@@ -16,6 +16,7 @@
     "@types/react-dom": "^16.9.0",
     "prettier": "^2.1.2",
     "react-scripts": "3.4.3",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "~3.7.2"
   },
   "scripts": {
