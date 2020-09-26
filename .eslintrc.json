@@ -12,6 +12,8 @@
     "@typescript-eslint/explicit-module-boundary-types": "error",
     "@typescript-eslint/array-type": ["error", { "default": "array" }],
     "@typescript-eslint/no-inferrable-types": "off",
-    "@typescript-eslint/no-unused-vars": "error"
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/typedef": ["error", { "a": "e" }]
   }
 }
