@@ -1,9 +1,15 @@
 import React from "react";
-import { render } from "@testing-library/react";
 import App from "./App";
+import { mount } from "enzyme";
 
-test("renders learn react link", () => {
-  const { getByText } = render(<App />);
-  const linkElement = getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+describe("App Component", () => {
+  test("Renders the canvas container", () => {
+    const app = mount(<App />);
+    expect(app.find("main > div#canvas-container").exists()).toBe(true);
+  });
+
+  test("Renders the canvas inside the container", () => {
+    const app = mount(<App />);
+    expect(app.find("main > div#canvas-container > canvas").exists()).toBe(true);
+  });
 });
