@@ -20,7 +20,10 @@ describe("File Selector Component", () => {
   });
 
   test("onChangeFile calls the setData callback", async () => {
-    const fileContents: string = "random-contents";
+    const fileContents: string = `
+      ignored row
+      14.01.2020 07:01:02 GMT+0200,1,2,3,4,5
+    `;
     const fileReader = onChangeFile(new File([fileContents], "test.csv"), defaultProps.setDataCallback) as FileReader;
 
     await new Promise((resolve: () => void, reject: (e: unknown) => void) => {
@@ -36,7 +39,10 @@ describe("File Selector Component", () => {
   });
 
   test("Calls toast.error when an error happens while reading the file contents", async () => {
-    const fileContents: string = "random-contents";
+    const fileContents: string = `
+      ignored row
+      14.01.2020 07:01:02 GMT+0200,1,2,3,4,5
+    `;
     const fileReader = onChangeFile(new File([fileContents], "test.csv"), defaultProps.setDataCallback) as FileReader;
 
     await new Promise((resolve: () => void, reject: (e: unknown) => void) => {
@@ -49,6 +55,26 @@ describe("File Selector Component", () => {
 
           expect(toastMockery.error).toHaveBeenCalledTimes(1);
 
+          resolve();
+        } catch (err: unknown) {
+          reject(err);
+        }
+      };
+    });
+  });
+
+  test("Calls toast.error if the file contents are not valid", async () => {
+    const fileContents: string = `
+      ignored row
+      14.66.2020 07:01:02 GMT+0200,1,2,3,4,5
+    `;
+    const fileReader = onChangeFile(new File([fileContents], "test.csv"), defaultProps.setDataCallback) as FileReader;
+
+    await new Promise((resolve: () => void, reject: (e: unknown) => void) => {
+      fileReader.onloadend = () => {
+        try {
+          expect(toastMockery.error).toHaveBeenCalledTimes(1);
+          expect(toastMockery.error).toHaveBeenCalledWith("Invalid date: 14.66.2020 07:01:02 GMT+0200");
           resolve();
         } catch (err: unknown) {
           reject(err);

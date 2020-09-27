@@ -11,15 +11,19 @@ export function parse(csvContents: string): ChartData[] {
   }
 
   const data: ChartData[] = [];
+  lines.shift();
   for (const line of lines) {
     const [date, open, high, low, close, volume] = line.trim().split(",");
-
+    const dateObject = getDateObject(date);
+    if (dateObject.toString() === "Invalid Date") {
+      throw new Error(`Invalid date: ${date}`);
+    }
     data.push({
-      date: getDateObject(date),
-      open: parseFloat(open),
-      high: parseFloat(high),
-      low: parseFloat(low),
-      close: parseFloat(close),
+      date: dateObject,
+      open: parseFloat(open ?? 0),
+      high: parseFloat(high ?? 0),
+      low: parseFloat(low ?? 0),
+      close: parseFloat(close ?? 0),
       volume: parseFloat(volume ?? 0),
     });
   }

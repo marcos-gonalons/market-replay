@@ -35,9 +35,9 @@ function onChangeFile(file: File, setData: (d: ChartData[]) => void): FileReader
     }
 
     try {
-      setData(parse(event.target.result as string));
+      setData(parse((event.target.result as string).trim()));
     } catch (err: unknown) {
-      toast.error(err as string);
+      toast.error((err as Error).message);
       return;
     }
   };
