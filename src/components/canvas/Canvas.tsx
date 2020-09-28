@@ -58,3 +58,4 @@ function onResize(setContainerDimensions: (d: ContainerDimensions) => void): voi
 }
 
 export default Canvas;
+export type { Props };
