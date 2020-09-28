@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
+import { setDataAction, setIsParsingDataAction } from "../../context/dataContext/Actions";
 import { DataContext } from "../../context/dataContext/DataContext";
-import { ActionTypes, ChartData } from "../../context/dataContext/Types";
+import { ChartData } from "../../context/dataContext/Types";
+import { ReducerAction } from "../../context/Types";
 import { ParserWorker, ParserWorkerMessageOut } from "../../services/csvParser/Parser.worker";
 
 // import styles from "./FileSelector.module.css";
@@ -19,9 +21,7 @@ function FileSelector(): JSX.Element {
     if (!parserWorker) return;
 
     parserWorker.onmessage = ({ data }: MessageEvent) => {
-      onReceiveParserResult(data as ParserWorkerMessageOut, (d: ChartData[]) => {
-        dispatch({ type: ActionTypes.SET_DATA, payload: d });
-      });
+      onReceiveParserResult(data as ParserWorkerMessageOut, (d: ChartData[]) => dispatch(setDataAction(d)), dispatch);
     };
 
     return () => {
@@ -36,15 +36,19 @@ function FileSelector(): JSX.Element {
       <input
         type="file"
         onChange={({ target: { files } }: React.ChangeEvent<HTMLInputElement>) => {
-          onChangeFile(files![0], parserWorker);
+          onChangeFile(files![0], parserWorker, dispatch);
         }}
       />
     </div>
   );
 }
 
-function onChangeFile(file: File, worker: ParserWorker | null): FileReader | null {
-  if (!file || !worker) return null;
+function onChangeFile(
+  file: File,
+  parserWorker: ParserWorker | null,
+  dispatch: React.Dispatch<ReducerAction>
+): FileReader | null {
+  if (!file || !parserWorker) return null;
 
   const reader = new FileReader();
   reader.readAsText(file);
@@ -56,8 +60,10 @@ function onChangeFile(file: File, worker: ParserWorker | null): FileReader | nul
     }
 
     try {
-      worker.postMessage((event.target.result as string).trim());
+      dispatch(setIsParsingDataAction(true));
+      parserWorker.postMessage((event.target.result as string).trim());
     } catch (err: unknown) {
+      dispatch(setIsParsingDataAction(false));
       toast.error((err as Error).message);
       return;
     }
@@ -71,7 +77,12 @@ function onChangeFile(file: File, worker: ParserWorker | null): FileReader | nul
   return reader;
 }
 
-function onReceiveParserResult(result: ParserWorkerMessageOut, setDataCallback: (d: ChartData[]) => void): void {
+function onReceiveParserResult(
+  result: ParserWorkerMessageOut,
+  setDataCallback: (d: ChartData[]) => void,
+  dispatch: React.Dispatch<ReducerAction>
+): void {
+  dispatch(setIsParsingDataAction(false));
   if (Array.isArray(result)) {
     setDataCallback(result);
   } else {
