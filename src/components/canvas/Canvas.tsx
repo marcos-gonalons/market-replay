@@ -12,7 +12,11 @@ interface ContainerDimensions {
   height: number;
 }
 
-function Canvas(): JSX.Element {
+interface Props {
+  readonly setIsParsingDataCallback: (v: boolean) => void;
+}
+
+function Canvas({ setIsParsingDataCallback }: Props): JSX.Element {
   const [data, setData] = useState<ChartData[]>([]);
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
     width: 0,
@@ -41,7 +45,7 @@ function Canvas(): JSX.Element {
       <div ref={canvasContainerRef} id={styles["canvas-container"]}>
         <canvas id={styles["canvas"]} ref={canvasRef}></canvas>
       </div>
-      <FileSelector setDataCallback={setData} />
+      <FileSelector setDataCallback={setData} setIsParsingDataCallback={setIsParsingDataCallback} />
     </>
   );
 }
