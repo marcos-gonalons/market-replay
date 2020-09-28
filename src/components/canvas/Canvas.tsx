@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { DataContext } from "../../context/dataContext/DataContext";
 import { draw } from "../../services/painter/Painter";
-import { ChartData } from "../../types/ChartData";
 import FileSelector from "../fileSelector/FileSelector";
 import styles from "./Canvas.module.css";
 
@@ -12,12 +12,9 @@ interface ContainerDimensions {
   height: number;
 }
 
-interface Props {
-  readonly setIsParsingDataCallback: (v: boolean) => void;
-}
+function Canvas(): JSX.Element {
+  const { state } = useContext(DataContext);
 
-function Canvas({ setIsParsingDataCallback }: Props): JSX.Element {
-  const [data, setData] = useState<ChartData[]>([]);
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
     width: 0,
     height: 0,
@@ -37,15 +34,19 @@ function Canvas({ setIsParsingDataCallback }: Props): JSX.Element {
   }, [containerDimensions]);
 
   useEffect(() => {
-    draw(data, canvasRef.current!, canvasRef.current!.getContext("2d", { alpha: false }) as CanvasRenderingContext2D);
-  }, [data, containerDimensions]);
+    draw(
+      state.data,
+      canvasRef.current!,
+      canvasRef.current!.getContext("2d", { alpha: false }) as CanvasRenderingContext2D
+    );
+  }, [state.data, containerDimensions]);
 
   return (
     <>
       <div ref={canvasContainerRef} id={styles["canvas-container"]}>
         <canvas id={styles["canvas"]} ref={canvasRef}></canvas>
       </div>
-      <FileSelector setDataCallback={setData} setIsParsingDataCallback={setIsParsingDataCallback} />
+      <FileSelector />
     </>
   );
 }
@@ -58,4 +59,3 @@ function onResize(setContainerDimensions: (d: ContainerDimensions) => void): voi
 }
 
 export default Canvas;
-export type { Props };

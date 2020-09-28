@@ -1,4 +1,4 @@
-import { ChartData } from "../../types/ChartData";
+import { ChartData } from "../../context/dataContext/Types";
 
 export function parse(csvContents: string): ChartData[] {
   if (csvContents.length === 0) {

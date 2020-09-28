@@ -1,5 +1,5 @@
+import { ChartData } from "../../context/dataContext/Types";
 import { parse } from "./Parser";
-import { ChartData } from "../../types/ChartData";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ctx: ParserWorker = self as any;

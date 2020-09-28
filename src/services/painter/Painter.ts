@@ -1,4 +1,4 @@
-import { ChartData } from "../../types/ChartData";
+import { ChartData } from "../../context/dataContext/Types";
 
 export function draw(data: ChartData[], canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): void {
   if (data.length === 0) return;

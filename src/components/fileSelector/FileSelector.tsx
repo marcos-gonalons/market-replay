@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
+import { DataContext } from "../../context/dataContext/DataContext";
+import { ActionTypes, ChartData } from "../../context/dataContext/Types";
 import { ParserWorker, ParserWorkerMessageOut } from "../../services/csvParser/Parser.worker";
-import { ChartData } from "../../types/ChartData";
 
 // import styles from "./FileSelector.module.css";
 
-interface Props {
-  readonly setDataCallback: (data: ChartData[]) => void;
-  readonly setIsParsingDataCallback: (v: boolean) => void;
-}
-
-function FileSelector({ setDataCallback, setIsParsingDataCallback }: Props): JSX.Element {
+function FileSelector(): JSX.Element {
+  const { dispatch } = useContext(DataContext);
   const [parserWorker, setParserWorker] = useState<ParserWorker | null>(null);
 
   useEffect(() => {
@@ -22,8 +19,9 @@ function FileSelector({ setDataCallback, setIsParsingDataCallback }: Props): JSX
     if (!parserWorker) return;
 
     parserWorker.onmessage = ({ data }: MessageEvent) => {
-      setIsParsingDataCallback(false);
-      onReceiveParserResult(data as ParserWorkerMessageOut, setDataCallback);
+      onReceiveParserResult(data as ParserWorkerMessageOut, (d: ChartData[]) => {
+        dispatch({ type: ActionTypes.SET_DATA, payload: d });
+      });
     };
 
     return () => {
@@ -31,25 +29,21 @@ function FileSelector({ setDataCallback, setIsParsingDataCallback }: Props): JSX
       parserWorker.onmessage = null;
       parserWorker.terminate();
     };
-  }, [parserWorker, setDataCallback, setIsParsingDataCallback]);
+  }, [parserWorker, dispatch]);
 
   return (
     <div>
       <input
         type="file"
         onChange={({ target: { files } }: React.ChangeEvent<HTMLInputElement>) => {
-          onChangeFile(files![0], parserWorker, setIsParsingDataCallback);
+          onChangeFile(files![0], parserWorker);
         }}
       />
     </div>
   );
 }
 
-function onChangeFile(
-  file: File,
-  worker: ParserWorker | null,
-  setIsParsingDataCallback: Props["setIsParsingDataCallback"]
-): FileReader | null {
+function onChangeFile(file: File, worker: ParserWorker | null): FileReader | null {
   if (!file || !worker) return null;
 
   const reader = new FileReader();
@@ -62,10 +56,8 @@ function onChangeFile(
     }
 
     try {
-      setIsParsingDataCallback(true);
       worker.postMessage((event.target.result as string).trim());
     } catch (err: unknown) {
-      setIsParsingDataCallback(false);
       toast.error((err as Error).message);
       return;
     }
@@ -89,4 +81,3 @@ function onReceiveParserResult(result: ParserWorkerMessageOut, setDataCallback: 
 
 export default FileSelector;
 export { onChangeFile };
-export type { Props };
