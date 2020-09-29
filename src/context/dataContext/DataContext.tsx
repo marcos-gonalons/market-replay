@@ -39,3 +39,5 @@ export const DataContextProvider: React.FC = ({ children }): React.ReactElement 
 
   return <DataContext.Provider value={{ state, dispatch }}>{children}</DataContext.Provider>;
 };
+
+export { reducer, initialState };
