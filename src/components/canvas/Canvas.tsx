@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { DataContext } from "../../context/dataContext/DataContext";
-import { draw } from "../../services/painter/Painter";
+import PainterService from "../../services/painter/Painter";
 import FileSelector from "../fileSelector/FileSelector";
 import styles from "./Canvas.module.css";
 
@@ -19,8 +19,13 @@ function Canvas(): JSX.Element {
     width: 0,
     height: 0,
   });
+  const [painterService, setPainterService] = useState<PainterService | null>(null);
 
   useEffect(() => {
+    const painterService = new PainterService();
+    painterService.setCanvas(canvasRef.current!);
+    setPainterService(painterService);
+
     const width = canvasContainerRef.current!.clientWidth;
     const height = canvasContainerRef.current!.clientHeight;
     setContainerDimensions({ width, height });
@@ -34,12 +39,16 @@ function Canvas(): JSX.Element {
   }, [containerDimensions]);
 
   useEffect(() => {
-    draw(
-      state.data,
-      canvasRef.current!,
-      canvasRef.current!.getContext("2d", { alpha: false }) as CanvasRenderingContext2D
-    );
-  }, [state.data, containerDimensions]);
+    if (!painterService) return;
+
+    if (state.data && state.data.length > 0) {
+      painterService.setData(state.data);
+      painterService.updateCandlesAmountInScreen();
+      painterService.updateCandleWidth();
+      painterService.updatePriceRangeInScreen();
+      painterService.draw();
+    }
+  }, [state.data, containerDimensions, painterService]);
 
   return (
     <>

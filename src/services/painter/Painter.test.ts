@@ -1,8 +1,8 @@
-import { draw } from "./Painter";
+import PainterService from "./Painter";
 
 describe("Painter service", () => {
   test("TODO", () => {
-    draw;
+    PainterService;
     expect(false).toBe(true);
   });
 });
