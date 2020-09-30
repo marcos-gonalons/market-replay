@@ -24,7 +24,7 @@ class PainterService {
   private colors: Colors = {
     background: "rgb(0, 0, 0)",
     text: "rgb(255,255,255)",
-    pointerLine: "rgb(255,255,255)",
+    pointerLine: "rgb(200,200,200)",
     priceScale: {
       background: "rgb(0, 0, 0)",
       border: "rgb(255, 255, 255)",
@@ -163,6 +163,8 @@ class PainterService {
       return this;
     }
 
+    this.ctx.font = "14px Arial";
+    this.ctx.textBaseline = "middle";
     this.ctx.fillStyle = this.colors.background;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -173,7 +175,11 @@ class PainterService {
     this.drawCandles();
 
     this.drawPriceScale();
+
+    this.ctx.setLineDash([10, 5]);
     this.drawPointerHorizontalLine();
+    this.drawPointerVerticalLine();
+    this.ctx.setLineDash([]);
     this.drawPriceInPointerPosition();
     return this;
   }
@@ -184,8 +190,7 @@ class PainterService {
     const price =
       this.priceRangeInScreen.max - this.getPriceRangeInScreenDiff() * (this.mouseCoords.y / this.canvas.height);
 
-    this.ctx.font = "14px Arial";
-    this.ctx.fillText(price.toFixed(5), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 6, this.mouseCoords.y);
+    this.ctx.fillText(price.toFixed(5), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 15, this.mouseCoords.y);
     return this;
   }
 
@@ -201,7 +206,8 @@ class PainterService {
     let price = maxRounded;
     while (price > this.priceRangeInScreen.min) {
       const y = (this.canvas.height * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
-      this.ctx.fillText(price.toString(), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 6, y);
+      this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, y, 10, 1);
+      this.ctx.fillText(price.toString(), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 15, y);
       price = price - priceJump;
     }
     return this;
@@ -212,7 +218,19 @@ class PainterService {
 
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.mouseCoords.y + 0.5);
-    this.ctx.lineTo(this.canvas.width, this.mouseCoords.y + 0.5);
+    this.ctx.lineTo(this.canvas.width - PRICE_SCALE_WITH_IN_PX, this.mouseCoords.y + 0.5);
+    this.ctx.stroke();
+    this.ctx.closePath();
+
+    return this;
+  }
+
+  private drawPointerVerticalLine(): PainterService {
+    this.ctx.strokeStyle = this.colors.pointerLine;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.mouseCoords.x + 0.5, 0);
+    this.ctx.lineTo(this.mouseCoords.x + 0.5, this.canvas.height);
     this.ctx.stroke();
     this.ctx.closePath();
 
