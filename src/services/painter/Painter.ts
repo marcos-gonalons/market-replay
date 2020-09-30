@@ -198,7 +198,6 @@ class PainterService {
 
     const maxRounded = Math.floor(this.priceRangeInScreen.max / 10) * 10;
     const priceJump = Math.ceil(this.getPriceRangeInScreenDiff() / PRICES_PER_1000_PX / 10) * 10 || 10;
-    console.log(priceJump);
     let price = maxRounded;
     while (price > this.priceRangeInScreen.min) {
       const y = (this.canvas.height * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
