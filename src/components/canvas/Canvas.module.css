@@ -2,8 +2,11 @@
   width: 100%;
   height: 80vh;
 }
-canvas {
+canvas.graph {
   cursor: crosshair;
+}
+canvas.candles {
+  display: none;
 }
 
 canvas.grabbing {
