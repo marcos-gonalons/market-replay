@@ -42,6 +42,7 @@ function Canvas(): JSX.Element {
     if (!painterService) return;
 
     painterService.setData(state.data ?? []);
+
     painterService.updateCandlesAmountInScreen();
     painterService.updateCandleWidth();
     painterService.updatePriceRangeInScreen();
@@ -51,7 +52,18 @@ function Canvas(): JSX.Element {
   return (
     <>
       <div ref={canvasContainerRef} id={styles["canvas-container"]}>
-        <canvas id={styles["canvas"]} ref={canvasRef}></canvas>
+        <canvas
+          onWheel={(e: React.WheelEvent<HTMLCanvasElement>) => {
+            if (!painterService) return;
+
+            painterService.updateZoomLevel(-(e.deltaY / 100));
+            painterService.updateCandleWidth();
+            painterService.updatePriceRangeInScreen();
+            painterService.draw();
+          }}
+          id={styles["canvas"]}
+          ref={canvasRef}
+        ></canvas>
       </div>
       <FileSelector />
     </>

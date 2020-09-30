@@ -1,31 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/dataContext/Types";
-
-const PRICE_SCALE_WITH_IN_PX = 100;
-const CANDLES_PER_1000_PX = 150;
-const ZOOM_LEVEL_CANDLES_MODIFIER = 0.1;
-
-// TODO: ADD MAX ZOOM (let's say -10 to +10)
-
-interface PriceRange {
-  min: number;
-  max: number;
-}
-
-interface Colors {
-  background: string;
-  priceScale: string;
-  candle: {
-    body: {
-      positive: string;
-      negative: string;
-    };
-    wick: {
-      positive: string;
-      negative: string;
-    };
-  };
-}
+import { CANDLES_PER_1000_PX, MAX_ZOOM, PRICE_SCALE_WITH_IN_PX, ZOOM_LEVEL_CANDLES_MODIFIER } from "./Constants";
+import { Colors, PriceRange } from "./Types";
 
 class PainterService {
   private data: ChartData[] = [];
@@ -83,6 +59,9 @@ class PainterService {
       }
     }
     this.candlesAmountInScreen = Math.round(candlesInScreen);
+    if (this.candlesAmountInScreen >= this.data.length) {
+      this.candlesAmountInScreen = this.data.length;
+    }
     return this;
   }
 
@@ -92,10 +71,27 @@ class PainterService {
     return this;
   }
 
+  public updateZoomLevel(value: number): PainterService {
+    const currenCandlesAmountInScreen = this.candlesAmountInScreen;
+    this.zoomLevel += value;
+    if (Math.abs(this.zoomLevel) > MAX_ZOOM) {
+      this.zoomLevel -= value;
+    }
+    this.updateCandlesAmountInScreen();
+    const newCandlesAmountInScreen = this.candlesAmountInScreen;
+    if (currenCandlesAmountInScreen === newCandlesAmountInScreen) {
+      this.zoomLevel -= value;
+    }
+    return this;
+  }
+
   public updatePriceRangeInScreen(): PainterService {
     if (this.data.length === 0) return this;
 
-    const startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
+    let startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
+    if (!this.data[startingIndex]) {
+      startingIndex = 0;
+    }
     let min = this.data[startingIndex].low;
     let max = this.data[startingIndex].high;
     for (let i = startingIndex + 1; i < startingIndex + this.candlesAmountInScreen; i++) {
@@ -133,7 +129,7 @@ class PainterService {
     this.ctx.fillStyle = "rgb(200, 0, 0)";
     const startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
     let candleNumber = 0;
-    const priceRangeInScreenDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min;
+    const priceRangeInScreenDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min || 100;
     for (let i = startingIndex; i < startingIndex + this.candlesAmountInScreen; i++) {
       const candle = this.data[i];
       const isPositive = candle.close >= candle.open;
@@ -146,7 +142,7 @@ class PainterService {
       );
 
       this.drawCandleBody(isPositive, [x, y, w, h]);
-      this.drawWicks(isPositive, candle, priceRangeInScreenDiff, x, y, h);
+      this.drawCandleWicks(isPositive, candle, priceRangeInScreenDiff, x, y, h);
 
       candleNumber++;
     }
@@ -173,7 +169,7 @@ class PainterService {
     return this;
   }
 
-  private drawWicks(
+  private drawCandleWicks(
     isPositive: boolean,
     candle: ChartData,
     priceRangeDiff: number,
@@ -182,6 +178,7 @@ class PainterService {
     candleHeight: number
   ): PainterService {
     this.ctx.strokeStyle = isPositive ? this.colors.candle.wick.positive : this.colors.candle.wick.negative;
+
     let wickDiff = candle.high - (isPositive ? candle.close : candle.open);
     const wickX = candleX + this.candleWidth / 2;
     this.ctx.beginPath();
