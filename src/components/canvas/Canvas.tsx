@@ -59,9 +59,10 @@ function Canvas(): JSX.Element {
 }
 
 function onResize(setContainerDimensions: (d: ContainerDimensions) => void): void {
+  if (!canvasContainerRef.current) return;
   setContainerDimensions({
-    width: canvasContainerRef.current!.clientWidth,
-    height: canvasContainerRef.current!.clientHeight,
+    width: canvasContainerRef.current.clientWidth,
+    height: canvasContainerRef.current.clientHeight,
   });
 }
 
