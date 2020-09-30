@@ -17,3 +17,8 @@ export interface Colors {
     };
   };
 }
+
+export interface Coords {
+  x: number;
+  y: number;
+}

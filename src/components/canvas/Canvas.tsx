@@ -30,7 +30,7 @@ function Canvas(): JSX.Element {
     const height = canvasContainerRef.current!.clientHeight;
     setContainerDimensions({ width, height });
 
-    window.addEventListener("resize", () => onResize(setContainerDimensions));
+    window.addEventListener("resize", () => onResizeWindow(setContainerDimensions));
   }, []);
 
   useEffect(() => {
@@ -55,11 +55,19 @@ function Canvas(): JSX.Element {
         <canvas
           onWheel={(e: React.WheelEvent<HTMLCanvasElement>) => {
             if (!painterService) return;
-
-            painterService.updateZoomLevel(-(e.deltaY / 100));
-            painterService.updateCandleWidth();
-            painterService.updatePriceRangeInScreen();
-            painterService.draw();
+            onScrollCanvas(painterService, e);
+          }}
+          onMouseMove={(e: React.MouseEvent<HTMLCanvasElement>) => {
+            if (!canvasRef.current || !painterService) return;
+            onMouseMoveCanvas(painterService, e, canvasRef.current.getBoundingClientRect());
+          }}
+          onMouseDown={() => {
+            if (!painterService) return;
+            painterService.setIsDragging(true);
+          }}
+          onMouseUp={() => {
+            if (!painterService) return;
+            painterService.setIsDragging(false);
           }}
           id={styles["canvas"]}
           ref={canvasRef}
@@ -70,11 +78,29 @@ function Canvas(): JSX.Element {
   );
 }
 
-function onResize(setContainerDimensions: (d: ContainerDimensions) => void): void {
+function onResizeWindow(setContainerDimensions: (d: ContainerDimensions) => void): void {
   if (!canvasContainerRef.current) return;
   setContainerDimensions({
     width: canvasContainerRef.current.clientWidth,
     height: canvasContainerRef.current.clientHeight,
+  });
+}
+
+function onScrollCanvas(painterService: PainterService, e: React.WheelEvent<HTMLCanvasElement>): void {
+  painterService.updateZoomLevel(-(e.deltaY / 100));
+  painterService.updateCandleWidth();
+  painterService.updatePriceRangeInScreen();
+  painterService.draw();
+}
+
+function onMouseMoveCanvas(
+  painterService: PainterService,
+  e: React.MouseEvent<HTMLCanvasElement>,
+  canvasRect: DOMRect
+): void {
+  painterService.updateMouseCoords({
+    x: e.clientX - canvasRect.x,
+    y: e.clientY - canvasRect.y,
   });
 }
 

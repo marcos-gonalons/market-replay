@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/dataContext/Types";
 import { CANDLES_PER_1000_PX, MAX_ZOOM, PRICE_SCALE_WITH_IN_PX, ZOOM_LEVEL_CANDLES_MODIFIER } from "./Constants";
-import { Colors, PriceRange } from "./Types";
+import { Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
   private data: ChartData[] = [];
@@ -17,15 +17,18 @@ class PainterService {
     priceScale: "rgb(200, 200, 0)",
     candle: {
       body: {
-        positive: "rgb(0,200,0)",
-        negative: "rgb(200,0,0)",
+        positive: "rgb(7,201,4)",
+        negative: "rgb(252,57,35)",
       },
       wick: {
-        positive: "rgb(0,200,0)",
-        negative: "rgb(200,0,0)",
+        positive: "rgb(7,201,4)",
+        negative: "rgb(252,57,35)",
       },
     },
   };
+  private mouseCoords: Coords = { x: 0, y: 0 };
+  private isDragging: boolean = false;
+  private dragStartMouseCoords: Coords = { x: 0, y: 0 };
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -33,8 +36,28 @@ class PainterService {
     return this;
   }
 
+  public setIsDragging(v: boolean): PainterService {
+    this.isDragging = v;
+    if (this.isDragging) {
+      this.dragStartMouseCoords = { ...this.mouseCoords };
+    }
+    return this;
+  }
+
   public setData(data: ChartData[]): PainterService {
     this.data = data;
+    return this;
+  }
+
+  public updateMouseCoords(coords: Coords): PainterService {
+    this.mouseCoords = coords;
+
+    if (this.isDragging) {
+      this.updateDataArrayOffset(-(this.dragStartMouseCoords.x - this.mouseCoords.x));
+      this.draw();
+
+      this.dragStartMouseCoords = { ...this.mouseCoords };
+    }
     return this;
   }
 
@@ -66,7 +89,20 @@ class PainterService {
   }
 
   public updateDataArrayOffset(value: number): PainterService {
+    if (!this.data || this.data.length === 0) return this;
+
     this.dataArrayOffset += value;
+
+    if (this.dataArrayOffset < 0) {
+      if (Math.abs(this.dataArrayOffset) > this.candlesAmountInScreen) {
+        this.dataArrayOffset = -this.candlesAmountInScreen;
+      }
+    }
+
+    if (this.dataArrayOffset > 0 && this.dataArrayOffset > this.data.length - this.candlesAmountInScreen) {
+      this.dataArrayOffset = this.data.length - this.candlesAmountInScreen;
+    }
+
     this.updatePriceRangeInScreen();
     return this;
   }
@@ -82,19 +118,18 @@ class PainterService {
     if (currenCandlesAmountInScreen === newCandlesAmountInScreen) {
       this.zoomLevel -= value;
     }
+
+    this.updateDataArrayOffset(0);
     return this;
   }
 
   public updatePriceRangeInScreen(): PainterService {
     if (this.data.length === 0) return this;
 
-    let startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
-    if (!this.data[startingIndex]) {
-      startingIndex = 0;
-    }
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
     let min = this.data[startingIndex].low;
     let max = this.data[startingIndex].high;
-    for (let i = startingIndex + 1; i < startingIndex + this.candlesAmountInScreen; i++) {
+    for (let i = startingIndex + 1; i < endingIndex; i++) {
       if (this.data[i].low < min) {
         min = this.data[i].low;
       }
@@ -127,10 +162,10 @@ class PainterService {
 
   private drawCandles(): PainterService {
     this.ctx.fillStyle = "rgb(200, 0, 0)";
-    const startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
     let candleNumber = 0;
     const priceRangeInScreenDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min || 100;
-    for (let i = startingIndex; i < startingIndex + this.candlesAmountInScreen; i++) {
+    for (let i = startingIndex; i < endingIndex; i++) {
       const candle = this.data[i];
       const isPositive = candle.close >= candle.open;
 
@@ -167,6 +202,22 @@ class PainterService {
     this.ctx.fillStyle = isPositive ? this.colors.candle.body.positive : this.colors.candle.body.negative;
     this.ctx.fillRect(x, y, w, h);
     return this;
+  }
+
+  private getDataStartAndEndIndex(): number[] {
+    let startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
+    if (!this.data[startingIndex] && this.dataArrayOffset === 0) {
+      startingIndex = 0;
+    }
+    if (!this.data[startingIndex] && this.dataArrayOffset !== 0) {
+      startingIndex = this.data.length - 1;
+    }
+    let endingIndex = startingIndex + this.candlesAmountInScreen;
+    if (endingIndex > this.data.length) {
+      endingIndex = this.data.length;
+    }
+
+    return [startingIndex, endingIndex];
   }
 
   private drawCandleWicks(
