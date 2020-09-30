@@ -147,12 +147,16 @@ class PainterService {
   }
 
   public draw(): PainterService {
-    this.ctx.fillStyle = this.colors.background;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
     if (!this.data || this.data.length === 0) {
       return this;
     }
+
+    this.ctx.fillStyle = this.colors.background;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.updateCandlesAmountInScreen();
+    this.updateCandleWidth();
+    this.updatePriceRangeInScreen();
 
     this.drawPriceScale();
     this.drawCandles();

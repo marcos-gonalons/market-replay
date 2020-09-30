@@ -43,10 +43,6 @@ function Canvas(): JSX.Element {
     if (!painterService) return;
 
     painterService.setData(state.data ?? []);
-
-    painterService.updateCandlesAmountInScreen();
-    painterService.updateCandleWidth();
-    painterService.updatePriceRangeInScreen();
     painterService.draw();
   }, [state.data, containerDimensions, painterService]);
 
@@ -103,8 +99,6 @@ function onResizeWindow(setContainerDimensions: (d: ContainerDimensions) => void
 
 function onScrollCanvas(painterService: PainterService, e: React.WheelEvent<HTMLCanvasElement>): void {
   painterService.updateZoomLevel(-(e.deltaY / 100));
-  painterService.updateCandleWidth();
-  painterService.updatePriceRangeInScreen();
   painterService.draw();
 }
 
