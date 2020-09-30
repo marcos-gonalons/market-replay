@@ -6,6 +6,7 @@ import {
   PRICES_PER_1000_PX,
   PRICE_SCALE_WITH_IN_PX,
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
+  TIME_SCALE_HEIGHT_IN_PX,
 } from "./Constants";
 import { Colors, Coords, PriceRange } from "./Types";
 
@@ -25,7 +26,15 @@ class PainterService {
     background: "rgb(0, 0, 0)",
     text: "rgb(255,255,255)",
     pointerLine: "rgb(200,200,200)",
+    highlight: {
+      background: "rgb(200,200,200)",
+      text: "rgb(0,0,0)",
+    },
     priceScale: {
+      background: "rgb(0, 0, 0)",
+      border: "rgb(255, 255, 255)",
+    },
+    timeScale: {
       background: "rgb(0, 0, 0)",
       border: "rgb(255, 255, 255)",
     },
@@ -79,12 +88,12 @@ class PainterService {
   }
 
   public updateCandleWidth(): PainterService {
-    this.candleWidth = (this.canvas.width - PRICE_SCALE_WITH_IN_PX) / this.candlesAmountInScreen;
+    this.candleWidth = this.getWidthForCandlesDisplay() / this.candlesAmountInScreen;
     return this;
   }
 
   public updateCandlesAmountInScreen(): PainterService {
-    let candlesInScreen = Math.round((this.canvas.width / 1000) * CANDLES_PER_1000_PX);
+    let candlesInScreen = Math.round((this.getWidthForCandlesDisplay() / 1000) * CANDLES_PER_1000_PX);
     let i = this.zoomLevel;
     if (i < 0) {
       while (i < 0) {
@@ -173,43 +182,55 @@ class PainterService {
     this.updatePriceRangeInScreen();
 
     this.drawCandles();
-
     this.drawPriceScale();
-
-    this.ctx.setLineDash([10, 5]);
-    this.drawPointerHorizontalLine();
-    this.drawPointerVerticalLine();
-    this.ctx.setLineDash([]);
     this.drawPriceInPointerPosition();
+    this.drawTimeScale();
+    this.drawPointerLines();
     return this;
   }
 
   private drawPriceInPointerPosition(): PainterService {
-    this.ctx.fillStyle = this.colors.text;
+    if (this.mouseCoords.y > this.getHeightForCandlesDisplay()) {
+      return this;
+    }
 
     const price =
-      this.priceRangeInScreen.max - this.getPriceRangeInScreenDiff() * (this.mouseCoords.y / this.canvas.height);
+      this.priceRangeInScreen.max -
+      this.getPriceRangeInScreenDiff() * (this.mouseCoords.y / this.getHeightForCandlesDisplay());
 
-    this.ctx.fillText(price.toFixed(5), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 15, this.mouseCoords.y);
+    this.ctx.fillStyle = this.colors.highlight.background;
+    this.ctx.fillRect(this.getWidthForCandlesDisplay(), this.mouseCoords.y - 10, PRICE_SCALE_WITH_IN_PX, 20);
+
+    this.ctx.fillStyle = this.colors.highlight.text;
+    this.ctx.fillText(price.toFixed(5), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y);
     return this;
   }
 
   private drawPriceScale(): PainterService {
     this.ctx.fillStyle = this.colors.priceScale.background;
-    this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, PRICE_SCALE_WITH_IN_PX, this.canvas.height);
+    this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, PRICE_SCALE_WITH_IN_PX, this.getHeightForCandlesDisplay());
 
     this.ctx.fillStyle = this.colors.priceScale.border;
-    this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, 2, this.canvas.height);
+    this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
 
     const maxRounded = Math.floor(this.priceRangeInScreen.max / 10) * 10;
     const priceJump = Math.ceil(this.getPriceRangeInScreenDiff() / PRICES_PER_1000_PX / 10) * 10 || 10;
     let price = maxRounded;
     while (price > this.priceRangeInScreen.min) {
-      const y = (this.canvas.height * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
-      this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, y, 10, 1);
-      this.ctx.fillText(price.toString(), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 15, y);
+      const y =
+        (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
+      this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
+      this.ctx.fillText(price.toString(), this.getWidthForCandlesDisplay() + 15, y);
       price = price - priceJump;
     }
+    return this;
+  }
+
+  private drawPointerLines(): PainterService {
+    this.ctx.setLineDash([10, 5]);
+    this.drawPointerHorizontalLine();
+    this.drawPointerVerticalLine();
+    this.ctx.setLineDash([]);
     return this;
   }
 
@@ -218,7 +239,7 @@ class PainterService {
 
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.mouseCoords.y + 0.5);
-    this.ctx.lineTo(this.canvas.width - PRICE_SCALE_WITH_IN_PX, this.mouseCoords.y + 0.5);
+    this.ctx.lineTo(this.getWidthForCandlesDisplay(), this.mouseCoords.y + 0.5);
     this.ctx.stroke();
     this.ctx.closePath();
 
@@ -230,7 +251,7 @@ class PainterService {
 
     this.ctx.beginPath();
     this.ctx.moveTo(this.mouseCoords.x + 0.5, 0);
-    this.ctx.lineTo(this.mouseCoords.x + 0.5, this.canvas.height);
+    this.ctx.lineTo(this.mouseCoords.x + 0.5, this.getHeightForCandlesDisplay());
     this.ctx.stroke();
     this.ctx.closePath();
 
@@ -267,9 +288,11 @@ class PainterService {
     candleBodyPriceDiff: number
   ): number[] {
     const x = this.candleWidth * candleNumber;
-    const y = ((this.priceRangeInScreen.max - priceForCalculatingY) / priceRangeInScreenDiff) * this.canvas.height;
+    const y =
+      ((this.priceRangeInScreen.max - priceForCalculatingY) / priceRangeInScreenDiff) *
+      this.getHeightForCandlesDisplay();
     const w = this.candleWidth;
-    const h = (this.canvas.height / priceRangeInScreenDiff) * candleBodyPriceDiff || 1;
+    const h = (this.getHeightForCandlesDisplay() / priceRangeInScreenDiff) * candleBodyPriceDiff || 1;
 
     return [x, y, w, h];
   }
@@ -310,14 +333,14 @@ class PainterService {
     const wickX = candleX + this.candleWidth / 2;
     this.ctx.beginPath();
     this.ctx.moveTo(wickX, candleY);
-    this.ctx.lineTo(wickX, candleY - (this.canvas.height / priceRangeDiff) * wickDiff);
+    this.ctx.lineTo(wickX, candleY - (this.getHeightForCandlesDisplay() / priceRangeDiff) * wickDiff);
     this.ctx.stroke();
     this.ctx.closePath();
 
     wickDiff = candle.low - (isPositive ? candle.open : candle.close);
     this.ctx.beginPath();
     this.ctx.moveTo(wickX, candleY + candleHeight);
-    this.ctx.lineTo(wickX, candleY + candleHeight - (this.canvas.height / priceRangeDiff) * wickDiff);
+    this.ctx.lineTo(wickX, candleY + candleHeight - (this.getHeightForCandlesDisplay() / priceRangeDiff) * wickDiff);
     this.ctx.stroke();
     this.ctx.closePath();
     return this;
@@ -325,6 +348,23 @@ class PainterService {
 
   private getPriceRangeInScreenDiff(): number {
     return this.priceRangeInScreen.max - this.priceRangeInScreen.min;
+  }
+
+  private getHeightForCandlesDisplay(): number {
+    return this.canvas.height - TIME_SCALE_HEIGHT_IN_PX;
+  }
+
+  private getWidthForCandlesDisplay(): number {
+    return this.canvas.width - PRICE_SCALE_WITH_IN_PX;
+  }
+
+  private drawTimeScale(): PainterService {
+    this.ctx.fillStyle = this.colors.timeScale.background;
+    this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.getWidthForCandlesDisplay(), TIME_SCALE_HEIGHT_IN_PX);
+
+    this.ctx.fillStyle = this.colors.timeScale.border;
+    this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.canvas.width, 2);
+    return this;
   }
 }
 

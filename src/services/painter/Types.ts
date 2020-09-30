@@ -7,7 +7,15 @@ export interface Colors {
   background: string;
   text: string;
   pointerLine: string;
+  highlight: {
+    background: string;
+    text: string;
+  };
   priceScale: {
+    background: string;
+    border: string;
+  };
+  timeScale: {
     background: string;
     border: string;
   };
