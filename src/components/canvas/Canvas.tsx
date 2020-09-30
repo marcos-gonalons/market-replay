@@ -69,6 +69,10 @@ function Canvas(): JSX.Element {
             if (!painterService) return;
             painterService.setIsDragging(false);
           }}
+          onMouseOut={() => {
+            if (!painterService) return;
+            painterService.setIsDragging(false);
+          }}
           id={styles["canvas"]}
           ref={canvasRef}
         ></canvas>

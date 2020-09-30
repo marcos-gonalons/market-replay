@@ -12,6 +12,9 @@ class PainterService {
   private candleWidth: number = 0;
   private candlesAmountInScreen: number = 0;
   private priceRangeInScreen: PriceRange = { min: 0, max: 0 };
+  private mouseCoords: Coords = { x: 0, y: 0 };
+  private isDragging: boolean = false;
+  private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private colors: Colors = {
     background: "rgb(0, 0, 0)",
     priceScale: "rgb(200, 200, 0)",
@@ -26,9 +29,6 @@ class PainterService {
       },
     },
   };
-  private mouseCoords: Coords = { x: 0, y: 0 };
-  private isDragging: boolean = false;
-  private dragStartMouseCoords: Coords = { x: 0, y: 0 };
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -46,6 +46,7 @@ class PainterService {
 
   public setData(data: ChartData[]): PainterService {
     this.data = data;
+    this.dataArrayOffset = 0;
     return this;
   }
 
