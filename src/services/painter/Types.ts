@@ -5,7 +5,12 @@ export interface PriceRange {
 
 export interface Colors {
   background: string;
-  priceScale: string;
+  text: string;
+  pointerLine: string;
+  priceScale: {
+    background: string;
+    border: string;
+  };
   candle: {
     body: {
       positive: string;

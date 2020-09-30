@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/dataContext/Types";
-import { CANDLES_PER_1000_PX, MAX_ZOOM, PRICE_SCALE_WITH_IN_PX, ZOOM_LEVEL_CANDLES_MODIFIER } from "./Constants";
+import { CANDLES_PER_1000_PX, MAX_ZOOM, PRICE_SCALE_WITH_IN_PX, ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER } from "./Constants";
 import { Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
@@ -17,7 +17,12 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private colors: Colors = {
     background: "rgb(0, 0, 0)",
-    priceScale: "rgb(200, 200, 0)",
+    text: "rgb(255,255,255)",
+    pointerLine: "rgb(255,255,255)",
+    priceScale: {
+      background: "rgb(0, 0, 0)",
+      border: "rgb(255, 255, 255)",
+    },
     candle: {
       body: {
         positive: "rgb(7,201,4)",
@@ -76,13 +81,13 @@ class PainterService {
     let i = this.zoomLevel;
     if (i < 0) {
       while (i < 0) {
-        candlesInScreen = candlesInScreen + candlesInScreen * ZOOM_LEVEL_CANDLES_MODIFIER;
+        candlesInScreen = candlesInScreen + candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
         i++;
       }
     }
     if (i >= 0) {
       while (i > 0) {
-        candlesInScreen = candlesInScreen - candlesInScreen * ZOOM_LEVEL_CANDLES_MODIFIER;
+        candlesInScreen = candlesInScreen - candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
         i--;
       }
     }
@@ -160,17 +165,56 @@ class PainterService {
 
     this.drawPriceScale();
     this.drawCandles();
+
+    this.drawPointerHorizontalLine();
+    this.drawPriceInPointerPosition();
+    return this;
+  }
+
+  private drawPriceInPointerPosition(): PainterService {
+    this.ctx.fillStyle = this.colors.text;
+
+    const priceRangeDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min;
+    const price = this.priceRangeInScreen.max - priceRangeDiff * (this.mouseCoords.y / this.canvas.height);
+
+    this.ctx.fillText(price.toFixed(5), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 10, this.mouseCoords.y);
     return this;
   }
 
   private drawPriceScale(): PainterService {
-    this.ctx.fillStyle = this.colors.priceScale;
+    this.ctx.fillStyle = this.colors.priceScale.background;
     this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, PRICE_SCALE_WITH_IN_PX, this.canvas.height);
+
+    this.ctx.fillStyle = this.colors.priceScale.border;
+    this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, 2, this.canvas.height);
+
+    /**
+     * Pongamos que el max es 1000 y el min es 900 (diferencia de 100)
+     * En el canvas height es 1000, y por cada 1000px mostramos 10 precios
+     *
+     * Pues mostrariamos 990,980,970,960,950,940,930,920,910,900
+     *
+     *
+     * Ahora el max es 1500 y el min es 1350
+     * El canvas height sige siendo 1000, por lo tanto mostramos 10 precios
+     * La diferencia es 150. 150/10 = Saltos de 15 por cada precio mostrado
+     */
+    return this;
+  }
+
+  private drawPointerHorizontalLine(): PainterService {
+    this.ctx.strokeStyle = this.colors.pointerLine;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, this.mouseCoords.y + 0.5);
+    this.ctx.lineTo(this.canvas.width, this.mouseCoords.y + 0.5);
+    this.ctx.stroke();
+    this.ctx.closePath();
+
     return this;
   }
 
   private drawCandles(): PainterService {
-    this.ctx.fillStyle = "rgb(200, 0, 0)";
     const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
     let candleNumber = 0;
     const priceRangeInScreenDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min || 100;

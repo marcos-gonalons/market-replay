@@ -111,6 +111,7 @@ function onMouseMoveCanvas(
     x: e.clientX - canvasRect.x,
     y: e.clientY - canvasRect.y,
   });
+  painterService.draw();
 }
 
 export default Canvas;
