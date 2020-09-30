@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/dataContext/Types";
 
+const BACKGROUND_COLOR = "rgb(0, 0, 0)";
 const PRICE_SCALE_WITH_IN_PX = 100;
 const PRICE_SCALE_BACKGOUND_COLOR = "rgb(0, 200, 0)";
-const CANDLES_PER_1000_PX = 120;
+const CANDLES_PER_1000_PX = 150;
 const ZOOM_LEVEL_CANDLES_MODIFIER = 0.1;
 
 type PriceRange = {
@@ -15,7 +16,7 @@ class PainterService {
   private data: ChartData[] = [];
   private canvas: HTMLCanvasElement = null as any;
   private ctx: CanvasRenderingContext2D = null as any;
-  private zoomLevel: number = 1;
+  private zoomLevel: number = 0;
   private dataArrayOffset: number = 0;
   private candleWidth: number = 0;
   private candlesAmountInScreen: number = 0;
@@ -38,9 +39,10 @@ class PainterService {
   }
 
   public updateCandlesAmountInScreen(): PainterService {
+    // TODO: Take into account negative zoom, in that case, I must show MORE candles
     let candlesInScreen = Math.round((this.canvas.width / 1000) * CANDLES_PER_1000_PX);
     let i = this.zoomLevel;
-    while (i > 1) {
+    while (i > 0) {
       candlesInScreen = candlesInScreen - candlesInScreen * ZOOM_LEVEL_CANDLES_MODIFIER;
       i--;
     }
@@ -73,6 +75,13 @@ class PainterService {
   }
 
   public draw(): PainterService {
+    this.ctx.fillStyle = BACKGROUND_COLOR;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    if (!this.data || this.data.length === 0) {
+      return this;
+    }
+
     this.drawPriceScale();
     this.drawCandles();
     return this;
@@ -92,11 +101,13 @@ class PainterService {
     for (let i = startingIndex; i < startingIndex + this.candlesAmountInScreen; i++) {
       const candle = this.data[i];
       const candlePriceDiff = candle.high - candle.low;
+
+      const x = this.candleWidth * candleNumber;
       const y = ((this.priceRangeInScreen.max - candle.high) / priceRangeDiff) * this.canvas.height;
-      const height = (this.canvas.height / priceRangeDiff) * candlePriceDiff;
+      const w = this.candleWidth;
+      const h = (this.canvas.height / priceRangeDiff) * candlePriceDiff;
 
-      this.ctx.fillRect(this.candleWidth * candleNumber, y, this.candleWidth, height);
-
+      this.ctx.fillRect(x, y, w, h);
       candleNumber++;
     }
     return this;

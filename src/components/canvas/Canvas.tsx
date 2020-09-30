@@ -41,13 +41,11 @@ function Canvas(): JSX.Element {
   useEffect(() => {
     if (!painterService) return;
 
-    if (state.data && state.data.length > 0) {
-      painterService.setData(state.data);
-      painterService.updateCandlesAmountInScreen();
-      painterService.updateCandleWidth();
-      painterService.updatePriceRangeInScreen();
-      painterService.draw();
-    }
+    painterService.setData(state.data ?? []);
+    painterService.updateCandlesAmountInScreen();
+    painterService.updateCandleWidth();
+    painterService.updatePriceRangeInScreen();
+    painterService.draw();
   }, [state.data, containerDimensions, painterService]);
 
   return (
