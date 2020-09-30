@@ -46,6 +46,10 @@ class PainterService {
 
   public setData(data: ChartData[]): PainterService {
     this.data = data;
+    return this;
+  }
+
+  public resetDataArrayOffset(): PainterService {
     this.dataArrayOffset = 0;
     return this;
   }

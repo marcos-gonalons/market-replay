@@ -20,6 +20,7 @@ function Canvas(): JSX.Element {
     height: 0,
   });
   const [painterService, setPainterService] = useState<PainterService | null>(null);
+  const [canvasClassName, setCanvasClassName] = useState<string>("");
 
   useEffect(() => {
     const painterService = new PainterService();
@@ -49,10 +50,17 @@ function Canvas(): JSX.Element {
     painterService.draw();
   }, [state.data, containerDimensions, painterService]);
 
+  useEffect(() => {
+    if (!painterService || !state.data || state.data.length === 0) return;
+    painterService.resetDataArrayOffset();
+    painterService.draw();
+  }, [state.data, painterService]);
+
   return (
     <>
       <div ref={canvasContainerRef} id={styles["canvas-container"]}>
         <canvas
+          className={canvasClassName}
           onWheel={(e: React.WheelEvent<HTMLCanvasElement>) => {
             if (!painterService) return;
             onScrollCanvas(painterService, e);
@@ -64,14 +72,17 @@ function Canvas(): JSX.Element {
           onMouseDown={() => {
             if (!painterService) return;
             painterService.setIsDragging(true);
+            setCanvasClassName(styles["grabbing"]);
           }}
           onMouseUp={() => {
             if (!painterService) return;
             painterService.setIsDragging(false);
+            setCanvasClassName("");
           }}
           onMouseOut={() => {
             if (!painterService) return;
             painterService.setIsDragging(false);
+            setCanvasClassName("");
           }}
           id={styles["canvas"]}
           ref={canvasRef}

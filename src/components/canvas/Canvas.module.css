@@ -2,3 +2,10 @@
   width: 100%;
   height: 80vh;
 }
+canvas {
+  cursor: crosshair;
+}
+
+canvas.grabbing {
+  cursor: grabbing;
+}
