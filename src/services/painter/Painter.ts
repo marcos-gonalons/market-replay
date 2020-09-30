@@ -138,11 +138,13 @@ class PainterService {
     this.zoomLevel += value;
     if (Math.abs(this.zoomLevel) > MAX_ZOOM) {
       this.zoomLevel -= value;
-    }
-    this.updateCandlesAmountInScreen();
-    const newCandlesAmountInScreen = this.candlesAmountInScreen;
-    if (currenCandlesAmountInScreen === newCandlesAmountInScreen) {
-      this.zoomLevel -= value;
+      this.updateCandlesAmountInScreen();
+    } else {
+      this.updateCandlesAmountInScreen();
+      const newCandlesAmountInScreen = this.candlesAmountInScreen;
+      if (currenCandlesAmountInScreen === newCandlesAmountInScreen) {
+        this.zoomLevel -= value;
+      }
     }
 
     this.updateDataArrayOffset(0);
@@ -228,8 +230,12 @@ class PainterService {
 
   private drawPointerLines(): PainterService {
     this.ctx.setLineDash([10, 5]);
-    this.drawPointerHorizontalLine();
-    this.drawPointerVerticalLine();
+    if (this.mouseCoords.y < this.getHeightForCandlesDisplay()) {
+      this.drawPointerHorizontalLine();
+    }
+    if (this.mouseCoords.x < this.getWidthForCandlesDisplay()) {
+      this.drawPointerVerticalLine();
+    }
     this.ctx.setLineDash([]);
     return this;
   }
