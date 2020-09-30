@@ -197,13 +197,13 @@ class PainterService {
     this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, 2, this.canvas.height);
 
     const maxRounded = Math.floor(this.priceRangeInScreen.max / 10) * 10;
-    const priceJump = Math.round(this.getPriceRangeInScreenDiff() / PRICES_PER_1000_PX / 10) * 10 || 10;
-
-    let i = maxRounded;
-    while (i > this.priceRangeInScreen.min) {
-      const y = (this.canvas.height * (this.priceRangeInScreen.max - i)) / this.getPriceRangeInScreenDiff();
-      this.ctx.fillText(i.toString(), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 6, y);
-      i = i - priceJump;
+    const priceJump = Math.ceil(this.getPriceRangeInScreenDiff() / PRICES_PER_1000_PX / 10) * 10 || 10;
+    console.log(priceJump);
+    let price = maxRounded;
+    while (price > this.priceRangeInScreen.min) {
+      const y = (this.canvas.height * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
+      this.ctx.fillText(price.toString(), this.canvas.width - PRICE_SCALE_WITH_IN_PX + 6, y);
+      price = price - priceJump;
     }
     return this;
   }
