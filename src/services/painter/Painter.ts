@@ -83,10 +83,11 @@ class PainterService {
     this.ctx.fillRect(this.canvas.width - PRICE_SCALE_WITH_IN_PX, 0, PRICE_SCALE_WITH_IN_PX, this.canvas.height);
     return this;
   }
+
   private drawCandles(): PainterService {
     this.ctx.fillStyle = "rgb(200, 0, 0)";
     const startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
-    let candleNumber = 1;
+    let candleNumber = 0;
     const priceRangeDiff = this.priceRangeInScreen.max - this.priceRangeInScreen.min;
     for (let i = startingIndex; i < startingIndex + this.candlesAmountInScreen; i++) {
       const candle = this.data[i];
@@ -94,12 +95,7 @@ class PainterService {
       const y = ((this.priceRangeInScreen.max - candle.high) / priceRangeDiff) * this.canvas.height;
       const height = (this.canvas.height / priceRangeDiff) * candlePriceDiff;
 
-      this.ctx.fillRect(
-        this.canvas.width - PRICE_SCALE_WITH_IN_PX - this.candleWidth * candleNumber,
-        y,
-        this.candleWidth,
-        height
-      );
+      this.ctx.fillRect(this.candleWidth * candleNumber, y, this.candleWidth, height);
 
       candleNumber++;
     }
