@@ -274,6 +274,9 @@ class PainterService {
 
   private drawCurrentPriceLine(): PainterService {
     let index = this.data.length - this.dataArrayOffset - 1;
+
+    if (index < 0) return this;
+
     let lastCandleInScreen = this.data[index];
 
     if (lastCandleInScreen) return this;
@@ -437,7 +440,7 @@ class PainterService {
   }
 
   private getDateFormatted(d: Date): string {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Nov", "Dic"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
 
     const [day, month, year, hours, minutes, seconds] = [
       d.getDate(),
