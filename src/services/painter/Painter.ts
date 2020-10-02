@@ -3,7 +3,7 @@ import { ChartData } from "../../context/dataContext/Types";
 import {
   CANDLES_PER_1000_PX,
   MAX_ZOOM,
-  PRICES_PER_1000_PX,
+  MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX,
   PRICE_SCALE_WITH_IN_PX,
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
@@ -248,13 +248,20 @@ class PainterService {
     this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
 
     const maxRounded = Math.floor(this.priceRangeInScreen.max / 10) * 10;
-    const priceJump = Math.ceil(this.getPriceRangeInScreenDiff() / PRICES_PER_1000_PX / 10) * 10 || 10;
+    const priceJump =
+      Math.ceil(
+        this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
+      ) * 10 || 1;
     let price = maxRounded;
     while (price > this.priceRangeInScreen.min) {
       const y =
         (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
-      this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
-      this.ctx.fillText(price.toString(), this.getWidthForCandlesDisplay() + 15, y);
+
+      if (y > 20 && y < this.getHeightForCandlesDisplay() - 20) {
+        this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
+        this.ctx.fillText(price.toString(), this.getWidthForCandlesDisplay() + 15, y);
+      }
+
       price = price - priceJump;
     }
     return this;
