@@ -7,6 +7,7 @@ export interface Colors {
   background: string;
   text: string;
   pointerLine: string;
+  currentPriceLine: string;
   highlight: {
     background: string;
     text: string;

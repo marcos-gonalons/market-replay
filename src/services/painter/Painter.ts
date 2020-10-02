@@ -7,6 +7,7 @@ import {
   PRICE_SCALE_WITH_IN_PX,
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
+  DEFAULT_FONT,
 } from "./Constants";
 import { Colors, Coords, PriceRange } from "./Types";
 
@@ -26,9 +27,10 @@ class PainterService {
     background: "rgb(0, 0, 0)",
     text: "rgb(255,255,255)",
     pointerLine: "rgb(200,200,200)",
+    currentPriceLine: "rgb(250,174,132)",
     highlight: {
-      background: "rgb(200,200,200)",
-      text: "rgb(0,0,0)",
+      background: "rgb(100,100,100)",
+      text: "rgb(255,255,255)",
     },
     priceScale: {
       background: "rgb(0, 0, 0)",
@@ -53,7 +55,6 @@ class PainterService {
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false }) as CanvasRenderingContext2D;
-    this.ctx.font = "14px Arial";
     return this;
   }
 
@@ -174,7 +175,7 @@ class PainterService {
       return this;
     }
 
-    this.ctx.font = "14px Arial";
+    this.ctx.font = DEFAULT_FONT;
     this.ctx.textBaseline = "middle";
     this.ctx.fillStyle = this.colors.background;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -184,10 +185,15 @@ class PainterService {
     this.updatePriceRangeInScreen();
 
     this.drawCandles();
+
     this.drawPriceScale();
     this.drawPriceInPointerPosition();
+
     this.drawTimeScale();
+    this.drawDateInPointerPosition();
+
     this.drawPointerLines();
+    this.drawCurrentPriceLine();
     return this;
   }
 
@@ -201,10 +207,34 @@ class PainterService {
       this.getPriceRangeInScreenDiff() * (this.mouseCoords.y / this.getHeightForCandlesDisplay());
 
     this.ctx.fillStyle = this.colors.highlight.background;
-    this.ctx.fillRect(this.getWidthForCandlesDisplay(), this.mouseCoords.y - 10, PRICE_SCALE_WITH_IN_PX, 20);
+    this.ctx.fillRect(this.getWidthForCandlesDisplay(), this.mouseCoords.y - 12.5, PRICE_SCALE_WITH_IN_PX, 25);
 
+    this.ctx.font = "bold 15px Arial";
     this.ctx.fillStyle = this.colors.highlight.text;
-    this.ctx.fillText(price.toFixed(5), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y);
+    this.ctx.fillText(price.toFixed(4), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y + 1);
+    this.ctx.font = DEFAULT_FONT;
+    return this;
+  }
+
+  private drawDateInPointerPosition(): PainterService {
+    const candleNumber = Math.floor(this.mouseCoords.x / this.candleWidth);
+    const dataIndex = this.data.length - this.candlesAmountInScreen + candleNumber - this.dataArrayOffset;
+    const candle = this.data[dataIndex];
+
+    if (!candle) return this;
+
+    const dateWidthInPx = 170;
+    const dateHeightInPx = 30;
+    const x = this.mouseCoords.x - dateWidthInPx / 2;
+    const y = this.getHeightForCandlesDisplay() + 2;
+
+    this.ctx.fillStyle = this.colors.highlight.background;
+    this.ctx.fillRect(x, y, dateWidthInPx, dateHeightInPx);
+
+    this.ctx.font = "bold 15px Arial";
+    this.ctx.fillStyle = this.colors.highlight.text;
+    this.ctx.fillText(this.getDateFormatted(candle.date), x + 5, y + 16);
+    this.ctx.font = DEFAULT_FONT;
     return this;
   }
 
@@ -237,6 +267,37 @@ class PainterService {
       this.drawPointerVerticalLine();
     }
     this.ctx.setLineDash([]);
+    return this;
+  }
+
+  private drawCurrentPriceLine(): PainterService {
+    let index = this.data.length - this.dataArrayOffset - 1;
+    let lastCandleInScreen = this.data[index];
+
+    if (lastCandleInScreen) return this;
+
+    let x = this.getWidthForCandlesDisplay();
+    while (!lastCandleInScreen) {
+      index--;
+      x = x - this.candleWidth;
+      lastCandleInScreen = this.data[index];
+    }
+
+    const y =
+      (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - lastCandleInScreen.close)) /
+        this.getPriceRangeInScreenDiff() +
+      0.5;
+
+    this.ctx.strokeStyle = this.colors.currentPriceLine;
+
+    this.ctx.setLineDash([5, 5]);
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.lineTo(this.getWidthForCandlesDisplay(), y);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.setLineDash([]);
+
     return this;
   }
 
@@ -371,6 +432,23 @@ class PainterService {
     this.ctx.fillStyle = this.colors.timeScale.border;
     this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.canvas.width, 2);
     return this;
+  }
+
+  private getDateFormatted(d: Date): string {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Nov", "Dic"];
+
+    const [day, month, year, hours, minutes, seconds] = [
+      d.getDate(),
+      months[d.getMonth()],
+      d.getFullYear(),
+      d.getHours(),
+      d.getMinutes(),
+      d.getSeconds(),
+    ].map((el) => {
+      return el.toString().length === 1 ? `${el}0` : el;
+    });
+
+    return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
 }
 
