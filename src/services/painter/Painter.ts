@@ -217,6 +217,8 @@ class PainterService {
   }
 
   private drawDateInPointerPosition(): PainterService {
+    if (this.mouseCoords.x > this.getWidthForCandlesDisplay()) return this;
+
     const candleNumber = Math.floor(this.mouseCoords.x / this.candleWidth);
     const dataIndex = this.data.length - this.candlesAmountInScreen + candleNumber - this.dataArrayOffset;
     const candle = this.data[dataIndex];
@@ -445,7 +447,7 @@ class PainterService {
       d.getMinutes(),
       d.getSeconds(),
     ].map((el) => {
-      return el.toString().length === 1 ? `${el}0` : el;
+      return el.toString().length === 1 ? `0${el}` : el;
     });
 
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
