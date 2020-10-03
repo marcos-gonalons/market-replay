@@ -18,7 +18,7 @@ class PainterService {
   private zoomLevel: number = 0;
   private dataArrayOffset: number = 0;
   private candleWidth: number = 0;
-  private candlesAmountInScreen: number = 0;
+  private maxCandlesAmountInScreen: number = 0;
   private priceRangeInScreen: PriceRange = { min: 0, max: 0 };
   private mouseCoords: Coords = { x: 0, y: 0 };
   private isDragging: boolean = false;
@@ -89,11 +89,11 @@ class PainterService {
   }
 
   public updateCandleWidth(): PainterService {
-    this.candleWidth = this.getWidthForCandlesDisplay() / this.candlesAmountInScreen;
+    this.candleWidth = this.getWidthForCandlesDisplay() / this.maxCandlesAmountInScreen;
     return this;
   }
 
-  public updateCandlesAmountInScreen(): PainterService {
+  public updateMaxCandlesAmountInScreen(): PainterService {
     let candlesInScreen = Math.round((this.getWidthForCandlesDisplay() / 1000) * CANDLES_PER_1000_PX);
     let i = this.zoomLevel;
     if (i < 0) {
@@ -108,9 +108,9 @@ class PainterService {
         i--;
       }
     }
-    this.candlesAmountInScreen = Math.round(candlesInScreen);
-    if (this.candlesAmountInScreen >= this.data.length) {
-      this.candlesAmountInScreen = this.data.length;
+    this.maxCandlesAmountInScreen = Math.round(candlesInScreen);
+    if (this.maxCandlesAmountInScreen >= this.data.length) {
+      this.maxCandlesAmountInScreen = this.data.length;
     }
     return this;
   }
@@ -121,13 +121,13 @@ class PainterService {
     this.dataArrayOffset += value;
 
     if (this.dataArrayOffset < 0) {
-      if (Math.abs(this.dataArrayOffset) > this.candlesAmountInScreen) {
-        this.dataArrayOffset = -this.candlesAmountInScreen;
+      if (Math.abs(this.dataArrayOffset) > this.maxCandlesAmountInScreen - 5) {
+        this.dataArrayOffset = -this.maxCandlesAmountInScreen + 5;
       }
     }
 
-    if (this.dataArrayOffset > 0 && this.dataArrayOffset > this.data.length - this.candlesAmountInScreen) {
-      this.dataArrayOffset = this.data.length - this.candlesAmountInScreen;
+    if (this.dataArrayOffset > 0 && this.dataArrayOffset > this.data.length - this.maxCandlesAmountInScreen) {
+      this.dataArrayOffset = this.data.length - this.maxCandlesAmountInScreen;
     }
 
     this.updatePriceRangeInScreen();
@@ -135,15 +135,15 @@ class PainterService {
   }
 
   public updateZoomLevel(value: number): PainterService {
-    const currenCandlesAmountInScreen = this.candlesAmountInScreen;
+    const currenMaxCandlesAmountInScreen = this.maxCandlesAmountInScreen;
     this.zoomLevel += value;
     if (Math.abs(this.zoomLevel) > MAX_ZOOM) {
       this.zoomLevel -= value;
-      this.updateCandlesAmountInScreen();
+      this.updateMaxCandlesAmountInScreen();
     } else {
-      this.updateCandlesAmountInScreen();
-      const newCandlesAmountInScreen = this.candlesAmountInScreen;
-      if (currenCandlesAmountInScreen === newCandlesAmountInScreen) {
+      this.updateMaxCandlesAmountInScreen();
+      const newCandlesAmountInScreen = this.maxCandlesAmountInScreen;
+      if (currenMaxCandlesAmountInScreen === newCandlesAmountInScreen) {
         this.zoomLevel -= value;
       }
     }
@@ -180,7 +180,7 @@ class PainterService {
     this.ctx.fillStyle = this.colors.background;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.updateCandlesAmountInScreen();
+    this.updateMaxCandlesAmountInScreen();
     this.updateCandleWidth();
     this.updatePriceRangeInScreen();
 
@@ -220,7 +220,7 @@ class PainterService {
     if (this.mouseCoords.x > this.getWidthForCandlesDisplay()) return this;
 
     const candleNumber = Math.floor(this.mouseCoords.x / this.candleWidth);
-    const dataIndex = this.data.length - this.candlesAmountInScreen + candleNumber - this.dataArrayOffset;
+    const dataIndex = this.data.length - this.maxCandlesAmountInScreen + candleNumber - this.dataArrayOffset;
     const candle = this.data[dataIndex];
 
     if (!candle) return this;
@@ -383,14 +383,14 @@ class PainterService {
   }
 
   private getDataStartAndEndIndex(): number[] {
-    let startingIndex = this.data.length - (this.candlesAmountInScreen + this.dataArrayOffset);
+    let startingIndex = this.data.length - (this.maxCandlesAmountInScreen + this.dataArrayOffset);
     if (!this.data[startingIndex] && this.dataArrayOffset === 0) {
       startingIndex = 0;
     }
     if (!this.data[startingIndex] && this.dataArrayOffset !== 0) {
       startingIndex = this.data.length - 1;
     }
-    let endingIndex = startingIndex + this.candlesAmountInScreen;
+    let endingIndex = startingIndex + this.maxCandlesAmountInScreen;
     if (endingIndex > this.data.length) {
       endingIndex = this.data.length;
     }
@@ -443,6 +443,33 @@ class PainterService {
 
     this.ctx.fillStyle = this.colors.timeScale.border;
     this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.canvas.width, 2);
+
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+
+    if (!this.data[startingIndex] || !this.data[startingIndex + 1]) {
+      return this;
+    }
+
+    const dataTemporality = this.getDataTemporalityInSeconds(startingIndex, endingIndex);
+    console.log(dataTemporality);
+
+    // maxDate = minDate + (maxcandlesinscreen*diff)
+
+    /**
+     * Coger la diferencia y guardarla entre todas las velas en pantalla
+     *
+     * La diferencia que mas se repita, esa es la buena, esa es la que usare
+     *
+     * diffInMilliseconds
+     */
+
+    /**
+    const priceJump =
+      Math.ceil(
+        this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
+      ) * 10 || 1;
+     */
+
     return this;
   }
 
@@ -461,6 +488,32 @@ class PainterService {
     });
 
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
+  }
+
+  private getDataTemporalityInSeconds(startingIndex: number, endingIndex: number): number {
+    const diffs: { diff: number; amount: number }[] = [];
+    for (let i = startingIndex; i <= endingIndex; i++) {
+      if (!this.data[i + 1]) break;
+
+      const diffInMilliseconds = this.data[i + 1].date.valueOf() - this.data[i].date.valueOf();
+      const diff = diffs.find((d) => d.diff === diffInMilliseconds);
+      if (diff) {
+        diff.amount++;
+      } else {
+        diffs.push({ diff: diffInMilliseconds, amount: 1 });
+      }
+    }
+
+    let maxOccurrences = 0;
+    let dataTemporality: number = 0;
+    for (const d of diffs) {
+      if (d.amount >= maxOccurrences) {
+        dataTemporality = d.diff;
+        maxOccurrences = d.amount;
+      }
+    }
+
+    return dataTemporality / 1000;
   }
 }
 
