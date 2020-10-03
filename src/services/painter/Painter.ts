@@ -8,6 +8,7 @@ import {
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
   DEFAULT_FONT,
+  MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
 } from "./Constants";
 import { Colors, Coords, PriceRange } from "./Types";
 
@@ -444,32 +445,28 @@ class PainterService {
     this.ctx.fillStyle = this.colors.timeScale.border;
     this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.canvas.width, 2);
 
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    this.ctx.font = "bold 15px Arial";
 
-    if (!this.data[startingIndex] || !this.data[startingIndex + 1]) {
-      return this;
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    const skip = Math.ceil(
+      this.maxCandlesAmountInScreen / ((this.getWidthForCandlesDisplay() * MAX_DATES_IN_DATE_SCALE_PER_1000_PX) / 1000)
+    );
+    let candleNumber = 1;
+    for (let i = startingIndex; i < endingIndex; i++) {
+      if (i % skip === 0) {
+        const date = this.data[i].date;
+        const [hours, minutes] = [date.getHours(), date.getMinutes()].map(this.prependZero);
+        const text = `${hours}:${minutes}`;
+        const textWidth = this.ctx.measureText(text).width;
+        const x = candleNumber * this.candleWidth - this.candleWidth / 2 - textWidth / 2;
+        if (x < this.getWidthForCandlesDisplay() - textWidth - 5) {
+          this.ctx.fillText(text, x, this.getHeightForCandlesDisplay() + 20);
+        }
+      }
+      candleNumber++;
     }
 
-    const dataTemporality = this.getDataTemporalityInSeconds(startingIndex, endingIndex);
-    console.log(dataTemporality);
-
-    // maxDate = minDate + (maxcandlesinscreen*diff)
-
-    /**
-     * Coger la diferencia y guardarla entre todas las velas en pantalla
-     *
-     * La diferencia que mas se repita, esa es la buena, esa es la que usare
-     *
-     * diffInMilliseconds
-     */
-
-    /**
-    const priceJump =
-      Math.ceil(
-        this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
-      ) * 10 || 1;
-     */
-
+    this.ctx.font = DEFAULT_FONT;
     return this;
   }
 
@@ -483,13 +480,11 @@ class PainterService {
       d.getHours(),
       d.getMinutes(),
       d.getSeconds(),
-    ].map((el) => {
-      return el.toString().length === 1 ? `0${el}` : el;
-    });
+    ].map(this.prependZero);
 
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
-
+  /*
   private getDataTemporalityInSeconds(startingIndex: number, endingIndex: number): number {
     const diffs: { diff: number; amount: number }[] = [];
     for (let i = startingIndex; i <= endingIndex; i++) {
@@ -514,6 +509,10 @@ class PainterService {
     }
 
     return dataTemporality / 1000;
+  }
+*/
+  private prependZero(el: number | string): number | string {
+    return el.toString().length === 1 ? `0${el}` : el;
   }
 }
 
