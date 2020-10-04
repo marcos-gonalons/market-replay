@@ -9,6 +9,7 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
   DEFAULT_FONT,
   MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
+  DEFAULT_COLORS,
 } from "./Constants";
 import { Colors, Coords, PriceRange } from "./Types";
 
@@ -25,34 +26,7 @@ class PainterService {
   private isDragging: boolean = false;
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
-  private colors: Colors = {
-    background: "rgb(0, 0, 0)",
-    text: "rgb(255,255,255)",
-    pointerLine: "rgb(200,200,200)",
-    currentPriceLine: "rgb(250,174,132)",
-    highlight: {
-      background: "rgb(100,100,100)",
-      text: "rgb(255,255,255)",
-    },
-    priceScale: {
-      background: "rgb(0, 0, 0)",
-      border: "rgb(255, 255, 255)",
-    },
-    timeScale: {
-      background: "rgb(0, 0, 0)",
-      border: "rgb(255, 255, 255)",
-    },
-    candle: {
-      body: {
-        positive: "rgb(7,201,4)",
-        negative: "rgb(252,57,35)",
-      },
-      wick: {
-        positive: "rgb(7,201,4)",
-        negative: "rgb(252,57,35)",
-      },
-    },
-  };
+  private colors: Colors = DEFAULT_COLORS;
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -70,7 +44,7 @@ class PainterService {
 
   public setData(data: ChartData[]): PainterService {
     this.data = data;
-    this.updateDataTemporality();
+    this.setDataTemporality();
     return this;
   }
 
@@ -250,11 +224,10 @@ class PainterService {
     this.ctx.fillStyle = this.colors.priceScale.border;
     this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
 
-    let nearestMultipleForRounding: number = 1;
     const diff = this.getPriceRangeInScreenDiff();
-
     if (diff === 0) return this;
 
+    let nearestMultipleForRounding: number = 1;
     if (diff >= 10) {
       const diffWithoutDecimals = diff.toString().split(".")[0];
       nearestMultipleForRounding = parseInt(`1${"0".repeat(diffWithoutDecimals.length - 2)}`);
@@ -274,7 +247,8 @@ class PainterService {
       nearestMultipleForRounding = parseFloat(`0.${"0".repeat(amountOfZeros)}1`);
     }
 
-    const maxPrice = Math.floor(this.priceRangeInScreen.max / nearestMultipleForRounding) * nearestMultipleForRounding;
+    const maxPriceRounded =
+      Math.floor(this.priceRangeInScreen.max / nearestMultipleForRounding) * nearestMultipleForRounding;
     const priceJump = parseFloat(
       (
         Math.ceil(
@@ -285,7 +259,7 @@ class PainterService {
       ).toFixed(5)
     );
 
-    let price = maxPrice;
+    let price = maxPriceRounded;
     while (price > this.priceRangeInScreen.min) {
       const y =
         (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
@@ -316,11 +290,9 @@ class PainterService {
 
   private drawCurrentPriceLine(): PainterService {
     let index = this.data.length - this.dataArrayOffset - 1;
-
     if (index < 0) return this;
 
     let lastCandleInScreen = this.data[index];
-
     if (lastCandleInScreen) return this;
 
     let x = this.getWidthForCandlesDisplay();
@@ -548,7 +520,7 @@ class PainterService {
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
 
-  private updateDataTemporality(): PainterService {
+  private setDataTemporality(): PainterService {
     const diffs: { diff: number; amount: number }[] = [];
     for (let i = 0; i <= 200; i++) {
       if (!this.data[i] || !this.data[i + 1]) break;
