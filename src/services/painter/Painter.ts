@@ -10,9 +10,10 @@ import {
   DEFAULT_FONT,
   DEFAULT_COLORS,
 } from "./Constants";
+import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
 import { drawPriceInPointerPosition, drawPriceScale } from "./PriceScalePainter/PriceScalePainter";
 import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
-import { Colors, Coords, PriceRange } from "./Types";
+import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
   private data: ChartData[] = [];
@@ -67,12 +68,12 @@ class PainterService {
   }
 
   public updateCandleWidth(): PainterService {
-    this.candleWidth = this.getWidthForCandlesDisplay() / this.maxCandlesAmountInScreen;
+    this.candleWidth = this.getCandlesDisplayDimensions().width / this.maxCandlesAmountInScreen;
     return this;
   }
 
   public updateMaxCandlesAmountInScreen(): PainterService {
-    let candlesInScreen = Math.round((this.getWidthForCandlesDisplay() / 1000) * CANDLES_PER_1000_PX);
+    let candlesInScreen = Math.round((this.getCandlesDisplayDimensions().width / 1000) * CANDLES_PER_1000_PX);
     let i = this.zoomLevel;
     if (i < 0) {
       while (i < 0) {
@@ -184,10 +185,7 @@ class PainterService {
       data: this.data,
       priceRange: this.priceRangeInScreen,
       candleWidth: this.candleWidth,
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       colors: this.colors.candle,
     });
     return this;
@@ -198,10 +196,7 @@ class PainterService {
       ctx: this.ctx,
       canvasHeight: this.canvas.height,
       colors: this.colors.priceScale,
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       priceRange: this.priceRangeInScreen,
     });
     return this;
@@ -211,10 +206,7 @@ class PainterService {
     drawPriceInPointerPosition({
       ctx: this.ctx,
       mousePointerY: this.mouseCoords.y,
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       priceRange: this.priceRangeInScreen,
       highlightColors: this.colors.highlight,
     });
@@ -226,10 +218,7 @@ class PainterService {
     drawTimeScale({
       ctx: this.ctx,
       colors: { ...this.colors.timeScale },
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       dataStartIndex: startingIndex,
       dataEndIndex: endingIndex,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
@@ -246,10 +235,7 @@ class PainterService {
       ctx: this.ctx,
       mousePointerX: this.mouseCoords.x,
       candleNumber: Math.floor(this.mouseCoords.x / this.candleWidth),
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       dataArrayOffset: this.dataArrayOffset,
       data: this.data,
       highlightColors: this.colors.highlight,
@@ -259,14 +245,12 @@ class PainterService {
   }
 
   private drawPointerLines(): PainterService {
-    this.ctx.setLineDash([10, 5]);
-    if (this.mouseCoords.y < this.getHeightForCandlesDisplay()) {
-      this.drawPointerHorizontalLine();
-    }
-    if (this.mouseCoords.x < this.getWidthForCandlesDisplay()) {
-      this.drawPointerVerticalLine();
-    }
-    this.ctx.setLineDash([]);
+    drawPointerLines({
+      ctx: this.ctx,
+      color: this.colors.pointerLine,
+      mouseCoords: this.mouseCoords,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+    });
     return this;
   }
 
@@ -277,7 +261,7 @@ class PainterService {
     let lastCandleInScreen = this.data[index];
     if (lastCandleInScreen) return this;
 
-    let x = this.getWidthForCandlesDisplay();
+    let x = this.getCandlesDisplayDimensions().width;
     while (!lastCandleInScreen) {
       index--;
       x = x - this.candleWidth;
@@ -285,8 +269,8 @@ class PainterService {
     }
 
     const y =
-      (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - lastCandleInScreen.close)) /
-        this.getPriceRangeInScreenDiff() +
+      (this.getCandlesDisplayDimensions().height * (this.priceRangeInScreen.max - lastCandleInScreen.close)) /
+        (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
       0.5;
 
     this.ctx.strokeStyle = this.colors.currentPriceLine;
@@ -294,34 +278,10 @@ class PainterService {
     this.ctx.setLineDash([5, 5]);
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
-    this.ctx.lineTo(this.getWidthForCandlesDisplay(), y);
+    this.ctx.lineTo(this.getCandlesDisplayDimensions().width, y);
     this.ctx.stroke();
     this.ctx.closePath();
     this.ctx.setLineDash([]);
-
-    return this;
-  }
-
-  private drawPointerHorizontalLine(): PainterService {
-    this.ctx.strokeStyle = this.colors.pointerLine;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, this.mouseCoords.y + 0.5);
-    this.ctx.lineTo(this.getWidthForCandlesDisplay(), this.mouseCoords.y + 0.5);
-    this.ctx.stroke();
-    this.ctx.closePath();
-
-    return this;
-  }
-
-  private drawPointerVerticalLine(): PainterService {
-    this.ctx.strokeStyle = this.colors.pointerLine;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.mouseCoords.x + 0.5, 0);
-    this.ctx.lineTo(this.mouseCoords.x + 0.5, this.getHeightForCandlesDisplay());
-    this.ctx.stroke();
-    this.ctx.closePath();
 
     return this;
   }
@@ -340,18 +300,6 @@ class PainterService {
     }
 
     return [startingIndex, endingIndex];
-  }
-
-  private getPriceRangeInScreenDiff(): number {
-    return this.priceRangeInScreen.max - this.priceRangeInScreen.min;
-  }
-
-  private getHeightForCandlesDisplay(): number {
-    return this.canvas.height - TIME_SCALE_HEIGHT_IN_PX;
-  }
-
-  private getWidthForCandlesDisplay(): number {
-    return this.canvas.width - PRICE_SCALE_WITH_IN_PX;
   }
 
   private setDataTemporality(): PainterService {
@@ -379,6 +327,13 @@ class PainterService {
 
     this.dataTemporality = dataTemporality / 1000;
     return this;
+  }
+
+  private getCandlesDisplayDimensions(): CandlesDisplayDimensions {
+    return {
+      width: this.canvas.width - PRICE_SCALE_WITH_IN_PX,
+      height: this.canvas.height - TIME_SCALE_HEIGHT_IN_PX,
+    };
   }
 }
 
