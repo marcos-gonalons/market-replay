@@ -448,17 +448,40 @@ class PainterService {
     this.ctx.font = "bold 15px Arial";
 
     const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
-    const skip = Math.ceil(
+    const dataTemporality = this.getDataTemporalityInSeconds(startingIndex, endingIndex);
+    let skip = Math.ceil(
       this.maxCandlesAmountInScreen / ((this.getWidthForCandlesDisplay() * MAX_DATES_IN_DATE_SCALE_PER_1000_PX) / 1000)
     );
+    if (dataTemporality < 3600) {
+      skip = Math.ceil(skip / 10) * 10;
+    }
     let candleNumber = 1;
     for (let i = startingIndex; i < endingIndex; i++) {
-      if (i % skip === 0) {
-        const date = this.data[i].date;
+      if (candleNumber % skip === 0) {
+        let date = this.data[i].date;
+
+        let offset = 0;
+        if (dataTemporality < 3600) {
+          if (date.getMinutes() % 10 !== 0) {
+            for (let j = i + 1; j < endingIndex; j++) {
+              offset++;
+              if (this.data[j].date.getMinutes() % 10 === 0) break;
+            }
+          }
+        }
+        if (offset > 0) {
+          date = this.data[i + offset].date;
+        }
+
         const [hours, minutes] = [date.getHours(), date.getMinutes()].map(this.prependZero);
+        /**
+         * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
+         * Or if it's bigger than 1 week or 1 month, display the month
+         * Make use of the method getDataTemporalityInSeconds !!! :) :)
+         */
         const text = `${hours}:${minutes}`;
         const textWidth = this.ctx.measureText(text).width;
-        const x = candleNumber * this.candleWidth - this.candleWidth / 2 - textWidth / 2;
+        const x = (candleNumber + offset) * this.candleWidth - this.candleWidth / 2 - textWidth / 2;
         if (x < this.getWidthForCandlesDisplay() - textWidth - 5) {
           this.ctx.fillText(text, x, this.getHeightForCandlesDisplay() + 20);
         }
@@ -484,7 +507,7 @@ class PainterService {
 
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
-  /*
+
   private getDataTemporalityInSeconds(startingIndex: number, endingIndex: number): number {
     const diffs: { diff: number; amount: number }[] = [];
     for (let i = startingIndex; i <= endingIndex; i++) {
@@ -510,7 +533,7 @@ class PainterService {
 
     return dataTemporality / 1000;
   }
-*/
+
   private prependZero(el: number | string): number | string {
     return el.toString().length === 1 ? `0${el}` : el;
   }
