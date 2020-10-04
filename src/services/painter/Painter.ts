@@ -24,6 +24,7 @@ class PainterService {
   private mouseCoords: Coords = { x: 0, y: 0 };
   private isDragging: boolean = false;
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
+  private dataTemporality: number = 0;
   private colors: Colors = {
     background: "rgb(0, 0, 0)",
     text: "rgb(255,255,255)",
@@ -69,6 +70,7 @@ class PainterService {
 
   public setData(data: ChartData[]): PainterService {
     this.data = data;
+    this.updateDataTemporality();
     return this;
   }
 
@@ -248,19 +250,32 @@ class PainterService {
     this.ctx.fillStyle = this.colors.priceScale.border;
     this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
 
-    const maxRounded = Math.floor(this.priceRangeInScreen.max / 10) * 10;
-    const priceJump =
-      Math.ceil(
-        this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
-      ) * 10 || 1;
-    let price = maxRounded;
+    let maxPrice: number;
+    let priceJump: number;
+    if (this.getPriceRangeInScreenDiff() > 2) {
+      maxPrice = Math.floor(this.priceRangeInScreen.max / 10) * 10;
+      priceJump =
+        Math.ceil(
+          this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
+        ) * 10 || 1;
+    } else {
+      maxPrice = this.priceRangeInScreen.max;
+      priceJump = parseFloat(
+        (
+          this.getPriceRangeInScreenDiff() /
+          ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000)
+        ).toFixed(5)
+      );
+    }
+
+    let price = maxPrice;
     while (price > this.priceRangeInScreen.min) {
       const y =
         (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
 
       if (y > 20 && y < this.getHeightForCandlesDisplay() - 20) {
         this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
-        this.ctx.fillText(price.toString(), this.getWidthForCandlesDisplay() + 15, y);
+        this.ctx.fillText(parseFloat(price.toFixed(5)).toString(), this.getWidthForCandlesDisplay() + 15, y);
       }
 
       price = price - priceJump;
@@ -448,11 +463,10 @@ class PainterService {
     this.ctx.font = "bold 15px Arial";
 
     const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
-    const dataTemporality = this.getDataTemporalityInSeconds(startingIndex, endingIndex);
     let skip = Math.ceil(
       this.maxCandlesAmountInScreen / ((this.getWidthForCandlesDisplay() * MAX_DATES_IN_DATE_SCALE_PER_1000_PX) / 1000)
     );
-    if (dataTemporality < 3600) {
+    if (this.dataTemporality < 3600) {
       skip = Math.ceil(skip / 10) * 10;
     }
     let candleNumber = 1;
@@ -461,7 +475,7 @@ class PainterService {
         let date = this.data[i].date;
 
         let offset = 0;
-        if (dataTemporality < 3600) {
+        if (this.dataTemporality < 3600) {
           if (date.getMinutes() % 10 !== 0) {
             for (let j = i + 1; j < endingIndex; j++) {
               offset++;
@@ -478,6 +492,13 @@ class PainterService {
          * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
          * Or if it's bigger than 1 week or 1 month, display the month
          * Make use of the method getDataTemporalityInSeconds !!! :) :)
+         *
+         * TODO2: If there is a day change while drawing the time, draw the day instead of the time
+         * It should have another style/color to highlight that is a new day
+         *
+         * TODO3: Refactor this a lil bit
+         *
+         * TODO3: Beware that  this.data[i + offset] may be null
          */
         const text = `${hours}:${minutes}`;
         const textWidth = this.ctx.measureText(text).width;
@@ -508,10 +529,10 @@ class PainterService {
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
 
-  private getDataTemporalityInSeconds(startingIndex: number, endingIndex: number): number {
+  private updateDataTemporality(): PainterService {
     const diffs: { diff: number; amount: number }[] = [];
-    for (let i = startingIndex; i <= endingIndex; i++) {
-      if (!this.data[i + 1]) break;
+    for (let i = 0; i <= 200; i++) {
+      if (!this.data[i] || !this.data[i + 1]) break;
 
       const diffInMilliseconds = this.data[i + 1].date.valueOf() - this.data[i].date.valueOf();
       const diff = diffs.find((d) => d.diff === diffInMilliseconds);
@@ -531,7 +552,8 @@ class PainterService {
       }
     }
 
-    return dataTemporality / 1000;
+    this.dataTemporality = dataTemporality / 1000;
+    return this;
   }
 
   private prependZero(el: number | string): number | string {
