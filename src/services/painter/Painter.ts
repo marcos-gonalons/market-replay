@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/dataContext/Types";
+import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
   MAX_ZOOM,
@@ -175,6 +176,24 @@ class PainterService {
     return this;
   }
 
+  private drawCandles(): PainterService {
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    drawCandles({
+      ctx: this.ctx,
+      dataStartIndex: startingIndex,
+      dataEndIndex: endingIndex,
+      data: this.data,
+      priceRange: this.priceRangeInScreen,
+      candleWidth: this.candleWidth,
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      colors: { ...this.colors.candle },
+    });
+    return this;
+  }
+
   private drawPriceInPointerPosition(): PainterService {
     if (this.mouseCoords.y > this.getHeightForCandlesDisplay()) {
       return this;
@@ -286,29 +305,6 @@ class PainterService {
     return this;
   }
 
-  private drawCandles(): PainterService {
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
-    let candleNumber = 0;
-    const priceRangeInScreenDiff = this.getPriceRangeInScreenDiff() || 100;
-    for (let i = startingIndex; i < endingIndex; i++) {
-      const candle = this.data[i];
-      const isPositive = candle.close >= candle.open;
-
-      const [x, y, w, h] = this.getCandleBodyCoordsAndSize(
-        candleNumber,
-        isPositive ? candle.close : candle.open,
-        priceRangeInScreenDiff,
-        Math.abs(candle.open - candle.close)
-      );
-
-      this.drawCandleBody(isPositive, [x, y, w, h]);
-      this.drawCandleWicks(isPositive, candle, priceRangeInScreenDiff, x, y, h);
-
-      candleNumber++;
-    }
-    return this;
-  }
-
   private drawPriceScale(): PainterService {
     drawPriceScale({
       ctx: this.ctx,
@@ -332,36 +328,14 @@ class PainterService {
         width: this.getWidthForCandlesDisplay(),
         height: this.getHeightForCandlesDisplay(),
       },
-      candlesInScreenStartIndex: startingIndex,
-      candlesInScreenEndIndex: endingIndex,
+      dataStartIndex: startingIndex,
+      dataEndIndex: endingIndex,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
       dataTemporality: this.dataTemporality,
       data: this.data,
       canvasWidth: this.canvas.width,
       candleWidth: this.candleWidth,
     });
-    return this;
-  }
-
-  private getCandleBodyCoordsAndSize(
-    candleNumber: number,
-    priceForCalculatingY: number,
-    priceRangeInScreenDiff: number,
-    candleBodyPriceDiff: number
-  ): number[] {
-    const x = this.candleWidth * candleNumber;
-    const y =
-      ((this.priceRangeInScreen.max - priceForCalculatingY) / priceRangeInScreenDiff) *
-      this.getHeightForCandlesDisplay();
-    const w = this.candleWidth;
-    const h = (this.getHeightForCandlesDisplay() / priceRangeInScreenDiff) * candleBodyPriceDiff || 1;
-
-    return [x, y, w, h];
-  }
-
-  private drawCandleBody(isPositive: boolean, [x, y, w, h]: number[]): PainterService {
-    this.ctx.fillStyle = isPositive ? this.colors.candle.body.positive : this.colors.candle.body.negative;
-    this.ctx.fillRect(x, y, w, h);
     return this;
   }
 
@@ -379,33 +353,6 @@ class PainterService {
     }
 
     return [startingIndex, endingIndex];
-  }
-
-  private drawCandleWicks(
-    isPositive: boolean,
-    candle: ChartData,
-    priceRangeDiff: number,
-    candleX: number,
-    candleY: number,
-    candleHeight: number
-  ): PainterService {
-    this.ctx.strokeStyle = isPositive ? this.colors.candle.wick.positive : this.colors.candle.wick.negative;
-
-    let wickDiff = candle.high - (isPositive ? candle.close : candle.open);
-    const wickX = candleX + this.candleWidth / 2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(wickX, candleY);
-    this.ctx.lineTo(wickX, candleY - (this.getHeightForCandlesDisplay() / priceRangeDiff) * wickDiff);
-    this.ctx.stroke();
-    this.ctx.closePath();
-
-    wickDiff = candle.low - (isPositive ? candle.open : candle.close);
-    this.ctx.beginPath();
-    this.ctx.moveTo(wickX, candleY + candleHeight);
-    this.ctx.lineTo(wickX, candleY + candleHeight - (this.getHeightForCandlesDisplay() / priceRangeDiff) * wickDiff);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    return this;
   }
 
   private getPriceRangeInScreenDiff(): number {

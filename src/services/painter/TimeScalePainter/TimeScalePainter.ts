@@ -6,8 +6,8 @@ interface Parameters {
   ctx: CanvasRenderingContext2D;
   colors: { background: string; border: string };
   candlesDisplayDimensions: { width: number; height: number };
-  candlesInScreenStartIndex: number;
-  candlesInScreenEndIndex: number;
+  dataStartIndex: number;
+  dataEndIndex: number;
   maxCandlesAmountInScreen: number;
   dataTemporality: number;
   data: ChartData[];
@@ -19,8 +19,8 @@ export default function drawTimeScale({
   ctx,
   colors,
   candlesDisplayDimensions,
-  candlesInScreenStartIndex,
-  candlesInScreenEndIndex,
+  dataStartIndex,
+  dataEndIndex,
   maxCandlesAmountInScreen,
   dataTemporality,
   data,
@@ -42,14 +42,14 @@ export default function drawTimeScale({
     skip = Math.ceil(skip / 10) * 10;
   }
   let candleNumber = 1;
-  for (let i = candlesInScreenStartIndex; i < candlesInScreenEndIndex; i++) {
+  for (let i = dataStartIndex; i < dataEndIndex; i++) {
     if (candleNumber % skip === 0) {
       let date = data[i].date;
 
       let offset = 0;
       if (dataTemporality < 3600) {
         if (date.getMinutes() % 10 !== 0) {
-          for (let j = i + 1; j < candlesInScreenEndIndex; j++) {
+          for (let j = i + 1; j < dataEndIndex; j++) {
             offset++;
             if (data[j].date.getMinutes() % 10 === 0) break;
           }
