@@ -214,7 +214,7 @@ class PainterService {
 
     this.ctx.font = "bold 15px Arial";
     this.ctx.fillStyle = this.colors.highlight.text;
-    this.ctx.fillText(price.toFixed(4), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y + 1);
+    this.ctx.fillText(price.toFixed(5), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y + 1);
     this.ctx.font = DEFAULT_FONT;
     return this;
   }
@@ -250,23 +250,40 @@ class PainterService {
     this.ctx.fillStyle = this.colors.priceScale.border;
     this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
 
-    let maxPrice: number;
-    let priceJump: number;
-    if (this.getPriceRangeInScreenDiff() > 2) {
-      maxPrice = Math.floor(this.priceRangeInScreen.max / 10) * 10;
-      priceJump =
-        Math.ceil(
-          this.getPriceRangeInScreenDiff() / ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) / 10
-        ) * 10 || 1;
+    let nearestMultipleForRounding: number = 1;
+    const diff = this.getPriceRangeInScreenDiff();
+
+    if (diff === 0) return this;
+
+    if (diff >= 10) {
+      const diffWithoutDecimals = diff.toString().split(".")[0];
+      nearestMultipleForRounding = parseInt(`1${"0".repeat(diffWithoutDecimals.length - 2)}`);
     } else {
-      maxPrice = this.priceRangeInScreen.max;
-      priceJump = parseFloat(
-        (
-          this.getPriceRangeInScreenDiff() /
-          ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000)
-        ).toFixed(5)
-      );
+      let amountOfZeros: number = 0;
+      if (diff < 1) {
+        amountOfZeros = 1;
+        const decimalPart = diff.toString().split(".")[1];
+        for (let i = 0; i < decimalPart.length; i++) {
+          if (decimalPart[i] === "0") {
+            amountOfZeros++;
+          } else {
+            break;
+          }
+        }
+      }
+      nearestMultipleForRounding = parseFloat(`0.${"0".repeat(amountOfZeros)}1`);
     }
+
+    const maxPrice = Math.floor(this.priceRangeInScreen.max / nearestMultipleForRounding) * nearestMultipleForRounding;
+    const priceJump = parseFloat(
+      (
+        Math.ceil(
+          this.getPriceRangeInScreenDiff() /
+            ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) /
+            nearestMultipleForRounding
+        ) * nearestMultipleForRounding || 1
+      ).toFixed(5)
+    );
 
     let price = maxPrice;
     while (price > this.priceRangeInScreen.min) {
@@ -274,8 +291,10 @@ class PainterService {
         (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
 
       if (y > 20 && y < this.getHeightForCandlesDisplay() - 20) {
+        const finalPriceToDisplay =
+          price.toString().split(".").length > 1 ? price.toFixed(5) : parseFloat(price.toFixed(5)).toString();
         this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
-        this.ctx.fillText(parseFloat(price.toFixed(5)).toString(), this.getWidthForCandlesDisplay() + 15, y);
+        this.ctx.fillText(finalPriceToDisplay, this.getWidthForCandlesDisplay() + 15, y);
       }
 
       price = price - priceJump;
