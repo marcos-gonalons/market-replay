@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../../context/dataContext/Types";
 import { DEFAULT_FONT, MAX_DATES_IN_DATE_SCALE_PER_1000_PX, TIME_SCALE_HEIGHT_IN_PX } from "../Constants";
 import { CandlesDisplayDimensions } from "../Types";
@@ -36,51 +37,39 @@ export function drawTimeScale({
 
   ctx.font = "bold 15px Arial";
 
-  let skip = Math.ceil(
+  let candlesAmountToSkip = Math.ceil(
     maxCandlesAmountInScreen / ((candlesDisplayDimensions.width * MAX_DATES_IN_DATE_SCALE_PER_1000_PX) / 1000)
   );
   if (dataTemporality < 3600) {
-    skip = Math.ceil(skip / 10) * 10;
+    candlesAmountToSkip = Math.ceil(candlesAmountToSkip / 10) * 10;
   }
-  let candleNumber = 1;
+  let candleNumber = 0;
   for (let i = dataStartIndex; i < dataEndIndex; i++) {
-    if (candleNumber % skip === 0) {
-      let date = data[i].date;
-
-      let offset = 0;
-      if (dataTemporality < 3600) {
-        if (date.getMinutes() % 10 !== 0) {
-          for (let j = i + 1; j < dataEndIndex; j++) {
-            offset++;
-            if (data[j].date.getMinutes() % 10 === 0) break;
-          }
-        }
-      }
-      if (offset > 0) {
-        date = data[i + offset].date;
-      }
-
-      const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
-      /**
-       * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
-       * Or if it's bigger than 1 week or 1 month, display the month
-       * Make use of the method getDataTemporalityInSeconds !!! :) :)
-       *
-       * TODO2: If there is a day change while drawing the time, draw the day instead of the time
-       * It should have another style/color to highlight that is a new day
-       *
-       * TODO3: Refactor this a lil bit
-       *
-       * TODO3: Beware that  data[i + offset] may be null
-       */
-      const text = `${hours}:${minutes}`;
-      const textWidth = ctx.measureText(text).width;
-      const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
-      if (x < candlesDisplayDimensions.width - textWidth - 5) {
-        ctx.fillText(text, x, candlesDisplayDimensions.height + 20);
-      }
-    }
     candleNumber++;
+    if (candleNumber % candlesAmountToSkip !== 0) continue;
+
+    const offset = getCandlesOffset(i, dataTemporality, data, dataEndIndex);
+    if (!data[i + offset]) break;
+
+    const date = data[i + offset].date;
+    const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
+    /**
+     * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
+     * Or if it's bigger than 1 week or 1 month, display the month
+     *
+     * Between 1 day and 1 month -> display day
+     * Between 1 month and year -> display month
+     * Between year and infinite -> display year
+     *
+     * TODO2: If there is a day change while drawing the time, draw the day instead of the time
+     * It should have another style/color to highlight that is a new day
+     */
+    const text = `${hours}:${minutes}`;
+    const textWidth = ctx.measureText(text).width;
+    const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
+    if (x < candlesDisplayDimensions.width - textWidth - 5) {
+      ctx.fillText(text, x, candlesDisplayDimensions.height + 20);
+    }
   }
 
   ctx.font = DEFAULT_FONT;
@@ -126,4 +115,20 @@ export function drawDateInPointerPosition({
   ctx.fillStyle = highlightColors.text;
   ctx.fillText(getDateFormatted(candle.date), x + 5, y + 16);
   ctx.font = DEFAULT_FONT;
+}
+
+function getCandlesOffset(
+  currentIndex: number,
+  dataTemporality: number,
+  data: ChartData[],
+  dataEndIndex: number
+): number {
+  let offset = 0;
+  if (dataTemporality < 3600 && data[currentIndex].date.getMinutes() % 10 !== 0) {
+    for (let j = currentIndex + 1; j < dataEndIndex; j++) {
+      offset++;
+      if (data[j].date.getMinutes() % 10 === 0) break;
+    }
+  }
+  return offset;
 }

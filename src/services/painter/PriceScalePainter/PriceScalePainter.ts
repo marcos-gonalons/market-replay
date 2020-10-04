@@ -25,26 +25,7 @@ export function drawPriceScale({
   const priceRangeDiff = priceRange.max - priceRange.min;
   if (priceRangeDiff === 0) return;
 
-  let nearestMultipleForRounding: number = 1;
-  if (priceRangeDiff >= 10) {
-    const diffWithoutDecimals = priceRangeDiff.toString().split(".")[0];
-    nearestMultipleForRounding = parseInt(`1${"0".repeat(diffWithoutDecimals.length - 2)}`);
-  } else {
-    let amountOfZeros: number = 0;
-    if (priceRangeDiff < 1) {
-      amountOfZeros = 1;
-      const decimalPart = priceRangeDiff.toString().split(".")[1];
-      for (let i = 0; i < decimalPart.length; i++) {
-        if (decimalPart[i] === "0") {
-          amountOfZeros++;
-        } else {
-          break;
-        }
-      }
-    }
-    nearestMultipleForRounding = parseFloat(`0.${"0".repeat(amountOfZeros)}1`);
-  }
-
+  const nearestMultipleForRounding = getNearestMultipleForRounding(priceRangeDiff);
   const maxPriceRounded = Math.floor(priceRange.max / nearestMultipleForRounding) * nearestMultipleForRounding;
   const priceJump = parseFloat(
     (
@@ -95,4 +76,27 @@ export function drawPriceInPointerPosition({
   ctx.fillStyle = highlightColors.text;
   ctx.fillText(price.toFixed(5), candlesDisplayDimensions.width + 15, mousePointerY + 1);
   ctx.font = DEFAULT_FONT;
+}
+
+function getNearestMultipleForRounding(priceRangeDiff: number): number {
+  let nearestMultipleForRounding: number = 1;
+  if (priceRangeDiff >= 10) {
+    const diffWithoutDecimals = priceRangeDiff.toString().split(".")[0];
+    nearestMultipleForRounding = parseInt(`1${"0".repeat(diffWithoutDecimals.length - 2)}`);
+  } else {
+    let amountOfZeros: number = 0;
+    if (priceRangeDiff < 1) {
+      amountOfZeros = 1;
+      const decimalPart = priceRangeDiff.toString().split(".")[1];
+      for (let i = 0; i < decimalPart.length; i++) {
+        if (decimalPart[i] === "0") {
+          amountOfZeros++;
+        } else {
+          break;
+        }
+      }
+    }
+    nearestMultipleForRounding = parseFloat(`0.${"0".repeat(amountOfZeros)}1`);
+  }
+  return nearestMultipleForRounding;
 }
