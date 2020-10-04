@@ -102,7 +102,6 @@ export function drawDateInPointerPosition({
   startingIndex,
   candleWidth,
 }: DrawDateInPointerPositionParameters): void {
-  console.log(dataTemporality);
   if (mousePointerX > candlesDisplayDimensions.width) return;
 
   const dataIndex = data.length - maxCandlesAmountInScreen + candleNumber - dataArrayOffset;
