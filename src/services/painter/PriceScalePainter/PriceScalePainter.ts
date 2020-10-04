@@ -1,21 +1,21 @@
-import { MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
-import { PriceRange } from "../Types";
+import { DEFAULT_FONT, MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
+import { CandlesDisplayDimensions, PriceRange } from "../Types";
 
-interface Parameters {
+interface DrawPriceScaleParameters {
   ctx: CanvasRenderingContext2D;
   canvasHeight: number;
   colors: { background: string; border: string };
-  candlesDisplayDimensions: { width: number; height: number };
+  candlesDisplayDimensions: CandlesDisplayDimensions;
   priceRange: PriceRange;
 }
 
-export default function drawPriceScale({
+export function drawPriceScale({
   ctx,
   canvasHeight,
   colors,
   candlesDisplayDimensions,
   priceRange,
-}: Parameters): void {
+}: DrawPriceScaleParameters): void {
   ctx.fillStyle = colors.background;
   ctx.fillRect(candlesDisplayDimensions.width, 0, PRICE_SCALE_WITH_IN_PX, candlesDisplayDimensions.height);
 
@@ -67,4 +67,32 @@ export default function drawPriceScale({
 
     price = price - priceJump;
   }
+}
+
+interface DrawPriceInPointerPositionParameters {
+  ctx: CanvasRenderingContext2D;
+  mousePointerY: number;
+  candlesDisplayDimensions: CandlesDisplayDimensions;
+  priceRange: PriceRange;
+  highlightColors: { background: string; text: string };
+}
+
+export function drawPriceInPointerPosition({
+  ctx,
+  mousePointerY,
+  candlesDisplayDimensions,
+  priceRange,
+  highlightColors,
+}: DrawPriceInPointerPositionParameters): void {
+  if (mousePointerY > candlesDisplayDimensions.height) return;
+
+  const price = priceRange.max - (priceRange.max - priceRange.min) * (mousePointerY / candlesDisplayDimensions.height);
+
+  ctx.fillStyle = highlightColors.background;
+  ctx.fillRect(candlesDisplayDimensions.width, mousePointerY - 12.5, PRICE_SCALE_WITH_IN_PX, 25);
+
+  ctx.font = "bold 15px Arial";
+  ctx.fillStyle = highlightColors.text;
+  ctx.fillText(price.toFixed(5), candlesDisplayDimensions.width + 15, mousePointerY + 1);
+  ctx.font = DEFAULT_FONT;
 }

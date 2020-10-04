@@ -10,10 +10,9 @@ import {
   DEFAULT_FONT,
   DEFAULT_COLORS,
 } from "./Constants";
-import drawPriceScale from "./PriceScalePainter/PriceScalePainter";
-import drawTimeScale from "./TimeScalePainter/TimeScalePainter";
+import { drawPriceInPointerPosition, drawPriceScale } from "./PriceScalePainter/PriceScalePainter";
+import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
 import { Colors, Coords, PriceRange } from "./Types";
-import { prependZero } from "./Utils";
 
 class PainterService {
   private data: ChartData[] = [];
@@ -189,51 +188,73 @@ class PainterService {
         width: this.getWidthForCandlesDisplay(),
         height: this.getHeightForCandlesDisplay(),
       },
-      colors: { ...this.colors.candle },
+      colors: this.colors.candle,
+    });
+    return this;
+  }
+
+  private drawPriceScale(): PainterService {
+    drawPriceScale({
+      ctx: this.ctx,
+      canvasHeight: this.canvas.height,
+      colors: this.colors.priceScale,
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      priceRange: this.priceRangeInScreen,
     });
     return this;
   }
 
   private drawPriceInPointerPosition(): PainterService {
-    if (this.mouseCoords.y > this.getHeightForCandlesDisplay()) {
-      return this;
-    }
+    drawPriceInPointerPosition({
+      ctx: this.ctx,
+      mousePointerY: this.mouseCoords.y,
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      priceRange: this.priceRangeInScreen,
+      highlightColors: this.colors.highlight,
+    });
+    return this;
+  }
 
-    const price =
-      this.priceRangeInScreen.max -
-      this.getPriceRangeInScreenDiff() * (this.mouseCoords.y / this.getHeightForCandlesDisplay());
-
-    this.ctx.fillStyle = this.colors.highlight.background;
-    this.ctx.fillRect(this.getWidthForCandlesDisplay(), this.mouseCoords.y - 12.5, PRICE_SCALE_WITH_IN_PX, 25);
-
-    this.ctx.font = "bold 15px Arial";
-    this.ctx.fillStyle = this.colors.highlight.text;
-    this.ctx.fillText(price.toFixed(5), this.getWidthForCandlesDisplay() + 15, this.mouseCoords.y + 1);
-    this.ctx.font = DEFAULT_FONT;
+  private drawTimeScale(): PainterService {
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    drawTimeScale({
+      ctx: this.ctx,
+      colors: { ...this.colors.timeScale },
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      dataStartIndex: startingIndex,
+      dataEndIndex: endingIndex,
+      maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
+      dataTemporality: this.dataTemporality,
+      data: this.data,
+      canvasWidth: this.canvas.width,
+      candleWidth: this.candleWidth,
+    });
     return this;
   }
 
   private drawDateInPointerPosition(): PainterService {
-    if (this.mouseCoords.x > this.getWidthForCandlesDisplay()) return this;
-
-    const candleNumber = Math.floor(this.mouseCoords.x / this.candleWidth);
-    const dataIndex = this.data.length - this.maxCandlesAmountInScreen + candleNumber - this.dataArrayOffset;
-    const candle = this.data[dataIndex];
-
-    if (!candle) return this;
-
-    const dateWidthInPx = 170;
-    const dateHeightInPx = 30;
-    const x = this.mouseCoords.x - dateWidthInPx / 2;
-    const y = this.getHeightForCandlesDisplay() + 2;
-
-    this.ctx.fillStyle = this.colors.highlight.background;
-    this.ctx.fillRect(x, y, dateWidthInPx, dateHeightInPx);
-
-    this.ctx.font = "bold 15px Arial";
-    this.ctx.fillStyle = this.colors.highlight.text;
-    this.ctx.fillText(this.getDateFormatted(candle.date), x + 5, y + 16);
-    this.ctx.font = DEFAULT_FONT;
+    drawDateInPointerPosition({
+      ctx: this.ctx,
+      mousePointerX: this.mouseCoords.x,
+      candleNumber: Math.floor(this.mouseCoords.x / this.candleWidth),
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      dataArrayOffset: this.dataArrayOffset,
+      data: this.data,
+      highlightColors: this.colors.highlight,
+      maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
+    });
     return this;
   }
 
@@ -305,40 +326,6 @@ class PainterService {
     return this;
   }
 
-  private drawPriceScale(): PainterService {
-    drawPriceScale({
-      ctx: this.ctx,
-      canvasHeight: this.canvas.height,
-      colors: { ...this.colors.priceScale },
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
-      priceRange: this.priceRangeInScreen,
-    });
-    return this;
-  }
-
-  private drawTimeScale(): PainterService {
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
-    drawTimeScale({
-      ctx: this.ctx,
-      colors: { ...this.colors.timeScale },
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
-      dataStartIndex: startingIndex,
-      dataEndIndex: endingIndex,
-      maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
-      dataTemporality: this.dataTemporality,
-      data: this.data,
-      canvasWidth: this.canvas.width,
-      candleWidth: this.candleWidth,
-    });
-    return this;
-  }
-
   private getDataStartAndEndIndex(): number[] {
     let startingIndex = this.data.length - (this.maxCandlesAmountInScreen + this.dataArrayOffset);
     if (!this.data[startingIndex] && this.dataArrayOffset === 0) {
@@ -365,21 +352,6 @@ class PainterService {
 
   private getWidthForCandlesDisplay(): number {
     return this.canvas.width - PRICE_SCALE_WITH_IN_PX;
-  }
-
-  private getDateFormatted(d: Date): string {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
-
-    const [day, month, year, hours, minutes, seconds] = [
-      d.getDate(),
-      months[d.getMonth()],
-      d.getFullYear(),
-      d.getHours(),
-      d.getMinutes(),
-      d.getSeconds(),
-    ].map(prependZero);
-
-    return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
 
   private setDataTemporality(): PainterService {

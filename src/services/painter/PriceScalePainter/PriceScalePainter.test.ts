@@ -1,4 +1,4 @@
-import drawPriceScale from "./PriceScalePainter";
+import { drawPriceScale } from "./PriceScalePainter";
 
 describe("Price Scale Painter", () => {
   test("TODO", () => {

@@ -1,5 +1,5 @@
 import { ChartData } from "../../../context/dataContext/Types";
-import { PriceRange } from "../Types";
+import { CandlesDisplayDimensions, PriceRange } from "../Types";
 
 interface Parameters {
   ctx: CanvasRenderingContext2D;
@@ -8,7 +8,7 @@ interface Parameters {
   data: ChartData[];
   priceRange: PriceRange;
   candleWidth: number;
-  candlesDisplayDimensions: { width: number; height: number };
+  candlesDisplayDimensions: CandlesDisplayDimensions;
   colors: {
     body: {
       positive: string;

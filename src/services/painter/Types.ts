@@ -36,3 +36,8 @@ export interface Coords {
   x: number;
   y: number;
 }
+
+export interface CandlesDisplayDimensions {
+  width: number;
+  height: number;
+}

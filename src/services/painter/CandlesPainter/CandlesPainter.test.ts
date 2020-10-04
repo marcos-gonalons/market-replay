@@ -1,4 +1,4 @@
-import drawCandles from "./CandlesPainter";
+import { drawCandles } from "./CandlesPainter";
 
 describe("Candles Painter", () => {
   test("TODO", () => {

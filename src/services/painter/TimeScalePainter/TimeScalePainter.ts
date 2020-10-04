@@ -1,11 +1,12 @@
 import { ChartData } from "../../../context/dataContext/Types";
 import { DEFAULT_FONT, MAX_DATES_IN_DATE_SCALE_PER_1000_PX, TIME_SCALE_HEIGHT_IN_PX } from "../Constants";
-import { prependZero } from "../Utils";
+import { CandlesDisplayDimensions } from "../Types";
+import { getDateFormatted, prependZero } from "../Utils";
 
-interface Parameters {
+interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
   colors: { background: string; border: string };
-  candlesDisplayDimensions: { width: number; height: number };
+  candlesDisplayDimensions: CandlesDisplayDimensions;
   dataStartIndex: number;
   dataEndIndex: number;
   maxCandlesAmountInScreen: number;
@@ -15,7 +16,7 @@ interface Parameters {
   candleWidth: number;
 }
 
-export default function drawTimeScale({
+export function drawTimeScale({
   ctx,
   colors,
   candlesDisplayDimensions,
@@ -26,7 +27,7 @@ export default function drawTimeScale({
   data,
   canvasWidth,
   candleWidth,
-}: Parameters): void {
+}: DrawTimeScaleParameters): void {
   ctx.fillStyle = colors.background;
   ctx.fillRect(0, candlesDisplayDimensions.height, candlesDisplayDimensions.width, TIME_SCALE_HEIGHT_IN_PX);
 
@@ -82,5 +83,47 @@ export default function drawTimeScale({
     candleNumber++;
   }
 
+  ctx.font = DEFAULT_FONT;
+}
+
+interface DrawDateInPointerPositionParameters {
+  ctx: CanvasRenderingContext2D;
+  mousePointerX: number;
+  candleNumber: number;
+  candlesDisplayDimensions: CandlesDisplayDimensions;
+  dataArrayOffset: number;
+  data: ChartData[];
+  highlightColors: { background: string; text: string };
+  maxCandlesAmountInScreen: number;
+}
+
+export function drawDateInPointerPosition({
+  ctx,
+  mousePointerX,
+  candleNumber,
+  candlesDisplayDimensions,
+  dataArrayOffset,
+  data,
+  highlightColors,
+  maxCandlesAmountInScreen,
+}: DrawDateInPointerPositionParameters): void {
+  if (mousePointerX > candlesDisplayDimensions.width) return;
+
+  const dataIndex = data.length - maxCandlesAmountInScreen + candleNumber - dataArrayOffset;
+  const candle = data[dataIndex];
+
+  if (!candle) return;
+
+  const dateWidthInPx = 170;
+  const dateHeightInPx = 30;
+  const x = mousePointerX - dateWidthInPx / 2;
+  const y = candlesDisplayDimensions.height + 2;
+
+  ctx.fillStyle = highlightColors.background;
+  ctx.fillRect(x, y, dateWidthInPx, dateHeightInPx);
+
+  ctx.font = "bold 15px Arial";
+  ctx.fillStyle = highlightColors.text;
+  ctx.fillText(getDateFormatted(candle.date), x + 5, y + 16);
   ctx.font = DEFAULT_FONT;
 }
