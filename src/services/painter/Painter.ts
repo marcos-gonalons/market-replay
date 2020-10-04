@@ -7,11 +7,12 @@ import {
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
   DEFAULT_FONT,
-  MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
   DEFAULT_COLORS,
 } from "./Constants";
 import drawPriceScale from "./PriceScalePainter/PriceScalePainter";
+import drawTimeScale from "./TimeScalePainter/TimeScalePainter";
 import { Colors, Coords, PriceRange } from "./Types";
+import { prependZero } from "./Utils";
 
 class PainterService {
   private data: ChartData[] = [];
@@ -27,10 +28,6 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
-
-  /**
-   * constructor, inicializar pricescalepainter, timescalepainter, todos los que necesite
-   */
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -167,16 +164,7 @@ class PainterService {
 
     this.drawCandles();
 
-    drawPriceScale({
-      ctx: this.ctx,
-      canvasHeight: this.canvas.height,
-      colors: { ...this.colors.priceScale },
-      candlesDisplayDimensions: {
-        width: this.getWidthForCandlesDisplay(),
-        height: this.getHeightForCandlesDisplay(),
-      },
-      priceRange: this.priceRangeInScreen,
-    });
+    this.drawPriceScale();
     this.drawPriceInPointerPosition();
 
     this.drawTimeScale();
@@ -321,6 +309,40 @@ class PainterService {
     return this;
   }
 
+  private drawPriceScale(): PainterService {
+    drawPriceScale({
+      ctx: this.ctx,
+      canvasHeight: this.canvas.height,
+      colors: { ...this.colors.priceScale },
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      priceRange: this.priceRangeInScreen,
+    });
+    return this;
+  }
+
+  private drawTimeScale(): PainterService {
+    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    drawTimeScale({
+      ctx: this.ctx,
+      colors: { ...this.colors.timeScale },
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      candlesInScreenStartIndex: startingIndex,
+      candlesInScreenEndIndex: endingIndex,
+      maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
+      dataTemporality: this.dataTemporality,
+      data: this.data,
+      canvasWidth: this.canvas.width,
+      candleWidth: this.candleWidth,
+    });
+    return this;
+  }
+
   private getCandleBodyCoordsAndSize(
     candleNumber: number,
     priceForCalculatingY: number,
@@ -398,67 +420,6 @@ class PainterService {
     return this.canvas.width - PRICE_SCALE_WITH_IN_PX;
   }
 
-  private drawTimeScale(): PainterService {
-    this.ctx.fillStyle = this.colors.timeScale.background;
-    this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.getWidthForCandlesDisplay(), TIME_SCALE_HEIGHT_IN_PX);
-
-    this.ctx.fillStyle = this.colors.timeScale.border;
-    this.ctx.fillRect(0, this.getHeightForCandlesDisplay(), this.canvas.width, 2);
-
-    this.ctx.font = "bold 15px Arial";
-
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
-    let skip = Math.ceil(
-      this.maxCandlesAmountInScreen / ((this.getWidthForCandlesDisplay() * MAX_DATES_IN_DATE_SCALE_PER_1000_PX) / 1000)
-    );
-    if (this.dataTemporality < 3600) {
-      skip = Math.ceil(skip / 10) * 10;
-    }
-    let candleNumber = 1;
-    for (let i = startingIndex; i < endingIndex; i++) {
-      if (candleNumber % skip === 0) {
-        let date = this.data[i].date;
-
-        let offset = 0;
-        if (this.dataTemporality < 3600) {
-          if (date.getMinutes() % 10 !== 0) {
-            for (let j = i + 1; j < endingIndex; j++) {
-              offset++;
-              if (this.data[j].date.getMinutes() % 10 === 0) break;
-            }
-          }
-        }
-        if (offset > 0) {
-          date = this.data[i + offset].date;
-        }
-
-        const [hours, minutes] = [date.getHours(), date.getMinutes()].map(this.prependZero);
-        /**
-         * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
-         * Or if it's bigger than 1 week or 1 month, display the month
-         * Make use of the method getDataTemporalityInSeconds !!! :) :)
-         *
-         * TODO2: If there is a day change while drawing the time, draw the day instead of the time
-         * It should have another style/color to highlight that is a new day
-         *
-         * TODO3: Refactor this a lil bit
-         *
-         * TODO3: Beware that  this.data[i + offset] may be null
-         */
-        const text = `${hours}:${minutes}`;
-        const textWidth = this.ctx.measureText(text).width;
-        const x = (candleNumber + offset) * this.candleWidth - this.candleWidth / 2 - textWidth / 2;
-        if (x < this.getWidthForCandlesDisplay() - textWidth - 5) {
-          this.ctx.fillText(text, x, this.getHeightForCandlesDisplay() + 20);
-        }
-      }
-      candleNumber++;
-    }
-
-    this.ctx.font = DEFAULT_FONT;
-    return this;
-  }
-
   private getDateFormatted(d: Date): string {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
 
@@ -469,7 +430,7 @@ class PainterService {
       d.getHours(),
       d.getMinutes(),
       d.getSeconds(),
-    ].map(this.prependZero);
+    ].map(prependZero);
 
     return `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   }
@@ -499,10 +460,6 @@ class PainterService {
 
     this.dataTemporality = dataTemporality / 1000;
     return this;
-  }
-
-  private prependZero(el: number | string): number | string {
-    return el.toString().length === 1 ? `0${el}` : el;
   }
 }
 
