@@ -3,7 +3,6 @@ import { ChartData } from "../../context/dataContext/Types";
 import {
   CANDLES_PER_1000_PX,
   MAX_ZOOM,
-  MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX,
   PRICE_SCALE_WITH_IN_PX,
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
@@ -11,6 +10,7 @@ import {
   MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
   DEFAULT_COLORS,
 } from "./Constants";
+import drawPriceScale from "./PriceScalePainter/PriceScalePainter";
 import { Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
@@ -27,6 +27,10 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
+
+  /**
+   * constructor, inicializar pricescalepainter, timescalepainter, todos los que necesite
+   */
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -163,7 +167,16 @@ class PainterService {
 
     this.drawCandles();
 
-    this.drawPriceScale();
+    drawPriceScale({
+      ctx: this.ctx,
+      canvasHeight: this.canvas.height,
+      colors: { ...this.colors.priceScale },
+      candlesDisplayDimensions: {
+        width: this.getWidthForCandlesDisplay(),
+        height: this.getHeightForCandlesDisplay(),
+      },
+      priceRange: this.priceRangeInScreen,
+    });
     this.drawPriceInPointerPosition();
 
     this.drawTimeScale();
@@ -214,65 +227,6 @@ class PainterService {
     this.ctx.fillStyle = this.colors.highlight.text;
     this.ctx.fillText(this.getDateFormatted(candle.date), x + 5, y + 16);
     this.ctx.font = DEFAULT_FONT;
-    return this;
-  }
-
-  private drawPriceScale(): PainterService {
-    this.ctx.fillStyle = this.colors.priceScale.background;
-    this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, PRICE_SCALE_WITH_IN_PX, this.getHeightForCandlesDisplay());
-
-    this.ctx.fillStyle = this.colors.priceScale.border;
-    this.ctx.fillRect(this.getWidthForCandlesDisplay(), 0, 2, this.canvas.height);
-
-    const diff = this.getPriceRangeInScreenDiff();
-    if (diff === 0) return this;
-
-    let nearestMultipleForRounding: number = 1;
-    if (diff >= 10) {
-      const diffWithoutDecimals = diff.toString().split(".")[0];
-      nearestMultipleForRounding = parseInt(`1${"0".repeat(diffWithoutDecimals.length - 2)}`);
-    } else {
-      let amountOfZeros: number = 0;
-      if (diff < 1) {
-        amountOfZeros = 1;
-        const decimalPart = diff.toString().split(".")[1];
-        for (let i = 0; i < decimalPart.length; i++) {
-          if (decimalPart[i] === "0") {
-            amountOfZeros++;
-          } else {
-            break;
-          }
-        }
-      }
-      nearestMultipleForRounding = parseFloat(`0.${"0".repeat(amountOfZeros)}1`);
-    }
-
-    const maxPriceRounded =
-      Math.floor(this.priceRangeInScreen.max / nearestMultipleForRounding) * nearestMultipleForRounding;
-    const priceJump = parseFloat(
-      (
-        Math.ceil(
-          this.getPriceRangeInScreenDiff() /
-            ((this.canvas.height * MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX) / 1000) /
-            nearestMultipleForRounding
-        ) * nearestMultipleForRounding || 1
-      ).toFixed(5)
-    );
-
-    let price = maxPriceRounded;
-    while (price > this.priceRangeInScreen.min) {
-      const y =
-        (this.getHeightForCandlesDisplay() * (this.priceRangeInScreen.max - price)) / this.getPriceRangeInScreenDiff();
-
-      if (y > 20 && y < this.getHeightForCandlesDisplay() - 20) {
-        const finalPriceToDisplay =
-          price.toString().split(".").length > 1 ? price.toFixed(5) : parseFloat(price.toFixed(5)).toString();
-        this.ctx.fillRect(this.getWidthForCandlesDisplay(), y, 10, 1);
-        this.ctx.fillText(finalPriceToDisplay, this.getWidthForCandlesDisplay() + 15, y);
-      }
-
-      price = price - priceJump;
-    }
     return this;
   }
 
