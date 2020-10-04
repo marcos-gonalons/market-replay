@@ -25,12 +25,12 @@ export const DEFAULT_COLORS = {
   },
   candle: {
     body: {
-      positive: "rgb(7,201,4)",
-      negative: "rgb(252,57,35)",
+      positive: "rgb(0,201,10)",
+      negative: "rgb(201,10,0)",
     },
     wick: {
-      positive: "rgb(7,201,4)",
-      negative: "rgb(252,57,35)",
+      positive: "rgb(0,201,10)",
+      negative: "rgb(201,10,0)",
     },
   },
 };

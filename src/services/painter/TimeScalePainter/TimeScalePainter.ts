@@ -2,7 +2,7 @@
 import { ChartData } from "../../../context/dataContext/Types";
 import { DEFAULT_FONT, MAX_DATES_IN_DATE_SCALE_PER_1000_PX, TIME_SCALE_HEIGHT_IN_PX } from "../Constants";
 import { CandlesDisplayDimensions } from "../Types";
-import { getDateFormatted, prependZero } from "../Utils";
+import { getDateFormatted, getDateFormattedShort, prependZero } from "../Utils";
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
@@ -84,6 +84,9 @@ interface DrawDateInPointerPositionParameters {
   data: ChartData[];
   highlightColors: { background: string; text: string };
   maxCandlesAmountInScreen: number;
+  dataTemporality: number;
+  startingIndex: number;
+  candleWidth: number;
 }
 
 export function drawDateInPointerPosition({
@@ -95,25 +98,58 @@ export function drawDateInPointerPosition({
   data,
   highlightColors,
   maxCandlesAmountInScreen,
+  dataTemporality,
+  startingIndex,
+  candleWidth,
 }: DrawDateInPointerPositionParameters): void {
+  console.log(dataTemporality);
   if (mousePointerX > candlesDisplayDimensions.width) return;
 
   const dataIndex = data.length - maxCandlesAmountInScreen + candleNumber - dataArrayOffset;
   const candle = data[dataIndex];
+  let date: Date;
 
-  if (!candle) return;
+  if (candle) {
+    date = candle.date;
+  } else {
+    let lastCandleNumber = 1;
+    let lastCandle: ChartData = data[startingIndex];
+    for (let i = startingIndex + 1; i < startingIndex + maxCandlesAmountInScreen; i++) {
+      if (!data[i]) break;
+      lastCandle = data[i];
+      lastCandleNumber++;
+    }
 
-  const dateWidthInPx = 170;
+    let x = candleWidth * lastCandleNumber;
+    let timestampInSeconds = lastCandle.date.valueOf() / 1000;
+    while (x < mousePointerX) {
+      x = x + candleWidth;
+      timestampInSeconds = timestampInSeconds + dataTemporality;
+    }
+
+    date = new Date(timestampInSeconds * 1000);
+  }
+
+  ctx.font = "bold 15px Arial";
+
+  let text: string;
+  if (dataTemporality < 60 * 60 * 24) {
+    text = getDateFormatted(date);
+  } else {
+    text = getDateFormattedShort(date);
+  }
+
+  const padding = 5;
+  const dateWidthInPx = ctx.measureText(text).width;
   const dateHeightInPx = 30;
   const x = mousePointerX - dateWidthInPx / 2;
   const y = candlesDisplayDimensions.height + 2;
 
   ctx.fillStyle = highlightColors.background;
-  ctx.fillRect(x, y, dateWidthInPx, dateHeightInPx);
+  ctx.fillRect(x, y, dateWidthInPx + padding * 2, dateHeightInPx);
 
-  ctx.font = "bold 15px Arial";
   ctx.fillStyle = highlightColors.text;
-  ctx.fillText(getDateFormatted(candle.date), x + 5, y + 16);
+  ctx.fillText(text, x + padding, y + 16);
   ctx.font = DEFAULT_FONT;
 }
 

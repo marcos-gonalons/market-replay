@@ -240,6 +240,9 @@ class PainterService {
       data: this.data,
       highlightColors: this.colors.highlight,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
+      dataTemporality: this.dataTemporality,
+      startingIndex: this.getDataStartAndEndIndex()[0],
+      candleWidth: this.candleWidth,
     });
     return this;
   }
