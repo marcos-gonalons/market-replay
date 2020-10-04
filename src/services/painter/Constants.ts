@@ -34,3 +34,8 @@ export const DEFAULT_COLORS = {
     },
   },
 };
+export const SECONDS_IN_AN_HOUR = 3600;
+export const SECONDS_IN_A_DAY = SECONDS_IN_AN_HOUR * 24;
+export const SECONDS_IN_A_WEEK = SECONDS_IN_A_DAY * 7;
+export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * 30.5;
+export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;

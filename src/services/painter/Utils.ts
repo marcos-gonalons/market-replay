@@ -19,6 +19,10 @@ export function getDateFormatted(d: Date): string {
 
 export function getDateFormattedShort(d: Date): string {
   const [day, month, year] = [d.getDate(), MONTHS[d.getMonth()], d.getFullYear()];
-
   return `${day} ${month} ${year}`;
+}
+
+export function getDateFormattedShorter(d: Date): string {
+  const [month, year] = [MONTHS[d.getMonth()], d.getFullYear()];
+  return `${month} ${year}`;
 }

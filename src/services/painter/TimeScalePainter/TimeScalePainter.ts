@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../../context/dataContext/Types";
-import { DEFAULT_FONT, MAX_DATES_IN_DATE_SCALE_PER_1000_PX, TIME_SCALE_HEIGHT_IN_PX } from "../Constants";
+import {
+  DEFAULT_FONT,
+  MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
+  SECONDS_IN_A_DAY,
+  SECONDS_IN_A_MONTH,
+  SECONDS_IN_A_YEAR,
+  TIME_SCALE_HEIGHT_IN_PX,
+} from "../Constants";
 import { CandlesDisplayDimensions } from "../Types";
-import { getDateFormatted, getDateFormattedShort, prependZero } from "../Utils";
+import { getDateFormatted, getDateFormattedShort, getDateFormattedShorter, prependZero } from "../Utils";
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
@@ -131,24 +138,19 @@ export function drawDateInPointerPosition({
 
   ctx.font = "bold 15px Arial";
 
-  let text: string;
-  if (dataTemporality < 60 * 60 * 24) {
-    text = getDateFormatted(date);
-  } else {
-    text = getDateFormattedShort(date);
-  }
+  const text = getTextForDateInPointerPosition(dataTemporality, date);
 
-  const padding = 5;
   const dateWidthInPx = ctx.measureText(text).width;
   const dateHeightInPx = 30;
   const x = mousePointerX - dateWidthInPx / 2;
   const y = candlesDisplayDimensions.height + 2;
+  const paddingInPx = 5;
 
   ctx.fillStyle = highlightColors.background;
-  ctx.fillRect(x, y, dateWidthInPx + padding * 2, dateHeightInPx);
+  ctx.fillRect(x, y, dateWidthInPx + paddingInPx * 2, dateHeightInPx);
 
   ctx.fillStyle = highlightColors.text;
-  ctx.fillText(text, x + padding, y + 16);
+  ctx.fillText(text, x + paddingInPx, y + 16);
   ctx.font = DEFAULT_FONT;
 }
 
@@ -166,4 +168,20 @@ function getCandlesOffset(
     }
   }
   return offset;
+}
+
+function getTextForDateInPointerPosition(dataTemporality: number, date: Date): string {
+  let text: string;
+
+  if (dataTemporality < SECONDS_IN_A_DAY) {
+    text = getDateFormatted(date);
+  } else if (dataTemporality < SECONDS_IN_A_MONTH) {
+    text = getDateFormattedShort(date);
+  } else if (dataTemporality < SECONDS_IN_A_YEAR) {
+    text = getDateFormattedShorter(date);
+  } else {
+    text = date.getFullYear().toString();
+  }
+
+  return text;
 }
