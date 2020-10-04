@@ -26,3 +26,7 @@ export function getDateFormattedShorter(d: Date): string {
   const [month, year] = [MONTHS[d.getMonth()], d.getFullYear()];
   return `${month} ${year}`;
 }
+
+export function getMonthAsString(d: Date): string {
+  return MONTHS[d.getMonth()];
+}

@@ -9,7 +9,13 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
 } from "../Constants";
 import { CandlesDisplayDimensions } from "../Types";
-import { getDateFormatted, getDateFormattedShort, getDateFormattedShorter, prependZero } from "../Utils";
+import {
+  getDateFormatted,
+  getDateFormattedShort,
+  getDateFormattedShorter,
+  getMonthAsString,
+  prependZero,
+} from "../Utils";
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
@@ -59,19 +65,11 @@ export function drawTimeScale({
     if (!data[i + offset]) break;
 
     const date = data[i + offset].date;
-    const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
     /**
-     * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
-     * Or if it's bigger than 1 week or 1 month, display the month
-     *
-     * Between 1 day and 1 month -> display day
-     * Between 1 month and year -> display month
-     * Between year and infinite -> display year
-     *
      * TODO2: If there is a day change while drawing the time, draw the day instead of the time
      * It should have another style/color to highlight that is a new day
      */
-    const text = `${hours}:${minutes}`;
+    const text = getTextForTimeScaleDates(date, dataTemporality);
     const textWidth = ctx.measureText(text).width;
     const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
     if (x < candlesDisplayDimensions.width - textWidth - 5) {
@@ -168,6 +166,23 @@ function getCandlesOffset(
     }
   }
   return offset;
+}
+
+function getTextForTimeScaleDates(date: Date, dataTemporality: number): string {
+  const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
+
+  let text: string;
+  if (dataTemporality < SECONDS_IN_A_DAY) {
+    text = `${hours}:${minutes}`;
+  } else if (dataTemporality < SECONDS_IN_A_MONTH) {
+    text = date.getDate().toString();
+  } else if (dataTemporality < SECONDS_IN_A_YEAR) {
+    text = getMonthAsString(date);
+  } else {
+    text = date.getFullYear().toString();
+  }
+
+  return text;
 }
 
 function getTextForDateInPointerPosition(dataTemporality: number, date: Date): string {
