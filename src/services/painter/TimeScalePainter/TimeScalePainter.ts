@@ -66,8 +66,13 @@ export function drawTimeScale({
 
     const date = data[i + offset].date;
     /**
-     * TODO2: If there is a day change while drawing the time, draw the day instead of the time
+     * TODO: If there is a day change while drawing the time, draw the day instead of the time
      * It should have another style/color to highlight that is a new day
+     *
+     * Depending of the temporality
+     * If less than one day -> detect day changes
+     * else if less than one month -> detect month changes
+     * else if less than one year -> detect year changes
      */
     const text = getTextForTimeScaleDates(date, dataTemporality);
     const textWidth = ctx.measureText(text).width;
@@ -175,9 +180,9 @@ function getTextForTimeScaleDates(date: Date, dataTemporality: number): string {
   if (dataTemporality < SECONDS_IN_A_DAY) {
     text = `${hours}:${minutes}`;
   } else if (dataTemporality < SECONDS_IN_A_MONTH) {
-    text = date.getDate().toString();
+    text = `${getMonthAsString(date)} ${date.getDate().toString()}`;
   } else if (dataTemporality < SECONDS_IN_A_YEAR) {
-    text = getMonthAsString(date);
+    text = `${getMonthAsString(date)} ${date.getFullYear()}`;
   } else {
     text = date.getFullYear().toString();
   }
