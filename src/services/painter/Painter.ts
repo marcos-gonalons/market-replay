@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChartData } from "../../context/dataContext/Types";
+import { ChartData } from "../../context/globalContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -96,20 +96,25 @@ class PainterService {
 
   public updateDataArrayOffset(value: number): PainterService {
     if (!this.data || this.data.length === 0) return this;
-
     this.dataArrayOffset += value;
+    this.validateOffset().updatePriceRangeInScreen();
+    return this;
+  }
 
-    if (this.dataArrayOffset < 0) {
-      if (Math.abs(this.dataArrayOffset) > this.maxCandlesAmountInScreen - 5) {
-        this.dataArrayOffset = -this.maxCandlesAmountInScreen + 5;
+  public updateOffsetByDate(targetDate: Date): PainterService {
+    if (!this.data || this.data.length === 0) return this;
+
+    let i;
+    for (i = 0; i < this.data.length; i++) {
+      if (this.data[i].date.valueOf() >= targetDate.valueOf()) {
+        console.log("found", this.data[i]);
+        break;
       }
     }
 
-    if (this.dataArrayOffset > 0 && this.dataArrayOffset > this.data.length - this.maxCandlesAmountInScreen) {
-      this.dataArrayOffset = this.data.length - this.maxCandlesAmountInScreen;
-    }
+    this.dataArrayOffset = this.data.length - i - Math.round(this.maxCandlesAmountInScreen / 5);
 
-    this.updatePriceRangeInScreen();
+    this.validateOffset().updatePriceRangeInScreen();
     return this;
   }
 
@@ -337,6 +342,19 @@ class PainterService {
       width: this.canvas.width - PRICE_SCALE_WITH_IN_PX,
       height: this.canvas.height - TIME_SCALE_HEIGHT_IN_PX,
     };
+  }
+
+  private validateOffset(): PainterService {
+    if (this.dataArrayOffset < 0) {
+      if (Math.abs(this.dataArrayOffset) > this.maxCandlesAmountInScreen - 5) {
+        this.dataArrayOffset = -this.maxCandlesAmountInScreen + 5;
+      }
+    }
+
+    if (this.dataArrayOffset > 0 && this.dataArrayOffset > this.data.length - this.maxCandlesAmountInScreen) {
+      this.dataArrayOffset = this.data.length - this.maxCandlesAmountInScreen;
+    }
+    return this;
   }
 }
 

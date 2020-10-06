@@ -1,4 +1,4 @@
-import { ChartData } from "../../context/dataContext/Types";
+import { ChartData } from "../../context/globalContext/Types";
 import { parse } from "./Parser";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,17 +3,22 @@ import React from "react";
 import { ToastContainer } from "react-toastify";
 
 import Canvas from "./components/canvas/Canvas";
+import { GlobalContextProvider } from "./context/globalContext/GlobalContext";
+
+import ReplayWidget from "./components/replayWidget/ReplayWidget";
+import ReplayButton from "./components/replayButton/ReplayButton";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
-import { DataContextProvider } from "./context/dataContext/DataContext";
 
 function App(): JSX.Element {
   return (
     <main>
-      <DataContextProvider>
+      <GlobalContextProvider>
         <Canvas />
-      </DataContextProvider>
+        <ReplayButton />
+        <ReplayWidget />
+      </GlobalContextProvider>
       <ToastContainer />
     </main>
   );

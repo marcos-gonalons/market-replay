@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { DataContext } from "../../context/dataContext/DataContext";
+import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import PainterService from "../../services/painter/Painter";
 import FileSelector from "../fileSelector/FileSelector";
 import styles from "./Canvas.module.css";
@@ -13,26 +13,28 @@ interface ContainerDimensions {
 }
 
 function Canvas(): JSX.Element {
-  const { state } = useContext(DataContext);
+  const {
+    state: { painterService, data },
+  } = useContext(GlobalContext);
 
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
     width: 0,
     height: 0,
   });
-  const [painterService, setPainterService] = useState<PainterService | null>(null);
   const [canvasClassName, setCanvasClassName] = useState<string>("");
 
   useEffect(() => {
-    const painterService = new PainterService();
-    painterService.setCanvas(canvasRef.current!);
-    setPainterService(painterService);
-
     const width = canvasContainerRef.current!.clientWidth;
     const height = canvasContainerRef.current!.clientHeight;
     setContainerDimensions({ width, height });
 
     window.addEventListener("resize", () => onResizeWindow(setContainerDimensions));
   }, []);
+
+  useEffect(() => {
+    if (!painterService) return;
+    painterService.setCanvas(canvasRef.current!);
+  }, [painterService]);
 
   useEffect(() => {
     canvasRef.current!.height = containerDimensions.height;
@@ -42,15 +44,15 @@ function Canvas(): JSX.Element {
   useEffect(() => {
     if (!painterService) return;
 
-    painterService.setData(state.data ?? []);
+    painterService.setData(data ?? []);
     painterService.draw();
-  }, [state.data, containerDimensions, painterService]);
+  }, [data, containerDimensions, painterService]);
 
   useEffect(() => {
-    if (!painterService || !state.data || state.data.length === 0) return;
+    if (!painterService || !data || data.length === 0) return;
     painterService.resetDataArrayOffset();
     painterService.draw();
-  }, [state.data, painterService]);
+  }, [data, painterService]);
 
   return (
     <>

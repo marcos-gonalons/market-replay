@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChartData } from "../../../context/dataContext/Types";
+import { ChartData } from "../../../context/globalContext/Types";
 import {
   DEFAULT_FONT,
   MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
@@ -9,13 +9,8 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
 } from "../Constants";
 import { CandlesDisplayDimensions } from "../Types";
-import {
-  getDateFormatted,
-  getDateFormattedShort,
-  getDateFormattedShorter,
-  getMonthAsString,
-  prependZero,
-} from "../Utils";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
@@ -65,15 +60,6 @@ export function drawTimeScale({
     if (!data[i + offset]) break;
 
     const date = data[i + offset].date;
-    /**
-     * TODO: If there is a day change while drawing the time, draw the day instead of the time
-     * It should have another style/color to highlight that is a new day
-     *
-     * Depending of the temporality
-     * If less than one day -> detect day changes
-     * else if less than one month -> detect month changes
-     * else if less than one year -> detect year changes
-     */
     const text = getTextForTimeScaleDates(date, dataTemporality);
     const textWidth = ctx.measureText(text).width;
     const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
@@ -194,14 +180,33 @@ function getTextForDateInPointerPosition(dataTemporality: number, date: Date): s
   let text: string;
 
   if (dataTemporality < SECONDS_IN_A_DAY) {
-    text = getDateFormatted(date);
+    const [day, month, year, hours, minutes, seconds] = [
+      date.getDate(),
+      getMonthAsString(date),
+      date.getFullYear(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    ].map(prependZero);
+
+    text = `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
   } else if (dataTemporality < SECONDS_IN_A_MONTH) {
-    text = getDateFormattedShort(date);
+    const [day, month, year] = [date.getDate(), getMonthAsString(date), date.getFullYear()];
+    text = `${day} ${month} ${year}`;
   } else if (dataTemporality < SECONDS_IN_A_YEAR) {
-    text = getDateFormattedShorter(date);
+    const [month, year] = [getMonthAsString(date), date.getFullYear()];
+    text = `${month} ${year}`;
   } else {
     text = date.getFullYear().toString();
   }
 
   return text;
+}
+
+function prependZero(el: number | string): number | string {
+  return el.toString().length === 1 ? `0${el}` : el;
+}
+
+function getMonthAsString(d: Date): string {
+  return MONTHS[d.getMonth()];
 }

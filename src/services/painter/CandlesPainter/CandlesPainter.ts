@@ -1,4 +1,4 @@
-import { ChartData } from "../../../context/dataContext/Types";
+import { ChartData } from "../../../context/globalContext/Types";
 import { CandlesDisplayDimensions, PriceRange } from "../Types";
 
 interface Parameters {

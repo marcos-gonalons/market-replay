@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { setDataAction, setIsParsingDataAction } from "../../context/dataContext/Actions";
-import { DataContext } from "../../context/dataContext/DataContext";
-import { ChartData } from "../../context/dataContext/Types";
+import { setDataAction, setIsParsingDataAction } from "../../context/globalContext/Actions";
+import { GlobalContext } from "../../context/globalContext/GlobalContext";
+import { ChartData } from "../../context/globalContext/Types";
 import { ReducerAction } from "../../context/Types";
 import { ParserWorker, ParserWorkerMessageOut } from "../../services/csvParser/Parser.worker";
 
 // import styles from "./FileSelector.module.css";
 
 function FileSelector(): JSX.Element {
-  const { dispatch } = useContext(DataContext);
+  const { dispatch } = useContext(GlobalContext);
   const [parserWorker, setParserWorker] = useState<ParserWorker | null>(null);
 
   useEffect(() => {

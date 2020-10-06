@@ -1,13 +1,16 @@
 import React, { useReducer, createContext, Dispatch } from "react";
+import PainterService from "../../services/painter/Painter";
 import { ReducerAction } from "../Types";
 import { ActionTypes, State } from "./Types";
 
 const initialState: State = {
+  painterService: new PainterService(),
   data: [],
   isParsingData: false,
+  isReplayWidgetVisible: false,
 };
 
-export const DataContext = createContext<{
+export const GlobalContext = createContext<{
   state: State;
   dispatch: Dispatch<ReducerAction>;
 }>({
@@ -17,6 +20,12 @@ export const DataContext = createContext<{
 
 const reducer = (state: State, action: ReducerAction): State => {
   switch (action.type) {
+    case ActionTypes.SET_PAINTER_SERVICE:
+      return {
+        ...state,
+        painterService: action.payload as State["painterService"],
+      };
+
     case ActionTypes.SET_DATA:
       return {
         ...state,
@@ -29,15 +38,21 @@ const reducer = (state: State, action: ReducerAction): State => {
         isParsingData: action.payload as State["isParsingData"],
       };
 
+    case ActionTypes.SET_IS_REPLAY_WIDGET_VISIBLE:
+      return {
+        ...state,
+        isReplayWidgetVisible: action.payload as State["isReplayWidgetVisible"],
+      };
+
     default:
       return state;
   }
 };
 
-export const DataContextProvider: React.FC = ({ children }): React.ReactElement => {
+export const GlobalContextProvider: React.FC = ({ children }): React.ReactElement => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  return <DataContext.Provider value={{ state, dispatch }}>{children}</DataContext.Provider>;
+  return <GlobalContext.Provider value={{ state, dispatch }}>{children}</GlobalContext.Provider>;
 };
 
 export { reducer, initialState };

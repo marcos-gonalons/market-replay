@@ -1,7 +1,7 @@
-import { reducer, initialState } from "./DataContext";
+import { reducer, initialState } from "./GlobalContext";
 import { ActionTypes } from "./Types";
 
-describe("DataContext Reducer", () => {
+describe("GlobalContext Reducer", () => {
   test("SET_DATA action sets the data property of the state", () => {
     const payload = [1, 2, 3];
     const action = { type: ActionTypes.SET_DATA, payload };

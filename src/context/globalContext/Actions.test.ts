@@ -3,7 +3,7 @@ import { ReducerAction } from "../Types";
 import { ActionTypes } from "./Types";
 import { setDataAction, setIsParsingDataAction } from "./Actions";
 
-describe("DataContext Actions", () => {
+describe("GlobalContext Actions", () => {
   test("Returns the setDataAction object correctly", () => {
     const data = [1, 2, 3] as any;
     const expectedAction: ReducerAction = {
