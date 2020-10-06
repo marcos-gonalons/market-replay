@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState, useEffect } from "react";
+import React, { useContext, useRef } from "react";
 import Draggable from "react-draggable";
 import DateFnsUtils from "@date-io/date-fns";
 
@@ -15,14 +15,8 @@ function ReplayWidget(): JSX.Element {
     dispatch,
   } = useContext(GlobalContext);
 
-  const [startDate, setStartDate] = useState<Date>(new Date());
-
   // This weird ref is necessary otherwise the console throws a warning.
   const ref = useRef(null);
-
-  useEffect(() => {
-    painterService.updateOffsetByDate(startDate);
-  }, [painterService, startDate]);
 
   if (!isReplayWidgetVisible) {
     return <></>;
@@ -38,13 +32,24 @@ function ReplayWidget(): JSX.Element {
         <div ref={ref}>
           <div className={styles["handle"]}>+</div>
           <div>
-            <span onClick={() => getDatepickerButton(styles["hidden-datepicker"]).click()}>
-              From: {startDate.toDateString()}
-            </span>
-            <button>Start</button>
-            <button>Pause</button>
+            <span onClick={() => getDatepickerButton(styles["hidden-datepicker"]).click()}>Move to</span>
             <button
               onClick={() => {
+                painterService.startReplay();
+              }}
+            >
+              Start
+            </button>
+            <button
+              onClick={() => {
+                painterService.togglePause();
+              }}
+            >
+              Pause/Resume
+            </button>
+            <button
+              onClick={() => {
+                painterService.stopReplay();
                 dispatch(setIsReplayWidgetVisible(false));
               }}
             >
@@ -53,22 +58,23 @@ function ReplayWidget(): JSX.Element {
           </div>
         </div>
       </Draggable>
-      {renderHiddenDatePicker(startDate, setStartDate, data[0].date, data[data.length - 1].date)}
+      {renderHiddenDatePicker(data[0].date, data[data.length - 1].date, (d: Date) =>
+        painterService.updateOffsetByDate(d)
+      )}
     </>
   );
 }
 
 function renderHiddenDatePicker(
-  startDate: Date,
-  onChange: (d: Date) => void,
   smallestPossibleDate: Date,
-  biggestPossibleDate: Date
+  biggestPossibleDate: Date,
+  onChange: (d: Date) => void
 ): JSX.Element {
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <KeyboardDatePicker
         className={styles["hidden-datepicker"]}
-        value={startDate}
+        value={null}
         DialogProps={{ className: styles["hidden-datepicker-dialog"] }}
         views={["year", "month"]}
         onChange={(d) => {
@@ -97,7 +103,7 @@ function renderHiddenDatePicker(
 function getDatepickerButton(className: string): HTMLElement {
   return (document
     .getElementsByClassName(className)[0]
-    .getElementsByClassName("MuiIconButton-root")[0] as any) as HTMLElement;
+    .getElementsByClassName("MuiIconButton-root")[0] as unknown) as HTMLElement;
 }
 
 export default ReplayWidget;

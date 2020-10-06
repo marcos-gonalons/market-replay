@@ -17,6 +17,7 @@ import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
   private data: ChartData[] = [];
+  private dataBackup: ChartData[] = [];
   private canvas: HTMLCanvasElement = null as any;
   private ctx: CanvasRenderingContext2D = null as any;
   private zoomLevel: number = 0;
@@ -29,6 +30,9 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
+  private replayTimer: NodeJS.Timeout | null = null;
+  private isReplayPaused: boolean = false;
+  private replaySpeed: number = 500;
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -104,15 +108,12 @@ class PainterService {
   public updateOffsetByDate(targetDate: Date): PainterService {
     if (!this.data || this.data.length === 0) return this;
 
-    let i;
-    for (i = 0; i < this.data.length; i++) {
+    for (let i = 0; i < this.data.length; i++) {
       if (this.data[i].date.valueOf() >= targetDate.valueOf()) {
-        console.log("found", this.data[i]);
+        this.dataArrayOffset = this.data.length - i - Math.round(this.maxCandlesAmountInScreen / 5);
         break;
       }
     }
-
-    this.dataArrayOffset = this.data.length - i - Math.round(this.maxCandlesAmountInScreen / 5);
 
     this.validateOffset().updatePriceRangeInScreen();
     return this;
@@ -178,6 +179,45 @@ class PainterService {
 
     this.drawPointerLines();
     this.drawCurrentPriceLine();
+    return this;
+  }
+
+  public startReplay(): PainterService {
+    this.dataBackup = [...this.data];
+    this.data = this.data.slice(
+      0,
+      this.data.length - this.dataArrayOffset - Math.round(this.maxCandlesAmountInScreen / 5)
+    );
+    this.dataArrayOffset = -Math.round(this.maxCandlesAmountInScreen / 5);
+    this.draw();
+
+    this.isReplayPaused = false;
+    this.replayTimer = setInterval(() => {
+      if (this.isReplayPaused) return;
+
+      if (this.dataBackup.length > this.data.length) {
+        this.data.push(this.dataBackup[this.data.length]);
+      } else {
+        this.stopReplay();
+        return;
+      }
+      this.draw();
+    }, this.replaySpeed);
+    return this;
+  }
+
+  public togglePause(): PainterService {
+    this.isReplayPaused = !this.isReplayPaused;
+    return this;
+  }
+
+  public stopReplay(): PainterService {
+    clearInterval(this.replayTimer!);
+    this.replayTimer = null;
+
+    this.isReplayPaused = false;
+    this.data = [...this.dataBackup];
+    this.draw();
     return this;
   }
 
