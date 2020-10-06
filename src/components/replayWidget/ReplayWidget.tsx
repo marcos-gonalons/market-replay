@@ -50,6 +50,13 @@ function ReplayWidget(): JSX.Element {
             <button
               onClick={() => {
                 painterService.stopReplay();
+              }}
+            >
+              Stop
+            </button>
+            <button
+              onClick={() => {
+                painterService.stopReplay();
                 dispatch(setIsReplayWidgetVisible(false));
               }}
             >

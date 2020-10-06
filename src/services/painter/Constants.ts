@@ -1,3 +1,5 @@
+import { Colors } from "./Types";
+
 export const PRICE_SCALE_WITH_IN_PX = 100;
 export const TIME_SCALE_HEIGHT_IN_PX = 50;
 export const CANDLES_PER_1000_PX = 150;
@@ -6,11 +8,15 @@ export const MAX_ZOOM = 15;
 export const MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX = 20;
 export const MAX_DATES_IN_DATE_SCALE_PER_1000_PX = 10;
 export const DEFAULT_FONT = "14px Arial";
-export const DEFAULT_COLORS = {
+export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",
   text: "rgb(255,255,255)",
   pointerLine: "rgb(200,200,200)",
-  currentPriceLine: "rgb(250,174,132)",
+  currentPrice: {
+    line: "rgb(250,174,132)",
+    text: "rgb(0,0,0)",
+    background: "rgb(255,255,255)",
+  },
   highlight: {
     background: "rgb(100,100,100)",
     text: "rgb(255,255,255)",

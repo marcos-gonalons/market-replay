@@ -171,7 +171,9 @@ class PainterService {
 
     this.drawCandles();
 
+    // todo: move to the price scale painter
     this.drawPriceScale();
+    this.drawCurrentPriceInPriceScale();
     this.drawPriceInPointerPosition();
 
     this.drawTimeScale();
@@ -179,10 +181,13 @@ class PainterService {
 
     this.drawPointerLines();
     this.drawCurrentPriceLine();
+
     return this;
   }
 
   public startReplay(): PainterService {
+    if (this.replayTimer !== null) return this;
+
     this.dataBackup = [...this.data];
     this.data = this.data.slice(
       0,
@@ -193,15 +198,7 @@ class PainterService {
 
     this.isReplayPaused = false;
     this.replayTimer = setInterval(() => {
-      if (this.isReplayPaused) return;
-
-      if (this.dataBackup.length > this.data.length) {
-        this.data.push(this.dataBackup[this.data.length]);
-      } else {
-        this.stopReplay();
-        return;
-      }
-      this.draw();
+      this.onReplayTimerTick();
     }, this.replaySpeed);
     return this;
   }
@@ -321,7 +318,7 @@ class PainterService {
         (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
       0.5;
 
-    this.ctx.strokeStyle = this.colors.currentPriceLine;
+    this.ctx.strokeStyle = this.colors.currentPrice.line;
 
     this.ctx.setLineDash([5, 5]);
     this.ctx.beginPath();
@@ -330,6 +327,28 @@ class PainterService {
     this.ctx.stroke();
     this.ctx.closePath();
     this.ctx.setLineDash([]);
+
+    return this;
+  }
+
+  private drawCurrentPriceInPriceScale(): PainterService {
+    const currentPrice = this.data[this.data.length - 1].close;
+
+    if (currentPrice < this.priceRangeInScreen.min || currentPrice > this.priceRangeInScreen.max) {
+      return this;
+    }
+
+    const candlesDisplayDimensions = this.getCandlesDisplayDimensions();
+    const y =
+      (candlesDisplayDimensions.height * (this.priceRangeInScreen.max - currentPrice)) /
+      (this.priceRangeInScreen.max - this.priceRangeInScreen.min);
+    const h = 25;
+
+    this.ctx.fillStyle = this.colors.currentPrice.background;
+    this.ctx.fillRect(candlesDisplayDimensions.width, y - h / 2, PRICE_SCALE_WITH_IN_PX, h);
+
+    this.ctx.fillStyle = this.colors.currentPrice.text;
+    this.ctx.fillText(currentPrice.toString(), candlesDisplayDimensions.width + 10, y);
 
     return this;
   }
@@ -395,6 +414,18 @@ class PainterService {
       this.dataArrayOffset = this.data.length - this.maxCandlesAmountInScreen;
     }
     return this;
+  }
+
+  private onReplayTimerTick(): void {
+    if (this.isReplayPaused) return;
+
+    if (this.dataBackup.length > this.data.length) {
+      this.data.push(this.dataBackup[this.data.length]);
+    } else {
+      this.stopReplay();
+      return;
+    }
+    this.draw();
   }
 }
 
