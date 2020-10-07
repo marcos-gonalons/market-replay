@@ -30,3 +30,10 @@ export function setIsReplayWidgetVisible(payload: State["isReplayWidgetVisible"]
     payload,
   };
 }
+
+export function setIsTradingPanelVisible(payload: State["isTradingPanelVisible"]): ReducerAction {
+  return {
+    type: ActionTypes.SET_IS_TRADING_PANEL_VISIBLE,
+    payload,
+  };
+}

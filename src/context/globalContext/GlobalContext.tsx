@@ -8,6 +8,7 @@ const initialState: State = {
   data: [],
   isParsingData: false,
   isReplayWidgetVisible: false,
+  isTradingPanelVisible: false,
 };
 
 export const GlobalContext = createContext<{
@@ -42,6 +43,12 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         isReplayWidgetVisible: action.payload as State["isReplayWidgetVisible"],
+      };
+
+    case ActionTypes.SET_IS_TRADING_PANEL_VISIBLE:
+      return {
+        ...state,
+        isTradingPanelVisible: action.payload as State["isTradingPanelVisible"],
       };
 
     default:

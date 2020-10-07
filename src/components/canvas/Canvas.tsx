@@ -54,9 +54,13 @@ function Canvas(): JSX.Element {
     painterService.draw();
   }, [data, painterService]);
 
+  const containerStyles = {
+    height: getCanvasContainerHeight(),
+  };
+
   return (
     <>
-      <div ref={canvasContainerRef} id={styles["canvas-container"]}>
+      <section style={containerStyles} ref={canvasContainerRef} id={styles["canvas-container"]}>
         <canvas
           className={canvasClassName}
           onWheel={(e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -85,7 +89,7 @@ function Canvas(): JSX.Element {
           id={styles["canvas"]}
           ref={canvasRef}
         ></canvas>
-      </div>
+      </section>
       <FileSelector />
     </>
   );
@@ -93,6 +97,8 @@ function Canvas(): JSX.Element {
 
 function onResizeWindow(setContainerDimensions: (d: ContainerDimensions) => void): void {
   if (!canvasContainerRef.current) return;
+
+  canvasContainerRef.current.style.height = getCanvasContainerHeight();
   setContainerDimensions({
     width: canvasContainerRef.current.clientWidth,
     height: canvasContainerRef.current.clientHeight,
@@ -114,6 +120,11 @@ function onMouseMoveCanvas(
     y: e.clientY - canvasRect.y,
   });
   painterService.draw();
+}
+
+function getCanvasContainerHeight(): string {
+  const topBarFullHeight = 102;
+  return `${window.innerHeight - topBarFullHeight}px`;
 }
 
 export default Canvas;
