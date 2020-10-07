@@ -10,6 +10,7 @@ import ReplayButton from "./components/replayButton/ReplayButton";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
+import TradingPanel from "./components/tradingPanel/TradingPanel";
 
 function App(): JSX.Element {
   return (
@@ -18,6 +19,7 @@ function App(): JSX.Element {
         <Canvas />
         <ReplayButton />
         <ReplayWidget />
+        <TradingPanel />
       </GlobalContextProvider>
       <ToastContainer />
     </main>

@@ -11,7 +11,11 @@ import {
   DEFAULT_COLORS,
 } from "./Constants";
 import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
-import { drawPriceInPointerPosition, drawPriceScale } from "./PriceScalePainter/PriceScalePainter";
+import {
+  drawCurrentPriceInPriceScale,
+  drawPriceInPointerPosition,
+  drawPriceScale,
+} from "./PriceScalePainter/PriceScalePainter";
 import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
 import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
@@ -32,7 +36,7 @@ class PainterService {
   private colors: Colors = DEFAULT_COLORS;
   private replayTimer: NodeJS.Timeout | null = null;
   private isReplayPaused: boolean = false;
-  private replaySpeed: number = 500;
+  private replayTimerTickMilliseconds: number = 10;
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -140,7 +144,7 @@ class PainterService {
   public updatePriceRangeInScreen(): PainterService {
     if (this.data.length === 0) return this;
 
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
     let min = this.data[startingIndex].low;
     let max = this.data[startingIndex].high;
     for (let i = startingIndex + 1; i < endingIndex; i++) {
@@ -171,7 +175,6 @@ class PainterService {
 
     this.drawCandles();
 
-    // todo: move to the price scale painter
     this.drawPriceScale();
     this.drawCurrentPriceInPriceScale();
     this.drawPriceInPointerPosition();
@@ -199,7 +202,7 @@ class PainterService {
     this.isReplayPaused = false;
     this.replayTimer = setInterval(() => {
       this.onReplayTimerTick();
-    }, this.replaySpeed);
+    }, this.replayTimerTickMilliseconds);
     return this;
   }
 
@@ -219,7 +222,7 @@ class PainterService {
   }
 
   private drawCandles(): PainterService {
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
     drawCandles({
       ctx: this.ctx,
       dataStartIndex: startingIndex,
@@ -244,6 +247,17 @@ class PainterService {
     return this;
   }
 
+  private drawCurrentPriceInPriceScale(): PainterService {
+    drawCurrentPriceInPriceScale({
+      ctx: this.ctx,
+      data: this.data,
+      priceRange: this.priceRangeInScreen,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.currentPrice,
+    });
+    return this;
+  }
+
   private drawPriceInPointerPosition(): PainterService {
     drawPriceInPointerPosition({
       ctx: this.ctx,
@@ -256,7 +270,7 @@ class PainterService {
   }
 
   private drawTimeScale(): PainterService {
-    const [startingIndex, endingIndex] = this.getDataStartAndEndIndex();
+    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
     drawTimeScale({
       ctx: this.ctx,
       colors: { ...this.colors.timeScale },
@@ -283,7 +297,7 @@ class PainterService {
       highlightColors: this.colors.highlight,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
       dataTemporality: this.dataTemporality,
-      startingIndex: this.getDataStartAndEndIndex()[0],
+      startingIndex: this.getStartAndEndIndexForCandlesInScreen()[0],
       candleWidth: this.candleWidth,
     });
     return this;
@@ -331,29 +345,7 @@ class PainterService {
     return this;
   }
 
-  private drawCurrentPriceInPriceScale(): PainterService {
-    const currentPrice = this.data[this.data.length - 1].close;
-
-    if (currentPrice < this.priceRangeInScreen.min || currentPrice > this.priceRangeInScreen.max) {
-      return this;
-    }
-
-    const candlesDisplayDimensions = this.getCandlesDisplayDimensions();
-    const y =
-      (candlesDisplayDimensions.height * (this.priceRangeInScreen.max - currentPrice)) /
-      (this.priceRangeInScreen.max - this.priceRangeInScreen.min);
-    const h = 25;
-
-    this.ctx.fillStyle = this.colors.currentPrice.background;
-    this.ctx.fillRect(candlesDisplayDimensions.width, y - h / 2, PRICE_SCALE_WITH_IN_PX, h);
-
-    this.ctx.fillStyle = this.colors.currentPrice.text;
-    this.ctx.fillText(currentPrice.toString(), candlesDisplayDimensions.width + 10, y);
-
-    return this;
-  }
-
-  private getDataStartAndEndIndex(): number[] {
+  private getStartAndEndIndexForCandlesInScreen(): number[] {
     let startingIndex = this.data.length - (this.maxCandlesAmountInScreen + this.dataArrayOffset);
     if (!this.data[startingIndex] && this.dataArrayOffset === 0) {
       startingIndex = 0;

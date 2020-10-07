@@ -9,6 +9,13 @@ interface ChartData {
   volume: number;
 }
 
+interface TradeOrder {
+  type: "market" | "limit";
+  price: number;
+  stopLoss?: number;
+  takeProfit: number;
+}
+
 interface State {
   readonly painterService: PainterService;
   readonly data: ChartData[];
@@ -24,4 +31,4 @@ const ActionTypes = {
 };
 
 export { ActionTypes };
-export type { State, ChartData };
+export type { State, ChartData, TradeOrder };

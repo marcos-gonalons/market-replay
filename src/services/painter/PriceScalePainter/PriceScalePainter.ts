@@ -1,3 +1,4 @@
+import { ChartData } from "../../../context/globalContext/Types";
 import { DEFAULT_FONT, MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
 import { CandlesDisplayDimensions, PriceRange } from "../Types";
 
@@ -74,8 +75,39 @@ export function drawPriceInPointerPosition({
 
   ctx.font = "bold 15px Arial";
   ctx.fillStyle = highlightColors.text;
-  ctx.fillText(price.toFixed(5), candlesDisplayDimensions.width + 15, mousePointerY + 1);
+
+  ctx.fillText(price.toFixed(5).slice(0, 9), candlesDisplayDimensions.width + 15, mousePointerY + 1);
   ctx.font = DEFAULT_FONT;
+}
+
+interface DrawCurrentPriceInPriceScaleParams {
+  ctx: CanvasRenderingContext2D;
+  data: ChartData[];
+  priceRange: PriceRange;
+  candlesDisplayDimensions: CandlesDisplayDimensions;
+  colors: { background: string; text: string };
+}
+export function drawCurrentPriceInPriceScale({
+  ctx,
+  data,
+  priceRange,
+  candlesDisplayDimensions,
+  colors,
+}: DrawCurrentPriceInPriceScaleParams): void {
+  const currentPrice = data[data.length - 1].close;
+
+  if (currentPrice < priceRange.min || currentPrice > priceRange.max) {
+    return;
+  }
+
+  const y = (candlesDisplayDimensions.height * (priceRange.max - currentPrice)) / (priceRange.max - priceRange.min);
+  const h = 25;
+
+  ctx.fillStyle = colors.background;
+  ctx.fillRect(candlesDisplayDimensions.width, y - h / 2, PRICE_SCALE_WITH_IN_PX, h);
+
+  ctx.fillStyle = colors.text;
+  ctx.fillText(currentPrice.toString(), candlesDisplayDimensions.width + 10, y);
 }
 
 function getNearestMultipleForRounding(priceRangeDiff: number): number {

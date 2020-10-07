@@ -15,7 +15,7 @@ function ReplayWidget(): JSX.Element {
     dispatch,
   } = useContext(GlobalContext);
 
-  // This weird ref is necessary otherwise the console throws a warning.
+  // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
   const ref = useRef(null);
 
   if (!isReplayWidgetVisible) {
