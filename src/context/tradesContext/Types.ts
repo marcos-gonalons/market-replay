@@ -32,4 +32,4 @@ const ActionTypes = {
 };
 
 export { ActionTypes };
-export type { State, Order, Trade };
+export type { State, Order, Trade, Position, OrderType };

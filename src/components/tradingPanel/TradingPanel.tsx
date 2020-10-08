@@ -1,11 +1,12 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState, useEffect } from "react";
 import Draggable from "react-draggable";
 import { setIsTradingPanelVisible } from "../../context/globalContext/Actions";
 
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import { addOrder } from "../../context/tradesContext/Actions";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
-import { Order } from "../../context/tradesContext/Types";
+import { Order, OrderType, Position } from "../../context/tradesContext/Types";
+import PainterService from "../../services/painter/Painter";
 
 import styles from "./TradingPanel.module.css";
 
@@ -26,7 +27,9 @@ function TradingPanel(): JSX.Element {
   const [takeProfitPrice, setTakeProfitPrice] = useState<number>(0);
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
-  console.log(orders);
+  useEffect(() => {
+    console.log(orders);
+  }, [painterService, orders]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
   const ref = useRef(null);
@@ -140,33 +143,88 @@ function TradingPanel(): JSX.Element {
             </div>
             <button
               onClick={() => {
-                const order: Order = {
-                  type: orderType,
-                  position: "long",
-                  size,
-                };
-                if (orderType === "limit") {
-                  order.limitPrice = limitOrderPrice;
-                } else {
-                  order.fillDate = painterService.getLastCandle().date;
-                }
-                if (hasStopLoss) {
-                  order.stopLoss = stopLossPrice;
-                }
-                if (hasTakeProfit) {
-                  order.takeProfit = takeProfitPrice;
-                }
-                tradesContextDispatch(addOrder(order));
+                tradesContextDispatch(
+                  addOrder(
+                    getOrder({
+                      type: orderType,
+                      position: "long",
+                      size,
+                      painterService,
+                      hasStopLoss,
+                      hasTakeProfit,
+                      limitPrice: limitOrderPrice,
+                      stopLossPrice: stopLossPrice,
+                      takeProfitPrice: takeProfitPrice,
+                    })
+                  )
+                );
               }}
             >
               Buy
             </button>
-            <button>Sell</button>
+            <button
+              onClick={() => {
+                tradesContextDispatch(
+                  addOrder(
+                    getOrder({
+                      type: orderType,
+                      position: "short",
+                      size,
+                      painterService,
+                      hasStopLoss,
+                      hasTakeProfit,
+                      limitPrice: limitOrderPrice,
+                      stopLossPrice: stopLossPrice,
+                      takeProfitPrice: takeProfitPrice,
+                    })
+                  )
+                );
+              }}
+            >
+              Sell
+            </button>
           </section>
         </div>
       </Draggable>
     </>
   );
+}
+
+interface GetOrderParams {
+  type: OrderType;
+  position: Position;
+  size: number;
+  painterService: PainterService;
+  hasStopLoss: boolean;
+  hasTakeProfit: boolean;
+  limitPrice?: number;
+  stopLossPrice?: number;
+  takeProfitPrice?: number;
+}
+function getOrder({
+  type,
+  position,
+  size,
+  painterService,
+  hasStopLoss,
+  hasTakeProfit,
+  limitPrice,
+  stopLossPrice,
+  takeProfitPrice,
+}: GetOrderParams): Order {
+  const order: Order = { type, position, size };
+  if (type === "limit") {
+    order.limitPrice = limitPrice;
+  } else {
+    order.fillDate = painterService.getLastCandle().date;
+  }
+  if (hasStopLoss) {
+    order.stopLoss = stopLossPrice;
+  }
+  if (hasTakeProfit) {
+    order.takeProfit = takeProfitPrice;
+  }
+  return order;
 }
 
 export default TradingPanel;
