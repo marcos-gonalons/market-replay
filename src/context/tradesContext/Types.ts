@@ -1,7 +1,12 @@
+type OrderType = "market" | "limit";
+
+type Position = "long" | "short";
+
 interface Order {
-  type: "market" | "limit";
-  price: number;
+  type: OrderType;
+  position: Position;
   size: number;
+  limitPrice?: number;
   stopLoss?: number;
   takeProfit?: number;
   fillDate?: Date;
@@ -13,6 +18,7 @@ interface Trade {
   startPrice: number;
   endPrice: number;
   size: number;
+  position: Position;
 }
 
 interface State {

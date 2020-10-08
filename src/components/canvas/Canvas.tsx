@@ -32,7 +32,6 @@ function Canvas(): JSX.Element {
 
   useEffect(() => {
     if (!painterService) return;
-    console.log("only once");
     window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, painterService));
     painterService.setCanvas(canvasRef.current!);
   }, [painterService]);

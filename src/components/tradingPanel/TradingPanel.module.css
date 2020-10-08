@@ -8,3 +8,7 @@
   top: 20px;
   left: 20px;
 }
+
+.selected {
+  background-color: yellow;
+}

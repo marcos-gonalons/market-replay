@@ -237,6 +237,10 @@ class PainterService {
     return this;
   }
 
+  public getLastCandle(): ChartData {
+    return this.data[this.data.length - 1];
+  }
+
   private drawCandles(): PainterService {
     const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
     drawCandles({

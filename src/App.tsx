@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import TradingPanel from "./components/tradingPanel/TradingPanel";
 import TopBar from "./components/topBar/TopBar";
+import { TradesContextProvider } from "./context/tradesContext/TradesContext";
 
 function App(): JSX.Element {
   return (
@@ -18,9 +19,11 @@ function App(): JSX.Element {
       <GlobalContextProvider>
         <main id="main-container">
           <TopBar />
-          <Canvas />
+          <TradesContextProvider>
+            <Canvas />
+            <TradingPanel />
+          </TradesContextProvider>
           <ReplayWidget />
-          <TradingPanel />
         </main>
       </GlobalContextProvider>
       <ToastContainer />
