@@ -1,5 +1,4 @@
 import React, { useContext } from "react";
-import { toast } from "react-toastify";
 import { setIsReplayWidgetVisible } from "../../../context/globalContext/Actions";
 import { GlobalContext } from "../../../context/globalContext/GlobalContext";
 
@@ -13,12 +12,9 @@ function ReplayButton(): JSX.Element {
 
   return (
     <button
+      disabled={!data || !data.length}
       onClick={() => {
-        if (!data || !data.length) {
-          toast.error("First you must select a CSV file with the data");
-        } else {
-          dispatch(setIsReplayWidgetVisible(true));
-        }
+        dispatch(setIsReplayWidgetVisible(true));
       }}
     >
       Replay mode

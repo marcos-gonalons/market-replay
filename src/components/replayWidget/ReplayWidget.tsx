@@ -63,6 +63,9 @@ function ReplayWidget(): JSX.Element {
               Quit
             </button>
           </div>
+          <div>
+            You can use the space bar to pause and left/right arrows while in pause to move the candles back and forth
+          </div>
         </div>
       </Draggable>
       {renderHiddenDatePicker(data[0].date, data[data.length - 1].date, (d: Date) =>

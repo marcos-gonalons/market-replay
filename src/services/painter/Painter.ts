@@ -201,6 +201,7 @@ class PainterService {
 
     this.isReplayPaused = false;
     this.replayTimer = setInterval(() => {
+      if (this.isReplayPaused) return;
       this.onReplayTimerTick();
     }, this.replayTimerTickMilliseconds);
     return this;
@@ -218,6 +219,25 @@ class PainterService {
     this.isReplayPaused = false;
     this.data = [...this.dataBackup];
     this.draw();
+    return this;
+  }
+
+  public isPaused(): boolean {
+    return this.isReplayPaused;
+  }
+
+  public goBack(): PainterService {
+    if (!this.isReplayPaused) return this;
+
+    this.data.splice(this.data.length - 1, 1);
+    this.draw();
+    return this;
+  }
+
+  public goForward(): PainterService {
+    if (!this.isReplayPaused) return this;
+
+    this.onReplayTimerTick();
     return this;
   }
 
@@ -409,8 +429,6 @@ class PainterService {
   }
 
   private onReplayTimerTick(): void {
-    if (this.isReplayPaused) return;
-
     if (this.dataBackup.length > this.data.length) {
       this.data.push(this.dataBackup[this.data.length]);
     } else {

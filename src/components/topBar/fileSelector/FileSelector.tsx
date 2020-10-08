@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { setDataAction, setIsParsingDataAction } from "../../context/globalContext/Actions";
-import { GlobalContext } from "../../context/globalContext/GlobalContext";
-import { ChartData } from "../../context/globalContext/Types";
-import { ReducerAction } from "../../context/Types";
-import { ParserWorker, ParserWorkerMessageOut } from "../../services/csvParser/Parser.worker";
+import { setDataAction, setIsParsingDataAction } from "../../../context/globalContext/Actions";
+import { GlobalContext } from "../../../context/globalContext/GlobalContext";
+import { ChartData } from "../../../context/globalContext/Types";
+import { ReducerAction } from "../../../context/Types";
+import { ParserWorker, ParserWorkerMessageOut } from "../../../services/csvParser/Parser.worker";
 
 // import styles from "./FileSelector.module.css";
 
@@ -14,7 +14,7 @@ function FileSelector(): JSX.Element {
 
   useEffect(() => {
     // eslint-disable-next-line
-    setParserWorker(new (require("worker-loader!../../services/csvParser/Parser.worker").default)() as ParserWorker);
+    setParserWorker(new (require("worker-loader!../../../services/csvParser/Parser.worker").default)() as ParserWorker);
   }, []);
 
   useEffect(() => {

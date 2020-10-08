@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import PainterService from "../../services/painter/Painter";
-import FileSelector from "../fileSelector/FileSelector";
 import styles from "./Canvas.module.css";
 
 const canvasContainerRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -33,6 +32,8 @@ function Canvas(): JSX.Element {
 
   useEffect(() => {
     if (!painterService) return;
+    console.log("only once");
+    window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, painterService));
     painterService.setCanvas(canvasRef.current!);
   }, [painterService]);
 
@@ -90,7 +91,6 @@ function Canvas(): JSX.Element {
           ref={canvasRef}
         ></canvas>
       </section>
-      <FileSelector />
     </>
   );
 }
@@ -123,8 +123,22 @@ function onMouseMoveCanvas(
 }
 
 function getCanvasContainerHeight(): string {
-  const topBarFullHeight = 102;
+  const topBarFullHeight = 52;
   return `${window.innerHeight - topBarFullHeight}px`;
+}
+
+function onKeyDown(e: KeyboardEvent, painterService: PainterService): void {
+  switch (e.code) {
+    case "Space":
+      painterService.togglePause();
+      break;
+    case "ArrowRight":
+      painterService.goForward();
+      break;
+    case "ArrowLeft":
+      painterService.goBack();
+      break;
+  }
 }
 
 export default Canvas;
