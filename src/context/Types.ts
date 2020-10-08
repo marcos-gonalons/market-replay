@@ -1,6 +1,6 @@
 interface ReducerAction {
   type: string;
-  payload: unknown;
+  payload?: unknown;
 }
 
 export type { ReducerAction };

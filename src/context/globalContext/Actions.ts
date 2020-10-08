@@ -31,6 +31,13 @@ export function setIsReplayWidgetVisible(payload: State["isReplayWidgetVisible"]
   };
 }
 
+export function setIsReplayActive(payload: State["isReplayActive"]): ReducerAction {
+  return {
+    type: ActionTypes.SET_IS_REPLAY_ACTIVE,
+    payload,
+  };
+}
+
 export function setIsTradingPanelVisible(payload: State["isTradingPanelVisible"]): ReducerAction {
   return {
     type: ActionTypes.SET_IS_TRADING_PANEL_VISIBLE,

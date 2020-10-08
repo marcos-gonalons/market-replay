@@ -8,6 +8,7 @@ const initialState: State = {
   data: [],
   isParsingData: false,
   isReplayWidgetVisible: false,
+  isReplayActive: false,
   isTradingPanelVisible: false,
 };
 
@@ -49,6 +50,12 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         isTradingPanelVisible: action.payload as State["isTradingPanelVisible"],
+      };
+
+    case ActionTypes.SET_IS_REPLAY_ACTIVE:
+      return {
+        ...state,
+        isReplayActive: action.payload as State["isReplayActive"],
       };
 
     default:

@@ -33,6 +33,11 @@ const reducer = (state: State, action: ReducerAction): State => {
         ...state,
         trades: tradesCopy,
       };
+    case ActionTypes.REMOVE_ALL_ORDERS:
+      return {
+        ...state,
+        orders: [],
+      };
     default:
       return state;
   }

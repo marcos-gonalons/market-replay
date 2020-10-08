@@ -22,8 +22,8 @@ function App(): JSX.Element {
           <TradesContextProvider>
             <Canvas />
             <TradingPanel />
+            <ReplayWidget />
           </TradesContextProvider>
-          <ReplayWidget />
         </main>
       </GlobalContextProvider>
       <ToastContainer />

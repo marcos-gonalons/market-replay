@@ -29,6 +29,7 @@ interface State {
 const ActionTypes = {
   ADD_ORDER: "TRADES_CONTEXT_ADD_ORDER",
   ADD_TRADE: "TRADES_CONTEXT_ADD_TRADE",
+  REMOVE_ALL_ORDERS: "TRADES_CONTEXT_REMOVE_ALL_ORDERS",
 };
 
 export { ActionTypes };

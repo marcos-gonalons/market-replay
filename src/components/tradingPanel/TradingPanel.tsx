@@ -28,7 +28,7 @@ function TradingPanel(): JSX.Element {
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
   useEffect(() => {
-    console.log(orders);
+    painterService.setOrders(orders);
   }, [painterService, orders]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.

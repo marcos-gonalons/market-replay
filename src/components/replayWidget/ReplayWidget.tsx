@@ -6,14 +6,17 @@ import { GlobalContext } from "../../context/globalContext/GlobalContext";
 
 import styles from "./ReplayWidget.module.css";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { setIsReplayWidgetVisible } from "../../context/globalContext/Actions";
+import { setIsReplayActive, setIsReplayWidgetVisible } from "../../context/globalContext/Actions";
 import { toast } from "react-toastify";
+import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { removeAllOrders } from "../../context/tradesContext/Actions";
 
 function ReplayWidget(): JSX.Element {
   const {
     state: { isReplayWidgetVisible, data, painterService },
-    dispatch,
+    dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
+  const { dispatch: tradesContextDispatch } = useContext(TradesContext);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
   const ref = useRef(null);
@@ -36,6 +39,7 @@ function ReplayWidget(): JSX.Element {
             <button
               onClick={() => {
                 painterService.startReplay();
+                globalContextDispatch(setIsReplayActive(true));
               }}
             >
               Start
@@ -49,6 +53,8 @@ function ReplayWidget(): JSX.Element {
             </button>
             <button
               onClick={() => {
+                tradesContextDispatch(removeAllOrders());
+                globalContextDispatch(setIsReplayActive(false));
                 painterService.stopReplay();
               }}
             >
@@ -57,7 +63,9 @@ function ReplayWidget(): JSX.Element {
             <button
               onClick={() => {
                 painterService.stopReplay();
-                dispatch(setIsReplayWidgetVisible(false));
+                tradesContextDispatch(removeAllOrders());
+                globalContextDispatch(setIsReplayActive(false));
+                globalContextDispatch(setIsReplayWidgetVisible(false));
               }}
             >
               Quit

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/globalContext/Types";
+import { Order } from "../../context/tradesContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -37,6 +38,7 @@ class PainterService {
   private replayTimer: NodeJS.Timeout | null = null;
   private isReplayPaused: boolean = false;
   private replayTimerTickMilliseconds: number = 10;
+  private orders: Order[] = [];
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -182,8 +184,13 @@ class PainterService {
     this.drawTimeScale();
     this.drawDateInPointerPosition();
 
-    this.drawPointerLines();
     this.drawCurrentPriceLine();
+
+    if (this.replayTimer !== null) {
+      this.drawOrders();
+    }
+
+    this.drawPointerLines();
 
     return this;
   }
@@ -239,6 +246,11 @@ class PainterService {
 
   public getLastCandle(): ChartData {
     return this.data[this.data.length - 1];
+  }
+
+  public setOrders(orders: Order[]): PainterService {
+    this.orders = orders;
+    return this;
   }
 
   private drawCandles(): PainterService {
@@ -436,6 +448,11 @@ class PainterService {
       return;
     }
     this.draw();
+  }
+
+  private drawOrders(): PainterService {
+    console.log(this.orders);
+    return this;
   }
 }
 

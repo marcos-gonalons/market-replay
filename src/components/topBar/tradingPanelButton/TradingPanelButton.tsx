@@ -7,12 +7,12 @@ import { GlobalContext } from "../../../context/globalContext/GlobalContext";
 function TradingPanelButton(): JSX.Element {
   const {
     dispatch,
-    state: { data },
+    state: { data, isReplayActive },
   } = useContext(GlobalContext);
 
   return (
     <button
-      disabled={!data || !data.length}
+      disabled={!data || !data.length || !isReplayActive}
       onClick={() => {
         dispatch(setIsTradingPanelVisible(true));
       }}
