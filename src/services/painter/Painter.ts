@@ -222,10 +222,6 @@ class PainterService {
     return this;
   }
 
-  public isPaused(): boolean {
-    return this.isReplayPaused;
-  }
-
   public goBack(): PainterService {
     if (!this.isReplayPaused) return this;
 
