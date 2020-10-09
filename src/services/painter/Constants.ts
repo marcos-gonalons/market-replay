@@ -7,6 +7,7 @@ export const ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER = 0.1;
 export const MAX_ZOOM = 15;
 export const MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX = 20;
 export const MAX_DATES_IN_DATE_SCALE_PER_1000_PX = 10;
+export const DEFAULT_REPLAY_TIMER_TICK_IN_MS = 500;
 export const DEFAULT_FONT = "14px Arial";
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",
@@ -38,6 +39,12 @@ export const DEFAULT_COLORS: Colors = {
       positive: "rgb(0,201,10)",
       negative: "rgb(201,10,0)",
     },
+  },
+  orders: {
+    market: "rgb(148,255,219)",
+    limit: "rgb(92,92,92)",
+    takeProfit: "rgb(2,138,0)",
+    stopLoss: "rgb(138,0,46)",
   },
 };
 export const SECONDS_IN_AN_HOUR = 3600;

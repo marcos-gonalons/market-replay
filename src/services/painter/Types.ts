@@ -34,6 +34,12 @@ export interface Colors {
       negative: string;
     };
   };
+  orders: {
+    market: string;
+    limit: string;
+    takeProfit: string;
+    stopLoss: string;
+  };
 }
 
 export interface Coords {

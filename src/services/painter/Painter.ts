@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartData } from "../../context/globalContext/Types";
-import { Order } from "../../context/tradesContext/Types";
+import { Order, Trade } from "../../context/tradesContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -10,7 +10,9 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
   DEFAULT_FONT,
   DEFAULT_COLORS,
+  DEFAULT_REPLAY_TIMER_TICK_IN_MS,
 } from "./Constants";
+import { drawOrders } from "./OrdersPainter/OrdersPainter";
 import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
 import {
   drawCurrentPriceInPriceScale,
@@ -37,8 +39,9 @@ class PainterService {
   private colors: Colors = DEFAULT_COLORS;
   private replayTimer: NodeJS.Timeout | null = null;
   private isReplayPaused: boolean = false;
-  private replayTimerTickMilliseconds: number = 10;
+  private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
   private orders: Order[] = [];
+  private trades: Trade[] = [];
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -198,6 +201,8 @@ class PainterService {
   public startReplay(): PainterService {
     if (this.replayTimer !== null) return this;
 
+    this.trades = [];
+
     this.dataBackup = [...this.data];
     this.data = this.data.slice(
       0,
@@ -251,6 +256,10 @@ class PainterService {
   public setOrders(orders: Order[]): PainterService {
     this.orders = orders;
     return this;
+  }
+
+  public getTrades(): Trade[] {
+    return this.trades;
   }
 
   private drawCandles(): PainterService {
@@ -359,10 +368,7 @@ class PainterService {
       lastCandleInScreen = this.data[index];
     }
 
-    const y =
-      (this.getCandlesDisplayDimensions().height * (this.priceRangeInScreen.max - lastCandleInScreen.close)) /
-        (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
-      0.5;
+    const y = this.getPriceYCoordinate(lastCandleInScreen.close);
 
     this.ctx.strokeStyle = this.colors.currentPrice.line;
 
@@ -443,6 +449,9 @@ class PainterService {
   private onReplayTimerTick(): void {
     if (this.dataBackup.length > this.data.length) {
       this.data.push(this.dataBackup[this.data.length]);
+
+      // TODO: Check if a limit order needs to be transformed into a market order
+      // TODO: Check if a market order needs to be removed and transformed into a trade
     } else {
       this.stopReplay();
       return;
@@ -451,8 +460,22 @@ class PainterService {
   }
 
   private drawOrders(): PainterService {
-    console.log(this.orders);
+    drawOrders({
+      ctx: this.ctx,
+      orders: this.orders,
+      priceRange: this.priceRangeInScreen,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.orders,
+    });
     return this;
+  }
+
+  private getPriceYCoordinate(price: number): number {
+    return (
+      (this.getCandlesDisplayDimensions().height * (this.priceRangeInScreen.max - price)) /
+        (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
+      0.5
+    );
   }
 }
 

@@ -6,7 +6,7 @@ interface Order {
   type: OrderType;
   position: Position;
   size: number;
-  limitPrice?: number;
+  price: number;
   stopLoss?: number;
   takeProfit?: number;
   fillDate?: Date;

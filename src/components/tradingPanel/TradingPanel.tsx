@@ -1,5 +1,6 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
 import Draggable from "react-draggable";
+import { toast } from "react-toastify";
 import { setIsTradingPanelVisible } from "../../context/globalContext/Actions";
 
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
@@ -29,6 +30,7 @@ function TradingPanel(): JSX.Element {
 
   useEffect(() => {
     painterService.setOrders(orders);
+    painterService.draw();
   }, [painterService, orders]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
@@ -37,6 +39,8 @@ function TradingPanel(): JSX.Element {
   if (!isTradingPanelVisible) {
     return <></>;
   }
+
+  // TODO: use decimal number component
   return (
     <>
       <Draggable nodeRef={ref} defaultClassName={styles["panel-container"]} axis="both" handle={`.${styles["handle"]}`}>
@@ -143,42 +147,48 @@ function TradingPanel(): JSX.Element {
             </div>
             <button
               onClick={() => {
-                tradesContextDispatch(
-                  addOrder(
-                    getOrder({
-                      type: orderType,
-                      position: "long",
-                      size,
-                      painterService,
-                      hasStopLoss,
-                      hasTakeProfit,
-                      limitPrice: limitOrderPrice,
-                      stopLossPrice: stopLossPrice,
-                      takeProfitPrice: takeProfitPrice,
-                    })
-                  )
-                );
+                const order = getOrder({
+                  type: orderType,
+                  position: "long",
+                  size,
+                  painterService,
+                  hasStopLoss,
+                  hasTakeProfit,
+                  limitPrice: limitOrderPrice,
+                  stopLossPrice: stopLossPrice,
+                  takeProfitPrice: takeProfitPrice,
+                });
+                try {
+                  validateOrder(order);
+                } catch (err: unknown) {
+                  toast.error((err as Error).message);
+                  return;
+                }
+                tradesContextDispatch(addOrder(order));
               }}
             >
               Buy
             </button>
             <button
               onClick={() => {
-                tradesContextDispatch(
-                  addOrder(
-                    getOrder({
-                      type: orderType,
-                      position: "short",
-                      size,
-                      painterService,
-                      hasStopLoss,
-                      hasTakeProfit,
-                      limitPrice: limitOrderPrice,
-                      stopLossPrice: stopLossPrice,
-                      takeProfitPrice: takeProfitPrice,
-                    })
-                  )
-                );
+                const order = getOrder({
+                  type: orderType,
+                  position: "short",
+                  size,
+                  painterService,
+                  hasStopLoss,
+                  hasTakeProfit,
+                  limitPrice: limitOrderPrice,
+                  stopLossPrice: stopLossPrice,
+                  takeProfitPrice: takeProfitPrice,
+                });
+                try {
+                  validateOrder(order);
+                } catch (err: unknown) {
+                  toast.error((err as Error).message);
+                  return;
+                }
+                tradesContextDispatch(addOrder(order));
               }}
             >
               Sell
@@ -212,11 +222,12 @@ function getOrder({
   stopLossPrice,
   takeProfitPrice,
 }: GetOrderParams): Order {
-  const order: Order = { type, position, size };
+  const order: Order = { type, position, size, price: 0 };
   if (type === "limit") {
-    order.limitPrice = limitPrice;
+    order.price = limitPrice as number;
   } else {
     order.fillDate = painterService.getLastCandle().date;
+    order.price = painterService.getLastCandle().close;
   }
   if (hasStopLoss) {
     order.stopLoss = stopLossPrice;
@@ -225,6 +236,26 @@ function getOrder({
     order.takeProfit = takeProfitPrice;
   }
   return order;
+}
+
+function validateOrder(order: Order): void {
+  if (order.stopLoss) {
+    if (
+      (order.position === "long" && order.stopLoss >= order.price) ||
+      (order.position === "short" && order.stopLoss <= order.price)
+    ) {
+      throw new Error("Invalid stop loss");
+    }
+  }
+
+  if (order.takeProfit) {
+    if (
+      (order.position === "long" && order.takeProfit <= order.price) ||
+      (order.position === "short" && order.takeProfit >= order.price)
+    ) {
+      throw new Error("Invalid take profit");
+    }
+  }
 }
 
 export default TradingPanel;
