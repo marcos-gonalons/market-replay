@@ -1,5 +1,5 @@
 import { ChartData } from "../../../context/globalContext/Types";
-import { CandlesDisplayDimensions, PriceRange } from "../Types";
+import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
 import { getYCoordOfPrice } from "../Utils/Utils";
 
 interface Parameters {
@@ -10,16 +10,7 @@ interface Parameters {
   priceRange: PriceRange;
   candleWidth: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: {
-    body: {
-      positive: string;
-      negative: string;
-    };
-    wick: {
-      positive: string;
-      negative: string;
-    };
-  };
+  colors: Colors["candle"];
 }
 
 export function drawCandles({

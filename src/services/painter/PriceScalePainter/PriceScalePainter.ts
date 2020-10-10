@@ -1,12 +1,12 @@
 import { ChartData } from "../../../context/globalContext/Types";
 import { DEFAULT_FONT, MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
-import { CandlesDisplayDimensions, PriceRange } from "../Types";
+import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
 import { getPriceOfYCoord, getYCoordOfPrice } from "../Utils/Utils";
 
 interface DrawPriceScaleParameters {
   ctx: CanvasRenderingContext2D;
   canvasHeight: number;
-  colors: { background: string; border: string };
+  colors: Colors["priceScale"];
   candlesDisplayDimensions: CandlesDisplayDimensions;
   priceRange: PriceRange;
 }
@@ -86,7 +86,7 @@ interface DrawCurrentPriceInPriceScaleParams {
   data: ChartData[];
   priceRange: PriceRange;
   candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: { background: string; text: string };
+  colors: Colors["currentPrice"];
 }
 export function drawCurrentPriceInPriceScale({
   ctx,

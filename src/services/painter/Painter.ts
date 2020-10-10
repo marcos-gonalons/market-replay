@@ -302,7 +302,7 @@ class PainterService {
   private drawPriceInPointerPosition(): PainterService {
     drawPriceInPointerPosition({
       ctx: this.ctx,
-      mousePointerY: this.mouseCoords.y,
+      yCoord: this.mouseCoords.y,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       priceRange: this.priceRangeInScreen,
       highlightColors: this.colors.highlight,

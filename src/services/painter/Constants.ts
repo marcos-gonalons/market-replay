@@ -41,10 +41,12 @@ export const DEFAULT_COLORS: Colors = {
     },
   },
   orders: {
-    market: "rgb(148,255,219)",
+    market: "rgb(3,167,255)",
     limit: "rgb(92,92,92)",
     takeProfit: "rgb(2,138,0)",
     stopLoss: "rgb(138,0,46)",
+    text: "rgb(0,0,0)",
+    background: "rgb(255,255,255)",
   },
 };
 export const SECONDS_IN_AN_HOUR = 3600;

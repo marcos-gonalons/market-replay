@@ -39,6 +39,8 @@ export interface Colors {
     limit: string;
     takeProfit: string;
     stopLoss: string;
+    text: string;
+    background: string;
   };
 }
 

@@ -8,13 +8,13 @@ import {
   SECONDS_IN_A_YEAR,
   TIME_SCALE_HEIGHT_IN_PX,
 } from "../Constants";
-import { CandlesDisplayDimensions } from "../Types";
+import { CandlesDisplayDimensions, Colors } from "../Types";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
-  colors: { background: string; border: string };
+  colors: Colors["timeScale"];
   candlesDisplayDimensions: CandlesDisplayDimensions;
   dataStartIndex: number;
   dataEndIndex: number;
