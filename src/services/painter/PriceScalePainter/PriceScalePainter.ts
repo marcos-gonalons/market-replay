@@ -1,6 +1,7 @@
 import { ChartData } from "../../../context/globalContext/Types";
 import { DEFAULT_FONT, MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
 import { CandlesDisplayDimensions, PriceRange } from "../Types";
+import { getPriceOfYCoord, getYCoordOfPrice } from "../Utils/Utils";
 
 interface DrawPriceScaleParameters {
   ctx: CanvasRenderingContext2D;
@@ -38,7 +39,7 @@ export function drawPriceScale({
 
   let price = maxPriceRounded;
   while (price > priceRange.min) {
-    const y = (candlesDisplayDimensions.height * (priceRange.max - price)) / priceRangeDiff;
+    const y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price });
 
     if (y > 20 && y < candlesDisplayDimensions.height - 20) {
       const finalPriceToDisplay =
@@ -53,7 +54,7 @@ export function drawPriceScale({
 
 interface DrawPriceInPointerPositionParameters {
   ctx: CanvasRenderingContext2D;
-  mousePointerY: number;
+  yCoord: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
   priceRange: PriceRange;
   highlightColors: { background: string; text: string };
@@ -61,22 +62,22 @@ interface DrawPriceInPointerPositionParameters {
 
 export function drawPriceInPointerPosition({
   ctx,
-  mousePointerY,
+  yCoord,
   candlesDisplayDimensions,
   priceRange,
   highlightColors,
 }: DrawPriceInPointerPositionParameters): void {
-  if (mousePointerY > candlesDisplayDimensions.height) return;
+  if (yCoord > candlesDisplayDimensions.height) return;
 
-  const price = priceRange.max - (priceRange.max - priceRange.min) * (mousePointerY / candlesDisplayDimensions.height);
+  const price = getPriceOfYCoord({ priceRange, candlesDisplayDimensions, yCoord });
 
   ctx.fillStyle = highlightColors.background;
-  ctx.fillRect(candlesDisplayDimensions.width, mousePointerY - 12.5, PRICE_SCALE_WITH_IN_PX, 25);
+  ctx.fillRect(candlesDisplayDimensions.width, yCoord - 12.5, PRICE_SCALE_WITH_IN_PX, 25);
 
   ctx.font = "bold 15px Arial";
   ctx.fillStyle = highlightColors.text;
 
-  ctx.fillText(price.toFixed(5).slice(0, 9), candlesDisplayDimensions.width + 15, mousePointerY + 1);
+  ctx.fillText(price.toFixed(5).slice(0, 9), candlesDisplayDimensions.width + 15, yCoord + 1);
   ctx.font = DEFAULT_FONT;
 }
 
@@ -100,7 +101,11 @@ export function drawCurrentPriceInPriceScale({
     return;
   }
 
-  const y = (candlesDisplayDimensions.height * (priceRange.max - currentPrice)) / (priceRange.max - priceRange.min);
+  const y = getYCoordOfPrice({
+    candlesDisplayDimensions,
+    priceRange,
+    price: currentPrice,
+  });
   const h = 25;
 
   ctx.fillStyle = colors.background;

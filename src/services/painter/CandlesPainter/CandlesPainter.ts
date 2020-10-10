@@ -1,5 +1,6 @@
 import { ChartData } from "../../../context/globalContext/Types";
 import { CandlesDisplayDimensions, PriceRange } from "../Types";
+import { getYCoordOfPrice } from "../Utils/Utils";
 
 interface Parameters {
   ctx: CanvasRenderingContext2D;
@@ -38,8 +39,13 @@ export function drawCandles({
     const isPositive = candle.close >= candle.open;
 
     const x = candleWidth * candleNumber;
-    const y =
-      ((priceRange.max - (isPositive ? candle.close : candle.open)) / priceRangeDiff) * candlesDisplayDimensions.height;
+
+    const y = getYCoordOfPrice({
+      candlesDisplayDimensions,
+      priceRange,
+      price: isPositive ? candle.close : candle.open,
+    });
+
     const w = candleWidth;
     const h = (candlesDisplayDimensions.height / priceRangeDiff) * Math.abs(candle.open - candle.close) || 1;
 
