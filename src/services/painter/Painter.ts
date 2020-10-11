@@ -118,7 +118,7 @@ class PainterService {
     if (!this.data || this.data.length === 0) return this;
 
     for (let i = 0; i < this.data.length; i++) {
-      if (this.data[i].date.valueOf() >= targetDate.valueOf()) {
+      if (this.data[i].timestamp >= targetDate.valueOf()) {
         this.dataArrayOffset = this.data.length - i - Math.round(this.maxCandlesAmountInScreen / 5);
         break;
       }
@@ -404,7 +404,7 @@ class PainterService {
     for (let i = 0; i <= 200; i++) {
       if (!this.data[i] || !this.data[i + 1]) break;
 
-      const diffInMilliseconds = this.data[i + 1].date.valueOf() - this.data[i].date.valueOf();
+      const diffInMilliseconds = this.data[i + 1].timestamp - this.data[i].timestamp;
       const diff = diffs.find((d) => d.diff === diffInMilliseconds);
       if (diff) {
         diff.amount++;
@@ -466,6 +466,7 @@ class PainterService {
       priceRange: this.priceRangeInScreen,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       colors: this.colors.orders,
+      currentCandle: this.getLastCandle(),
     });
     return this;
   }

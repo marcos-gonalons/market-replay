@@ -6,7 +6,11 @@ import { GlobalContext } from "../../context/globalContext/GlobalContext";
 
 import styles from "./ReplayWidget.module.css";
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { setIsReplayActive, setIsReplayWidgetVisible } from "../../context/globalContext/Actions";
+import {
+  setIsReplayActive,
+  setIsReplayWidgetVisible,
+  setIsTradingPanelVisible,
+} from "../../context/globalContext/Actions";
 import { toast } from "react-toastify";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
 import { removeAllOrders } from "../../context/tradesContext/Actions";
@@ -64,6 +68,7 @@ function ReplayWidget(): JSX.Element {
               onClick={() => {
                 painterService.stopReplay();
                 tradesContextDispatch(removeAllOrders());
+                globalContextDispatch(setIsTradingPanelVisible(false));
                 globalContextDispatch(setIsReplayActive(false));
                 globalContextDispatch(setIsReplayWidgetVisible(false));
               }}
@@ -76,7 +81,7 @@ function ReplayWidget(): JSX.Element {
           </div>
         </div>
       </Draggable>
-      {renderHiddenDatePicker(data[0].date, data[data.length - 1].date, (d: Date) =>
+      {renderHiddenDatePicker(data[0].timestamp, data[data.length - 1].timestamp, (d: Date) =>
         painterService.updateOffsetByDate(d)
       )}
     </>
@@ -84,8 +89,8 @@ function ReplayWidget(): JSX.Element {
 }
 
 function renderHiddenDatePicker(
-  smallestPossibleDate: Date,
-  biggestPossibleDate: Date,
+  smallestPossibleTimestamp: number,
+  biggestPossibleTimestamp: number,
   onChange: (d: Date) => void
 ): JSX.Element {
   return (
@@ -101,6 +106,9 @@ function renderHiddenDatePicker(
           date.setSeconds(0);
           date.setMinutes(0);
           date.setHours(0);
+
+          const smallestPossibleDate = new Date(smallestPossibleTimestamp);
+          const biggestPossibleDate = new Date(biggestPossibleTimestamp);
 
           if (date.valueOf() < smallestPossibleDate.valueOf()) {
             date = smallestPossibleDate;

@@ -19,7 +19,7 @@ export function parse(csvContents: string): ChartData[] {
       throw new Error(`Invalid date: ${date}`);
     }
     data.push({
-      date: dateObject,
+      timestamp: dateObject.valueOf(),
       open: parseFloat(open ?? 0),
       high: parseFloat(high ?? 0),
       low: parseFloat(low ?? 0),

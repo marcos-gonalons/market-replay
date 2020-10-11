@@ -59,7 +59,7 @@ export function drawTimeScale({
     const offset = getCandlesOffset(i, dataTemporality, data, dataEndIndex);
     if (!data[i + offset]) break;
 
-    const date = data[i + offset].date;
+    const date = new Date(data[i + offset].timestamp);
     const text = getTextForTimeScaleDates(date, dataTemporality);
     const textWidth = ctx.measureText(text).width;
     const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
@@ -105,7 +105,7 @@ export function drawDateInPointerPosition({
   let date: Date;
 
   if (candle) {
-    date = candle.date;
+    date = new Date(candle.timestamp);
   } else {
     let lastCandleNumber = 1;
     let lastCandle: ChartData = data[startingIndex];
@@ -116,7 +116,7 @@ export function drawDateInPointerPosition({
     }
 
     let x = candleWidth * lastCandleNumber;
-    let timestampInSeconds = lastCandle.date.valueOf() / 1000;
+    let timestampInSeconds = lastCandle.timestamp / 1000;
     while (x < mousePointerX) {
       x = x + candleWidth;
       timestampInSeconds = timestampInSeconds + dataTemporality;
@@ -150,10 +150,12 @@ function getCandlesOffset(
   dataEndIndex: number
 ): number {
   let offset = 0;
-  if (dataTemporality < 3600 && data[currentIndex].date.getMinutes() % 10 !== 0) {
+  const d = new Date(data[currentIndex].timestamp);
+  if (dataTemporality < 3600 && d.getMinutes() % 10 !== 0) {
     for (let j = currentIndex + 1; j < dataEndIndex; j++) {
       offset++;
-      if (data[j].date.getMinutes() % 10 === 0) break;
+      const d = new Date(data[j].timestamp);
+      if (d.getMinutes() % 10 === 0) break;
     }
   }
   return offset;

@@ -1,7 +1,7 @@
 import PainterService from "../../services/painter/Painter";
 
 interface ChartData {
-  date: Date;
+  timestamp: number;
   open: number;
   high: number;
   low: number;

@@ -157,6 +157,7 @@ function TradingPanel(): JSX.Element {
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
+                  createdAt: painterService.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);
@@ -181,6 +182,7 @@ function TradingPanel(): JSX.Element {
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
+                  createdAt: painterService.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);
@@ -205,6 +207,7 @@ interface GetOrderParams {
   position: Position;
   size: number;
   painterService: PainterService;
+  createdAt: number;
   hasStopLoss: boolean;
   hasTakeProfit: boolean;
   limitPrice?: number;
@@ -221,12 +224,13 @@ function getOrder({
   limitPrice,
   stopLossPrice,
   takeProfitPrice,
+  createdAt,
 }: GetOrderParams): Order {
-  const order: Order = { type, position, size, price: 0 };
+  const order: Order = { type, position, size, price: 0, createdAt };
   if (type === "limit") {
     order.price = limitPrice as number;
   } else {
-    order.fillDate = painterService.getLastCandle().date;
+    order.fillDate = painterService.getLastCandle().timestamp;
     order.price = painterService.getLastCandle().close;
   }
   if (hasStopLoss) {

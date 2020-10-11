@@ -1,3 +1,4 @@
+import { ChartData } from "../../../context/globalContext/Types";
 import { Order } from "../../../context/tradesContext/Types";
 import { DEFAULT_FONT } from "../Constants";
 import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
@@ -9,12 +10,22 @@ interface DrawOrdersParameters {
   priceRange: PriceRange;
   candlesDisplayDimensions: CandlesDisplayDimensions;
   colors: Colors["orders"];
+  currentCandle: ChartData;
 }
 
-export function drawOrders({ ctx, orders, priceRange, candlesDisplayDimensions, colors }: DrawOrdersParameters): void {
+export function drawOrders({
+  ctx,
+  orders,
+  priceRange,
+  candlesDisplayDimensions,
+  colors,
+  currentCandle,
+}: DrawOrdersParameters): void {
   let y: number;
   ctx.font = "bold 15px Arial";
-  for (const { type, price, stopLoss, takeProfit, size } of orders) {
+  for (const { type, price, stopLoss, takeProfit, size, createdAt } of orders) {
+    if (createdAt > currentCandle.timestamp) continue;
+
     if (isPriceWithinRange(price as number, priceRange)) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price });
       drawOrderLine(ctx, candlesDisplayDimensions.width, y, type === "limit" ? colors.limit : colors.market);
