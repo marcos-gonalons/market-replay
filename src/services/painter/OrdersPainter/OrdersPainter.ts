@@ -1,4 +1,4 @@
-import { ChartData } from "../../../context/globalContext/Types";
+import { Candle } from "../../../context/globalContext/Types";
 import { Order } from "../../../context/tradesContext/Types";
 import { DEFAULT_FONT } from "../Constants";
 import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
@@ -10,7 +10,7 @@ interface DrawOrdersParameters {
   priceRange: PriceRange;
   candlesDisplayDimensions: CandlesDisplayDimensions;
   colors: Colors["orders"];
-  currentCandle: ChartData;
+  currentCandle: Candle;
 }
 
 export function drawOrders({
@@ -23,34 +23,38 @@ export function drawOrders({
 }: DrawOrdersParameters): void {
   let y: number;
   ctx.font = "bold 15px Arial";
-  for (const { type, price, stopLoss, takeProfit, size, createdAt } of orders) {
-    if (createdAt > currentCandle.timestamp) continue;
+  for (const order of orders) {
+    if (order.createdAt > currentCandle.timestamp) continue;
 
-    if (isPriceWithinRange(price as number, priceRange)) {
-      y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price });
-      drawOrderLine(ctx, candlesDisplayDimensions.width, y, type === "limit" ? colors.limit : colors.market);
-      drawOrderData(ctx, y, size.toString(), candlesDisplayDimensions, colors, type);
+    if (isPriceWithinRange(order.price as number, priceRange)) {
+      y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.price });
+      drawOrderLine(ctx, candlesDisplayDimensions.width, y, order.type === "limit" ? colors.limit : colors.market);
+      drawOrderData({
+        ctx,
+        y,
+        orderSize: order.size.toString(),
+        candlesDisplayDimensions,
+        colors,
+        order,
+        currentCandle,
+      });
     }
 
-    if (stopLoss) {
-      if (isPriceWithinRange(stopLoss, priceRange)) {
-        drawOrderLine(
-          ctx,
-          candlesDisplayDimensions.width,
-          getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: stopLoss }),
-          colors.stopLoss
-        );
-      }
+    if (order.stopLoss && isPriceWithinRange(order.stopLoss, priceRange)) {
+      drawOrderLine(
+        ctx,
+        candlesDisplayDimensions.width,
+        getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.stopLoss }),
+        colors.stopLoss
+      );
     }
-    if (takeProfit) {
-      if (isPriceWithinRange(takeProfit, priceRange)) {
-        drawOrderLine(
-          ctx,
-          candlesDisplayDimensions.width,
-          getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: takeProfit }),
-          colors.takeProfit
-        );
-      }
+    if (order.takeProfit && isPriceWithinRange(order.takeProfit, priceRange)) {
+      drawOrderLine(
+        ctx,
+        candlesDisplayDimensions.width,
+        getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.takeProfit }),
+        colors.takeProfit
+      );
     }
   }
   ctx.font = DEFAULT_FONT;
@@ -71,25 +75,68 @@ function drawOrderLine(ctx: CanvasRenderingContext2D, width: number, y: number, 
   ctx.setLineDash([]);
 }
 
-function drawOrderData(
-  ctx: CanvasRenderingContext2D,
-  y: number,
-  text: string,
-  candlesDisplayDimensions: CandlesDisplayDimensions,
-  colors: Colors["orders"],
-  orderType: Order["type"]
-): void {
-  const height = 30;
-  const padding = 10;
-  const textWidth = ctx.measureText(text).width;
-  const x = candlesDisplayDimensions.width - 100 - textWidth;
+interface DrawOrderDataParameters {
+  ctx: CanvasRenderingContext2D;
+  y: number;
+  orderSize: string;
+  candlesDisplayDimensions: CandlesDisplayDimensions;
+  colors: Colors["orders"];
+  order: Order;
+  currentCandle: Candle;
+}
+function drawOrderData({
+  ctx,
+  y,
+  orderSize,
+  candlesDisplayDimensions,
+  colors,
+  order,
+  currentCandle,
+}: DrawOrderDataParameters): void {
+  ctx.strokeStyle = order.type === "limit" ? colors.limit : colors.market;
 
-  ctx.fillStyle = colors.background;
-  ctx.fillRect(x, y - height / 2, textWidth + padding * 2, height);
+  const margin = 100;
+  const boxHeight = 30;
+  const boxPadding = 10;
+  const boxY = y - boxHeight / 2;
 
-  ctx.strokeStyle = orderType === "limit" ? colors.limit : colors.market;
-  ctx.strokeRect(x, y - height / 2, textWidth + padding * 2, height);
+  const closeOrderText = "X";
+  const closeOrderTextWidth = ctx.measureText(closeOrderText).width;
 
+  let x = candlesDisplayDimensions.width - margin - closeOrderTextWidth;
   ctx.fillStyle = colors.text;
-  ctx.fillText(text, x + padding, y + 1);
+  ctx.fillRect(x, boxY, closeOrderTextWidth + boxPadding * 2, boxHeight);
+  ctx.strokeRect(x, boxY, closeOrderTextWidth + boxPadding * 2, boxHeight);
+  ctx.fillStyle = colors.background;
+  ctx.fillText(closeOrderText, x + boxPadding, y + 1);
+
+  if (order.type === "market") {
+    let result = parseFloat(((currentCandle.close - order.price) * order.size).toFixed(2));
+    result = order.position === "short" ? -result : result;
+    const resultText = `${result >= 0 ? "+" : ""} ${result.toLocaleString()}`;
+    const resultTextWidth = ctx.measureText(resultText).width;
+    x = x - resultTextWidth - boxPadding * 2;
+    ctx.fillStyle = colors.background;
+    ctx.fillRect(x, boxY, resultTextWidth + boxPadding * 2, boxHeight);
+    ctx.strokeRect(x, boxY, resultTextWidth + boxPadding * 2, boxHeight);
+    ctx.fillStyle = result >= 0 ? colors.buyText : colors.sellText;
+    ctx.fillText(resultText, x + boxPadding, y + 1);
+  }
+
+  const orderSizeTextWidth = ctx.measureText(orderSize).width;
+  x = x - orderSizeTextWidth - boxPadding * 2;
+  ctx.fillStyle = colors.background;
+  ctx.fillRect(x, boxY, orderSizeTextWidth + boxPadding * 2, boxHeight);
+  ctx.strokeRect(x, boxY, orderSizeTextWidth + boxPadding * 2, boxHeight);
+  ctx.fillStyle = colors.text;
+  ctx.fillText(orderSize, x + boxPadding, y + 1);
+
+  const positionText = `${order.position === "long" ? "Buy" : "Sell"} @ ${order.price}`;
+  const positionTextWidth = ctx.measureText(positionText).width;
+  x = x - positionTextWidth - boxPadding * 2;
+  ctx.fillStyle = colors.background;
+  ctx.fillRect(x, boxY, positionTextWidth + boxPadding * 2, boxHeight);
+  ctx.strokeRect(x, boxY, positionTextWidth + boxPadding * 2, boxHeight);
+  ctx.fillStyle = order.position === "long" ? colors.buyText : colors.sellText;
+  ctx.fillText(positionText, x + boxPadding, y + 1);
 }

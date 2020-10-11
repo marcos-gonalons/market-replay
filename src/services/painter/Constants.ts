@@ -47,6 +47,8 @@ export const DEFAULT_COLORS: Colors = {
     stopLoss: "rgb(138,0,46)",
     text: "rgb(0,0,0)",
     background: "rgb(255,255,255)",
+    buyText: "rgb(26,156,0)",
+    sellText: "rgb(156,3,0)",
   },
 };
 export const SECONDS_IN_AN_HOUR = 3600;

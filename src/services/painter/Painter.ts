@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChartData } from "../../context/globalContext/Types";
+import { Candle } from "../../context/globalContext/Types";
 import { Order, Trade } from "../../context/tradesContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
@@ -23,8 +23,8 @@ import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/Tim
 import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
-  private data: ChartData[] = [];
-  private dataBackup: ChartData[] = [];
+  private data: Candle[] = [];
+  private dataBackup: Candle[] = [];
   private canvas: HTMLCanvasElement = null as any;
   private ctx: CanvasRenderingContext2D = null as any;
   private zoomLevel: number = 0;
@@ -57,7 +57,7 @@ class PainterService {
     return this;
   }
 
-  public setData(data: ChartData[]): PainterService {
+  public setData(data: Candle[]): PainterService {
     this.data = data;
     this.setDataTemporality();
     return this;
@@ -249,7 +249,7 @@ class PainterService {
     return this;
   }
 
-  public getLastCandle(): ChartData {
+  public getLastCandle(): Candle {
     return this.data[this.data.length - 1];
   }
 
@@ -260,6 +260,10 @@ class PainterService {
 
   public getTrades(): Trade[] {
     return this.trades;
+  }
+
+  public isReplayActive(): boolean {
+    return this.replayTimer !== null;
   }
 
   private drawCandles(): PainterService {

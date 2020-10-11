@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChartData } from "../../../context/globalContext/Types";
+import { Candle } from "../../../context/globalContext/Types";
 import {
   DEFAULT_FONT,
   MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
@@ -20,7 +20,7 @@ interface DrawTimeScaleParameters {
   dataEndIndex: number;
   maxCandlesAmountInScreen: number;
   dataTemporality: number;
-  data: ChartData[];
+  data: Candle[];
   canvasWidth: number;
   candleWidth: number;
 }
@@ -77,7 +77,7 @@ interface DrawDateInPointerPositionParameters {
   candleNumber: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
   dataArrayOffset: number;
-  data: ChartData[];
+  data: Candle[];
   highlightColors: { background: string; text: string };
   maxCandlesAmountInScreen: number;
   dataTemporality: number;
@@ -108,7 +108,7 @@ export function drawDateInPointerPosition({
     date = new Date(candle.timestamp);
   } else {
     let lastCandleNumber = 1;
-    let lastCandle: ChartData = data[startingIndex];
+    let lastCandle: Candle = data[startingIndex];
     for (let i = startingIndex + 1; i < startingIndex + maxCandlesAmountInScreen; i++) {
       if (!data[i]) break;
       lastCandle = data[i];
@@ -143,12 +143,7 @@ export function drawDateInPointerPosition({
   ctx.font = DEFAULT_FONT;
 }
 
-function getCandlesOffset(
-  currentIndex: number,
-  dataTemporality: number,
-  data: ChartData[],
-  dataEndIndex: number
-): number {
+function getCandlesOffset(currentIndex: number, dataTemporality: number, data: Candle[], dataEndIndex: number): number {
   let offset = 0;
   const d = new Date(data[currentIndex].timestamp);
   if (dataTemporality < 3600 && d.getMinutes() % 10 !== 0) {

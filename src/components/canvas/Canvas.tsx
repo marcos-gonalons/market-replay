@@ -44,8 +44,10 @@ function Canvas(): JSX.Element {
   useEffect(() => {
     if (!painterService) return;
 
-    painterService.setData(data ?? []);
-    painterService.draw();
+    if (!painterService.isReplayActive()) {
+      painterService.setData(data ?? []);
+      painterService.draw();
+    }
   }, [data, containerDimensions, painterService]);
 
   useEffect(() => {

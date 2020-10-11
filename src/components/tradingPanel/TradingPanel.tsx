@@ -243,6 +243,10 @@ function getOrder({
 }
 
 function validateOrder(order: Order): void {
+  if (!order.size || order.size < 0) {
+    throw new Error("Invalid size");
+  }
+
   if (order.stopLoss) {
     if (
       (order.position === "long" && order.stopLoss >= order.price) ||

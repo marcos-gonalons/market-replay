@@ -1,6 +1,6 @@
 import PainterService from "../../services/painter/Painter";
 
-interface ChartData {
+interface Candle {
   timestamp: number;
   open: number;
   high: number;
@@ -11,7 +11,7 @@ interface ChartData {
 
 interface State {
   readonly painterService: PainterService;
-  readonly data: ChartData[];
+  readonly data: Candle[];
   readonly isParsingData: boolean;
   readonly isReplayWidgetVisible: boolean;
   readonly isReplayActive: boolean;
@@ -28,4 +28,4 @@ const ActionTypes = {
 };
 
 export { ActionTypes };
-export type { State, ChartData };
+export type { State, Candle };

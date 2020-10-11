@@ -1,4 +1,4 @@
-import { ChartData } from "../../../context/globalContext/Types";
+import { Candle } from "../../../context/globalContext/Types";
 import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
 import { getYCoordOfPrice } from "../Utils/Utils";
 
@@ -6,7 +6,7 @@ interface Parameters {
   ctx: CanvasRenderingContext2D;
   dataStartIndex: number;
   dataEndIndex: number;
-  data: ChartData[];
+  data: Candle[];
   priceRange: PriceRange;
   candleWidth: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;

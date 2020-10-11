@@ -41,6 +41,8 @@ export interface Colors {
     stopLoss: string;
     text: string;
     background: string;
+    buyText: string;
+    sellText: string;
   };
 }
 

@@ -1,11 +1,11 @@
-import { ChartData } from "../../context/globalContext/Types";
+import { Candle } from "../../context/globalContext/Types";
 import { parse } from "./Parser";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ctx: ParserWorker = self as any;
 
 export type ParserWorkerMessageIn = string;
-export type ParserWorkerMessageOut = ChartData[] | Error;
+export type ParserWorkerMessageOut = Candle[] | Error;
 
 export interface ParserWorker extends Worker {
   postMessage(message: ParserWorkerMessageIn): void;
