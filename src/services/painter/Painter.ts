@@ -188,12 +188,11 @@ class PainterService {
     this.drawDateInPointerPosition();
 
     this.drawCurrentPriceLine();
+    this.drawPointerLines();
 
     if (this.replayTimer !== null) {
       this.drawOrders();
     }
-
-    this.drawPointerLines();
 
     return this;
   }
@@ -238,6 +237,17 @@ class PainterService {
     if (!this.isReplayPaused) return this;
 
     this.data.splice(this.data.length - 1, 1);
+
+    const indicesOfOrdersToRemove: number[] = [];
+    for (const [index, order] of this.orders.entries()) {
+      if (order.createdAt > this.data[this.data.length - 1].timestamp) {
+        indicesOfOrdersToRemove.push(index);
+      }
+    }
+    for (const i of indicesOfOrdersToRemove) {
+      this.orders.splice(i, 1);
+    }
+
     this.draw();
     return this;
   }
@@ -454,12 +464,58 @@ class PainterService {
     if (this.dataBackup.length > this.data.length) {
       this.data.push(this.dataBackup[this.data.length]);
 
-      // TODO: Check if a limit order needs to be transformed into a market order
-      // TODO: Check if a market order needs to be removed and transformed into a trade
+      const limitOrders = this.orders.filter((o) => o.type === "limit");
+      const marketOrders = this.orders.filter((o) => o.type === "market");
+      const currentCandle = this.getLastCandle();
+
+      for (const order of limitOrders) {
+        if (order.price >= currentCandle.low && order.price <= currentCandle.high) {
+          order.createdAt = currentCandle.timestamp;
+          order.fillDate = currentCandle.timestamp;
+          order.type = "market";
+        }
+      }
+
+      const indicesOfMarketOrdersToRemove: number[] = [];
+      for (const [index, order] of marketOrders.entries()) {
+        if (!order.stopLoss && !order.takeProfit) continue;
+
+        if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
+          this.trades.push({
+            startDate: order.createdAt,
+            endDate: this.data[this.data.length - 1].timestamp,
+            startPrice: order.price,
+            endPrice: order.stopLoss,
+            size: order.size,
+            position: order.position,
+          });
+          indicesOfMarketOrdersToRemove.push(index);
+          continue;
+        }
+
+        if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
+          this.trades.push({
+            startDate: order.createdAt,
+            endDate: this.data[this.data.length - 1].timestamp,
+            startPrice: order.price,
+            endPrice: order.takeProfit,
+            size: order.size,
+            position: order.position,
+          });
+          indicesOfMarketOrdersToRemove.push(index);
+          continue;
+        }
+      }
+
+      for (const i of indicesOfMarketOrdersToRemove) {
+        this.orders.splice(i, 1);
+      }
     } else {
       this.stopReplay();
       return;
     }
+
+    console.log(this.trades);
     this.draw();
   }
 

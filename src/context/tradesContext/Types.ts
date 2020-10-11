@@ -14,8 +14,8 @@ interface Order {
 }
 
 interface Trade {
-  startDate: Date;
-  endDate: Date;
+  startDate: number;
+  endDate: number;
   startPrice: number;
   endPrice: number;
   size: number;
