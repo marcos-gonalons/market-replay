@@ -16,7 +16,8 @@
     "jsx": "react",
     "noImplicitAny": true,
     "noUnusedParameters": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "downlevelIteration": true
   },
   "include": ["src"]
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
-import { DataContext } from "../../context/dataContext/DataContext";
+import { GlobalContext } from "../../context/globalContext/GlobalContext";
+import { TradesContext } from "../../context/tradesContext/TradesContext";
 import PainterService from "../../services/painter/Painter";
-import FileSelector from "../fileSelector/FileSelector";
+import ReplayerService from "../../services/painter/Replayer/Replayer";
 import styles from "./Canvas.module.css";
 
 const canvasContainerRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -13,20 +14,18 @@ interface ContainerDimensions {
 }
 
 function Canvas(): JSX.Element {
-  const { state } = useContext(DataContext);
+  const {
+    state: { painterService, replayerService, data },
+  } = useContext(GlobalContext);
+  const { dispatch: tradesContextDispatch } = useContext(TradesContext);
 
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
     width: 0,
     height: 0,
   });
-  const [painterService, setPainterService] = useState<PainterService | null>(null);
   const [canvasClassName, setCanvasClassName] = useState<string>("");
 
   useEffect(() => {
-    const painterService = new PainterService();
-    painterService.setCanvas(canvasRef.current!);
-    setPainterService(painterService);
-
     const width = canvasContainerRef.current!.clientWidth;
     const height = canvasContainerRef.current!.clientHeight;
     setContainerDimensions({ width, height });
@@ -35,26 +34,39 @@ function Canvas(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    if (!painterService || !replayerService) return;
+    window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, replayerService));
+    painterService.setCanvas(canvasRef.current!);
+    painterService.setTradesContextDispatch(tradesContextDispatch);
+  }, [painterService, replayerService, tradesContextDispatch]);
+
+  useEffect(() => {
     canvasRef.current!.height = containerDimensions.height;
     canvasRef.current!.width = containerDimensions.width;
   }, [containerDimensions]);
 
   useEffect(() => {
-    if (!painterService) return;
+    if (!painterService || !replayerService) return;
 
-    painterService.setData(state.data ?? []);
-    painterService.draw();
-  }, [state.data, containerDimensions, painterService]);
+    if (!replayerService.isReplayActive()) {
+      painterService.setData(data ?? []);
+      painterService.draw();
+    }
+  }, [data, containerDimensions, painterService, replayerService]);
 
   useEffect(() => {
-    if (!painterService || !state.data || state.data.length === 0) return;
+    if (!painterService || !data || data.length === 0) return;
     painterService.resetDataArrayOffset();
     painterService.draw();
-  }, [state.data, painterService]);
+  }, [data, painterService]);
+
+  const containerStyles = {
+    height: getCanvasContainerHeight(),
+  };
 
   return (
     <>
-      <div ref={canvasContainerRef} id={styles["canvas-container"]}>
+      <section style={containerStyles} ref={canvasContainerRef} id={styles["canvas-container"]}>
         <canvas
           className={canvasClassName}
           onWheel={(e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -83,14 +95,15 @@ function Canvas(): JSX.Element {
           id={styles["canvas"]}
           ref={canvasRef}
         ></canvas>
-      </div>
-      <FileSelector />
+      </section>
     </>
   );
 }
 
 function onResizeWindow(setContainerDimensions: (d: ContainerDimensions) => void): void {
   if (!canvasContainerRef.current) return;
+
+  canvasContainerRef.current.style.height = getCanvasContainerHeight();
   setContainerDimensions({
     width: canvasContainerRef.current.clientWidth,
     height: canvasContainerRef.current.clientHeight,
@@ -112,6 +125,25 @@ function onMouseMoveCanvas(
     y: e.clientY - canvasRect.y,
   });
   painterService.draw();
+}
+
+function getCanvasContainerHeight(): string {
+  const topBarFullHeight = 52;
+  return `${window.innerHeight - topBarFullHeight}px`;
+}
+
+function onKeyDown(e: KeyboardEvent, replayerService: ReplayerService): void {
+  switch (e.code) {
+    case "Space":
+      replayerService.togglePause();
+      break;
+    case "ArrowRight":
+      replayerService.goForward();
+      break;
+    case "ArrowLeft":
+      replayerService.goBack();
+      break;
+  }
 }
 
 export default Canvas;

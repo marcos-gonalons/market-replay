@@ -1,6 +1,6 @@
-import { ChartData } from "../../context/dataContext/Types";
+import { Candle } from "../../context/globalContext/Types";
 
-export function parse(csvContents: string): ChartData[] {
+export function parse(csvContents: string): Candle[] {
   if (csvContents.length === 0) {
     throw new Error("Empty contents");
   }
@@ -10,7 +10,7 @@ export function parse(csvContents: string): ChartData[] {
     lines = csvContents.split("\n");
   }
 
-  const data: ChartData[] = [];
+  const data: Candle[] = [];
   lines.shift();
   for (const line of lines) {
     const [date, open, high, low, close, volume] = line.trim().split(",");
@@ -19,7 +19,7 @@ export function parse(csvContents: string): ChartData[] {
       throw new Error(`Invalid date: ${date}`);
     }
     data.push({
-      date: dateObject,
+      timestamp: dateObject.valueOf(),
       open: parseFloat(open ?? 0),
       high: parseFloat(high ?? 0),
       low: parseFloat(low ?? 0),

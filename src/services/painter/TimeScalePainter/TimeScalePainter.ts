@@ -1,18 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChartData } from "../../../context/dataContext/Types";
-import { DEFAULT_FONT, MAX_DATES_IN_DATE_SCALE_PER_1000_PX, TIME_SCALE_HEIGHT_IN_PX } from "../Constants";
-import { CandlesDisplayDimensions } from "../Types";
-import { getDateFormatted, getDateFormattedShort, prependZero } from "../Utils";
+import { Candle } from "../../../context/globalContext/Types";
+import {
+  DEFAULT_FONT,
+  MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
+  SECONDS_IN_A_DAY,
+  SECONDS_IN_A_MONTH,
+  SECONDS_IN_A_YEAR,
+  TIME_SCALE_HEIGHT_IN_PX,
+} from "../Constants";
+import { CandlesDisplayDimensions, Colors } from "../Types";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dic"];
 
 interface DrawTimeScaleParameters {
   ctx: CanvasRenderingContext2D;
-  colors: { background: string; border: string };
+  colors: Colors["timeScale"];
   candlesDisplayDimensions: CandlesDisplayDimensions;
   dataStartIndex: number;
   dataEndIndex: number;
   maxCandlesAmountInScreen: number;
   dataTemporality: number;
-  data: ChartData[];
+  data: Candle[];
   canvasWidth: number;
   candleWidth: number;
 }
@@ -51,20 +59,8 @@ export function drawTimeScale({
     const offset = getCandlesOffset(i, dataTemporality, data, dataEndIndex);
     if (!data[i + offset]) break;
 
-    const date = data[i + offset].date;
-    const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
-    /**
-     * TODO: If data temporality is bigger than 1 day, display the day instead of hh:mm
-     * Or if it's bigger than 1 week or 1 month, display the month
-     *
-     * Between 1 day and 1 month -> display day
-     * Between 1 month and year -> display month
-     * Between year and infinite -> display year
-     *
-     * TODO2: If there is a day change while drawing the time, draw the day instead of the time
-     * It should have another style/color to highlight that is a new day
-     */
-    const text = `${hours}:${minutes}`;
+    const date = new Date(data[i + offset].timestamp);
+    const text = getTextForTimeScaleDates(date, dataTemporality);
     const textWidth = ctx.measureText(text).width;
     const x = (candleNumber + offset) * candleWidth - candleWidth / 2 - textWidth / 2;
     if (x < candlesDisplayDimensions.width - textWidth - 5) {
@@ -81,7 +77,7 @@ interface DrawDateInPointerPositionParameters {
   candleNumber: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
   dataArrayOffset: number;
-  data: ChartData[];
+  data: Candle[];
   highlightColors: { background: string; text: string };
   maxCandlesAmountInScreen: number;
   dataTemporality: number;
@@ -109,10 +105,10 @@ export function drawDateInPointerPosition({
   let date: Date;
 
   if (candle) {
-    date = candle.date;
+    date = new Date(candle.timestamp);
   } else {
     let lastCandleNumber = 1;
-    let lastCandle: ChartData = data[startingIndex];
+    let lastCandle: Candle = data[startingIndex];
     for (let i = startingIndex + 1; i < startingIndex + maxCandlesAmountInScreen; i++) {
       if (!data[i]) break;
       lastCandle = data[i];
@@ -120,7 +116,7 @@ export function drawDateInPointerPosition({
     }
 
     let x = candleWidth * lastCandleNumber;
-    let timestampInSeconds = lastCandle.date.valueOf() / 1000;
+    let timestampInSeconds = lastCandle.timestamp / 1000;
     while (x < mousePointerX) {
       x = x + candleWidth;
       timestampInSeconds = timestampInSeconds + dataTemporality;
@@ -131,39 +127,83 @@ export function drawDateInPointerPosition({
 
   ctx.font = "bold 15px Arial";
 
-  let text: string;
-  if (dataTemporality < 60 * 60 * 24) {
-    text = getDateFormatted(date);
-  } else {
-    text = getDateFormattedShort(date);
-  }
+  const text = getTextForDateInPointerPosition(dataTemporality, date);
 
-  const padding = 5;
   const dateWidthInPx = ctx.measureText(text).width;
   const dateHeightInPx = 30;
   const x = mousePointerX - dateWidthInPx / 2;
   const y = candlesDisplayDimensions.height + 2;
+  const paddingInPx = 5;
 
   ctx.fillStyle = highlightColors.background;
-  ctx.fillRect(x, y, dateWidthInPx + padding * 2, dateHeightInPx);
+  ctx.fillRect(x, y, dateWidthInPx + paddingInPx * 2, dateHeightInPx);
 
   ctx.fillStyle = highlightColors.text;
-  ctx.fillText(text, x + padding, y + 16);
+  ctx.fillText(text, x + paddingInPx, y + 16);
   ctx.font = DEFAULT_FONT;
 }
 
-function getCandlesOffset(
-  currentIndex: number,
-  dataTemporality: number,
-  data: ChartData[],
-  dataEndIndex: number
-): number {
+function getCandlesOffset(currentIndex: number, dataTemporality: number, data: Candle[], dataEndIndex: number): number {
   let offset = 0;
-  if (dataTemporality < 3600 && data[currentIndex].date.getMinutes() % 10 !== 0) {
+  const d = new Date(data[currentIndex].timestamp);
+  if (dataTemporality < 3600 && d.getMinutes() % 10 !== 0) {
     for (let j = currentIndex + 1; j < dataEndIndex; j++) {
       offset++;
-      if (data[j].date.getMinutes() % 10 === 0) break;
+      const d = new Date(data[j].timestamp);
+      if (d.getMinutes() % 10 === 0) break;
     }
   }
   return offset;
+}
+
+function getTextForTimeScaleDates(date: Date, dataTemporality: number): string {
+  const [hours, minutes] = [date.getHours(), date.getMinutes()].map(prependZero);
+
+  let text: string;
+  if (dataTemporality < SECONDS_IN_A_DAY) {
+    text = `${hours}:${minutes}`;
+  } else if (dataTemporality < SECONDS_IN_A_MONTH) {
+    text = `${getMonthAsString(date)} ${date.getDate().toString()}`;
+  } else if (dataTemporality < SECONDS_IN_A_YEAR) {
+    text = `${getMonthAsString(date)} ${date.getFullYear()}`;
+  } else {
+    text = date.getFullYear().toString();
+  }
+
+  return text;
+}
+
+function getTextForDateInPointerPosition(dataTemporality: number, date: Date): string {
+  let text: string;
+
+  if (dataTemporality < SECONDS_IN_A_DAY) {
+    const [day, month, year, hours, minutes, seconds] = [
+      date.getDate(),
+      getMonthAsString(date),
+      date.getFullYear(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    ].map(prependZero);
+
+    text = `${day} ${month} ${year} - ${hours}:${minutes}:${seconds}`;
+  } else if (dataTemporality < SECONDS_IN_A_MONTH) {
+    const [day, month, year] = [date.getDate(), getMonthAsString(date), date.getFullYear()];
+    text = `${day} ${month} ${year}`;
+  } else if (dataTemporality < SECONDS_IN_A_YEAR) {
+    const [month, year] = [getMonthAsString(date), date.getFullYear()];
+    text = `${month} ${year}`;
+  } else {
+    text = date.getFullYear().toString();
+  }
+
+  return text;
+}
+
+function prependZero(el: number | string): number | string {
+  return el.toString().length === 1 ? `0${el}` : el;
+}
+
+function getMonthAsString(d: Date): string {
+  return MONTHS[d.getMonth()];
 }

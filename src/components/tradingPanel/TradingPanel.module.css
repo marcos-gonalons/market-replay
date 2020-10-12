@@ -1,0 +1,14 @@
+.handle {
+  cursor: grab;
+}
+
+.panel-container {
+  background-color: white;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+}
+
+.selected {
+  background-color: yellow;
+}

@@ -1,25 +1,5 @@
-import { ChartData } from "../../../context/dataContext/Types";
-import { CandlesDisplayDimensions, PriceRange } from "../Types";
-
-interface Parameters {
-  ctx: CanvasRenderingContext2D;
-  dataStartIndex: number;
-  dataEndIndex: number;
-  data: ChartData[];
-  priceRange: PriceRange;
-  candleWidth: number;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: {
-    body: {
-      positive: string;
-      negative: string;
-    };
-    wick: {
-      positive: string;
-      negative: string;
-    };
-  };
-}
+import { getYCoordOfPrice } from "../Utils/Utils";
+import { DrawCandlesParameters } from "./Types";
 
 export function drawCandles({
   ctx,
@@ -30,7 +10,7 @@ export function drawCandles({
   candleWidth,
   candlesDisplayDimensions,
   colors,
-}: Parameters): void {
+}: DrawCandlesParameters): void {
   let candleNumber = 0;
   const priceRangeDiff = priceRange.max - priceRange.min || 100;
   for (let i = dataStartIndex; i < dataEndIndex; i++) {
@@ -38,8 +18,13 @@ export function drawCandles({
     const isPositive = candle.close >= candle.open;
 
     const x = candleWidth * candleNumber;
-    const y =
-      ((priceRange.max - (isPositive ? candle.close : candle.open)) / priceRangeDiff) * candlesDisplayDimensions.height;
+
+    const y = getYCoordOfPrice({
+      candlesDisplayDimensions,
+      priceRange,
+      price: isPositive ? candle.close : candle.open,
+    });
+
     const w = candleWidth;
     const h = (candlesDisplayDimensions.height / priceRangeDiff) * Math.abs(candle.open - candle.close) || 1;
 

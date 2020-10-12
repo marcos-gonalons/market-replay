@@ -1,27 +1,27 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { setDataAction, setIsParsingDataAction } from "../../context/dataContext/Actions";
-import { DataContext } from "../../context/dataContext/DataContext";
-import { ChartData } from "../../context/dataContext/Types";
-import { ReducerAction } from "../../context/Types";
-import { ParserWorker, ParserWorkerMessageOut } from "../../services/csvParser/Parser.worker";
+import { setDataAction, setIsParsingDataAction } from "../../../context/globalContext/Actions";
+import { GlobalContext } from "../../../context/globalContext/GlobalContext";
+import { Candle } from "../../../context/globalContext/Types";
+import { ReducerAction } from "../../../context/Types";
+import { ParserWorker, ParserWorkerMessageOut } from "../../../services/csvParser/Parser.worker";
 
 // import styles from "./FileSelector.module.css";
 
 function FileSelector(): JSX.Element {
-  const { dispatch } = useContext(DataContext);
+  const { dispatch } = useContext(GlobalContext);
   const [parserWorker, setParserWorker] = useState<ParserWorker | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line
-    setParserWorker(new (require("worker-loader!../../services/csvParser/Parser.worker").default)() as ParserWorker);
+    setParserWorker(new (require("worker-loader!../../../services/csvParser/Parser.worker").default)() as ParserWorker);
   }, []);
 
   useEffect(() => {
     if (!parserWorker) return;
 
     parserWorker.onmessage = ({ data }: MessageEvent) => {
-      onReceiveParserResult(data as ParserWorkerMessageOut, (d: ChartData[]) => dispatch(setDataAction(d)), dispatch);
+      onReceiveParserResult(data as ParserWorkerMessageOut, (d: Candle[]) => dispatch(setDataAction(d)), dispatch);
     };
 
     return () => {
@@ -79,7 +79,7 @@ function onChangeFile(
 
 function onReceiveParserResult(
   result: ParserWorkerMessageOut,
-  setDataCallback: (d: ChartData[]) => void,
+  setDataCallback: (d: Candle[]) => void,
   dispatch: React.Dispatch<ReducerAction>
 ): void {
   dispatch(setIsParsingDataAction(false));
