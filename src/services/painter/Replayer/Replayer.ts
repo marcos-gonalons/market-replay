@@ -1,4 +1,6 @@
+import { toast } from "react-toastify";
 import { Candle } from "../../../context/globalContext/Types";
+import { Script } from "../../../context/scriptsContext/Types";
 import { Trade } from "../../../context/tradesContext/Types";
 import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
 import PainterService from "../Painter";
@@ -7,13 +9,19 @@ class ReplayerService {
   private PainterService: PainterService;
 
   private replayTimer: NodeJS.Timeout | null = null;
-  private isReplayPaused: boolean = false;
+  private isPaused: boolean = false;
   private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
   private trades: Trade[] = [];
   private dataBackup: Candle[] = [];
+  private scripts: Script[] = [];
 
   public constructor(painterService: PainterService) {
     this.PainterService = painterService;
+  }
+
+  public setScripts(scripts: Script[]): ReplayerService {
+    this.scripts = scripts;
+    return this;
   }
 
   public getTrades(): Trade[] {
@@ -41,9 +49,9 @@ class ReplayerService {
 
     this.PainterService.draw();
 
-    this.isReplayPaused = false;
+    this.isPaused = false;
     this.replayTimer = setInterval(() => {
-      if (this.isReplayPaused) return;
+      if (this.isPaused) return;
       this.onReplayTimerTick();
     }, this.replayTimerTickMilliseconds);
 
@@ -51,7 +59,7 @@ class ReplayerService {
   }
 
   public togglePause(): ReplayerService {
-    this.isReplayPaused = !this.isReplayPaused;
+    this.isPaused = !this.isPaused;
     return this;
   }
 
@@ -59,7 +67,7 @@ class ReplayerService {
     clearInterval(this.replayTimer!);
 
     this.replayTimer = null;
-    this.isReplayPaused = false;
+    this.isPaused = false;
 
     this.PainterService.setOrders([], true);
     this.PainterService.setData([...this.dataBackup]);
@@ -68,7 +76,7 @@ class ReplayerService {
   }
 
   public goBack(): ReplayerService {
-    if (!this.isReplayPaused) return this;
+    if (!this.isPaused) return this;
 
     const data = [...this.PainterService.getData()];
     data.splice(data.length - 1, 1);
@@ -93,7 +101,7 @@ class ReplayerService {
   }
 
   public goForward(): ReplayerService {
-    if (!this.isReplayPaused) return this;
+    if (!this.isPaused) return this;
 
     this.onReplayTimerTick();
     return this;
@@ -101,6 +109,10 @@ class ReplayerService {
 
   public isReplayActive(): boolean {
     return this.replayTimer !== null;
+  }
+
+  public isReplayPaused(): boolean {
+    return this.isPaused;
   }
 
   private onReplayTimerTick(): void {
@@ -162,8 +174,37 @@ class ReplayerService {
       return;
     }
 
+    this.executeScripts();
     this.PainterService.draw();
   }
+
+  private executeScripts(): ReplayerService {
+    for (const script of this.scripts) {
+      if (!script.isActive) continue;
+
+      (function ({ candles, currentCandle }: ScriptFuncParameters) {
+        void candles;
+        void currentCandle;
+
+        try {
+          // eslint-disable-next-line
+          eval(script.contents);
+        } catch (err) {
+          toast.error("There is an error in your scripts; Check console for more details.");
+          console.error(err);
+        }
+      })({
+        candles: this.PainterService.getData(),
+        currentCandle: this.PainterService.getLastCandle(),
+      });
+    }
+    return this;
+  }
+}
+
+interface ScriptFuncParameters {
+  candles: Candle[];
+  currentCandle: Candle;
 }
 
 export default ReplayerService;

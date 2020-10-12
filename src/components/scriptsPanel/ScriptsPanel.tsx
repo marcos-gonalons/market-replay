@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import Modal from "react-modal";
 import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
@@ -25,13 +25,22 @@ import { ReducerAction } from "../../context/Types";
 
 function ScriptsPanel(): JSX.Element {
   const {
-    state: { isScriptsPanelVisible },
+    state: { isScriptsPanelVisible, replayerService },
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
   const {
     state: { scripts, indexOfTheScriptBeingEdited },
     dispatch: scriptsContextDispatch,
   } = useContext(ScriptsContext);
+
+  useEffect(() => {
+    if (!replayerService) return;
+    replayerService.setScripts(scripts);
+
+    if (replayerService.isReplayActive() && !replayerService.isReplayPaused()) {
+      replayerService.togglePause();
+    }
+  }, [scripts, replayerService]);
 
   if (!isScriptsPanelVisible) {
     return <></>;
