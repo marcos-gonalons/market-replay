@@ -12,6 +12,7 @@ import "./App.css";
 import TradingPanel from "./components/tradingPanel/TradingPanel";
 import TopBar from "./components/topBar/TopBar";
 import { TradesContextProvider } from "./context/tradesContext/TradesContext";
+import ScriptsPanel from "./components/scriptsPanel/ScriptsPanel";
 
 function App(): JSX.Element {
   return (
@@ -24,6 +25,7 @@ function App(): JSX.Element {
             <TradingPanel />
             <ReplayWidget />
           </TradesContextProvider>
+          <ScriptsPanel />
         </main>
       </GlobalContextProvider>
       <ToastContainer />

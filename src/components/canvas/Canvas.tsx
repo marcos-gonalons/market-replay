@@ -38,7 +38,7 @@ function Canvas(): JSX.Element {
     window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, replayerService));
     painterService.setCanvas(canvasRef.current!);
     painterService.setTradesContextDispatch(tradesContextDispatch);
-  }, [painterService, replayerService]);
+  }, [painterService, replayerService, tradesContextDispatch]);
 
   useEffect(() => {
     canvasRef.current!.height = containerDimensions.height;

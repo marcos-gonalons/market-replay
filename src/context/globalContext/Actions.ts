@@ -3,7 +3,6 @@ import { ActionTypes } from "./Types";
 
 import { State } from "./Types";
 
-
 export function setDataAction(payload: State["data"]): ReducerAction {
   return {
     type: ActionTypes.SET_DATA,
@@ -35,6 +34,13 @@ export function setIsReplayActive(payload: State["isReplayActive"]): ReducerActi
 export function setIsTradingPanelVisible(payload: State["isTradingPanelVisible"]): ReducerAction {
   return {
     type: ActionTypes.SET_IS_TRADING_PANEL_VISIBLE,
+    payload,
+  };
+}
+
+export function setIsScriptsPanelVisible(payload: State["isScriptsPanelVisible"]): ReducerAction {
+  return {
+    type: ActionTypes.SET_IS_SCRIPTS_PANEL_VISIBLE,
     payload,
   };
 }

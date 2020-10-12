@@ -15,6 +15,7 @@ const initialState: State = {
   isReplayWidgetVisible: false,
   isReplayActive: false,
   isTradingPanelVisible: false,
+  isScriptsPanelVisible: false,
 };
 
 export const GlobalContext = createContext<{
@@ -55,6 +56,12 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         isReplayActive: action.payload as State["isReplayActive"],
+      };
+
+    case ActionTypes.SET_IS_SCRIPTS_PANEL_VISIBLE:
+      return {
+        ...state,
+        isScriptsPanelVisible: action.payload as State["isScriptsPanelVisible"],
       };
 
     default:

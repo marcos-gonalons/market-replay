@@ -18,6 +18,7 @@ interface State {
   readonly isReplayWidgetVisible: boolean;
   readonly isReplayActive: boolean;
   readonly isTradingPanelVisible: boolean;
+  readonly isScriptsPanelVisible: boolean;
 }
 
 const ActionTypes = {
@@ -26,6 +27,7 @@ const ActionTypes = {
   SET_IS_REPLAY_WIDGET_VISIBLE: "GLOBAL_CONTEXT_SET_IS_REPLAY_WIDGET_VISIBLE",
   SET_IS_REPLAY_ACTIVE: "GLOBAL_CONTEXT_SET_IS_REPLAY_ACTIVE",
   SET_IS_TRADING_PANEL_VISIBLE: "GLOBAL_CONTEXT_SET_IS_TRADING_PANEL_VISIBLE",
+  SET_IS_SCRIPTS_PANEL_VISIBLE: "GLOBAL_CONTEXT_SET_IS_SCRIPTS_PANEL_VISIBLE",
 };
 
 export { ActionTypes };
