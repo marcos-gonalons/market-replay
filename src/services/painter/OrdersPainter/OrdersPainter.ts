@@ -1,17 +1,12 @@
-import { Candle } from "../../../context/globalContext/Types";
-import { Order } from "../../../context/tradesContext/Types";
 import { DEFAULT_FONT } from "../Constants";
-import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
+import { PriceRange } from "../Types";
 import { getYCoordOfPrice } from "../Utils/Utils";
-
-interface DrawOrdersParameters {
-  ctx: CanvasRenderingContext2D;
-  orders: Order[];
-  priceRange: PriceRange;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: Colors["orders"];
-  currentCandle: Candle;
-}
+import {
+  DrawOrderDataParameters,
+  DrawOrderLineParameters,
+  DrawOrdersParameters,
+  DrawTakeProfitOrStopLossBoxParameters,
+} from "./Types";
 
 const boxMargin = 100;
 const boxHeight = 30;
@@ -91,12 +86,6 @@ function isPriceWithinRange(price: number, range: PriceRange): boolean {
   return price >= range.min && price <= range.max;
 }
 
-interface DrawOrderLineParameters {
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  y: number;
-  color: string;
-}
 function drawOrderLine({ ctx, width, y, color }: DrawOrderLineParameters): void {
   ctx.strokeStyle = color;
   ctx.setLineDash([5, 2]);
@@ -108,15 +97,6 @@ function drawOrderLine({ ctx, width, y, color }: DrawOrderLineParameters): void 
   ctx.setLineDash([]);
 }
 
-interface DrawOrderDataParameters {
-  ctx: CanvasRenderingContext2D;
-  y: number;
-  orderSize: string;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: Colors["orders"];
-  order: Order;
-  currentCandle: Candle;
-}
 function drawOrderData({
   ctx,
   y,
@@ -170,14 +150,6 @@ function drawOrderData({
   ctx.fillText(positionText, x + boxPadding, y + 1);
 }
 
-interface DrawTakeProfitOrStopLossBoxParameters {
-  ctx: CanvasRenderingContext2D;
-  type: "tp" | "sl";
-  colors: Colors["orders"];
-  y: number;
-  price: number;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-}
 function drawTakeProfitOrStopLossBox({
   ctx,
   type,

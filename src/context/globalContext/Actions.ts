@@ -3,12 +3,6 @@ import { ActionTypes } from "./Types";
 
 import { State } from "./Types";
 
-export function setPainterService(payload: State["painterService"]): ReducerAction {
-  return {
-    type: ActionTypes.SET_PAINTER_SERVICE,
-    payload,
-  };
-}
 
 export function setDataAction(payload: State["data"]): ReducerAction {
   return {

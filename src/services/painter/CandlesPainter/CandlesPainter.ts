@@ -1,17 +1,5 @@
-import { Candle } from "../../../context/globalContext/Types";
-import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
 import { getYCoordOfPrice } from "../Utils/Utils";
-
-interface Parameters {
-  ctx: CanvasRenderingContext2D;
-  dataStartIndex: number;
-  dataEndIndex: number;
-  data: Candle[];
-  priceRange: PriceRange;
-  candleWidth: number;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: Colors["candle"];
-}
+import { DrawCandlesParameters } from "./Types";
 
 export function drawCandles({
   ctx,
@@ -22,7 +10,7 @@ export function drawCandles({
   candleWidth,
   candlesDisplayDimensions,
   colors,
-}: Parameters): void {
+}: DrawCandlesParameters): void {
   let candleNumber = 0;
   const priceRangeDiff = priceRange.max - priceRange.min || 100;
   for (let i = dataStartIndex; i < dataEndIndex; i++) {

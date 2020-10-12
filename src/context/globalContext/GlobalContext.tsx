@@ -1,10 +1,15 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import PainterService from "../../services/painter/Painter";
+import ReplayerService from "../../services/painter/Replayer/Replayer";
 import { ReducerAction } from "../Types";
 import { ActionTypes, State } from "./Types";
 
+const painterService = new PainterService();
+const replayerService = new ReplayerService(painterService);
+
 const initialState: State = {
-  painterService: new PainterService(),
+  painterService: painterService,
+  replayerService: replayerService,
   data: [],
   isParsingData: false,
   isReplayWidgetVisible: false,
@@ -22,12 +27,6 @@ export const GlobalContext = createContext<{
 
 const reducer = (state: State, action: ReducerAction): State => {
   switch (action.type) {
-    case ActionTypes.SET_PAINTER_SERVICE:
-      return {
-        ...state,
-        painterService: action.payload as State["painterService"],
-      };
-
     case ActionTypes.SET_DATA:
       return {
         ...state,

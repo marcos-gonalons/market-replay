@@ -1,4 +1,5 @@
 import PainterService from "../../services/painter/Painter";
+import ReplayerService from "../../services/painter/Replayer/Replayer";
 
 interface Candle {
   timestamp: number;
@@ -11,6 +12,7 @@ interface Candle {
 
 interface State {
   readonly painterService: PainterService;
+  readonly replayerService: ReplayerService;
   readonly data: Candle[];
   readonly isParsingData: boolean;
   readonly isReplayWidgetVisible: boolean;
@@ -19,7 +21,6 @@ interface State {
 }
 
 const ActionTypes = {
-  SET_PAINTER_SERVICE: "GLOBAL_CONTEXT_SET_PAINTER_SERVICE",
   SET_DATA: "GLOBAL_CONTEXT_SET_DATA",
   SET_IS_PARSING_DATA: "GLOBAL_CONTEXT_SET_IS_PARSING_DATA",
   SET_IS_REPLAY_WIDGET_VISIBLE: "GLOBAL_CONTEXT_SET_IS_REPLAY_WIDGET_VISIBLE",

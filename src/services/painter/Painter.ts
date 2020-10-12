@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Candle } from "../../context/globalContext/Types";
-import { Order, Trade } from "../../context/tradesContext/Types";
+import { Order } from "../../context/tradesContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -10,7 +10,6 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
   DEFAULT_FONT,
   DEFAULT_COLORS,
-  DEFAULT_REPLAY_TIMER_TICK_IN_MS,
 } from "./Constants";
 import { drawOrders } from "./OrdersPainter/OrdersPainter";
 import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
@@ -24,7 +23,6 @@ import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
   private data: Candle[] = [];
-  private dataBackup: Candle[] = [];
   private canvas: HTMLCanvasElement = null as any;
   private ctx: CanvasRenderingContext2D = null as any;
   private zoomLevel: number = 0;
@@ -37,11 +35,7 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
-  private replayTimer: NodeJS.Timeout | null = null;
-  private isReplayPaused: boolean = false;
-  private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
   private orders: Order[] = [];
-  private trades: Trade[] = [];
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -63,6 +57,10 @@ class PainterService {
     return this;
   }
 
+  public getData(): Candle[] {
+    return this.data;
+  }
+
   public resetDataArrayOffset(): PainterService {
     this.dataArrayOffset = 0;
     return this;
@@ -80,41 +78,12 @@ class PainterService {
     return this;
   }
 
-  public updateCandleWidth(): PainterService {
-    this.candleWidth = this.getCandlesDisplayDimensions().width / this.maxCandlesAmountInScreen;
+  public setDataArrayOffset(offset: number): PainterService {
+    this.dataArrayOffset = offset;
     return this;
   }
 
-  public updateMaxCandlesAmountInScreen(): PainterService {
-    let candlesInScreen = Math.round((this.getCandlesDisplayDimensions().width / 1000) * CANDLES_PER_1000_PX);
-    let i = this.zoomLevel;
-    if (i < 0) {
-      while (i < 0) {
-        candlesInScreen = candlesInScreen + candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
-        i++;
-      }
-    }
-    if (i >= 0) {
-      while (i > 0) {
-        candlesInScreen = candlesInScreen - candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
-        i--;
-      }
-    }
-    this.maxCandlesAmountInScreen = Math.round(candlesInScreen);
-    if (this.maxCandlesAmountInScreen >= this.data.length) {
-      this.maxCandlesAmountInScreen = this.data.length;
-    }
-    return this;
-  }
-
-  public updateDataArrayOffset(value: number): PainterService {
-    if (!this.data || this.data.length === 0) return this;
-    this.dataArrayOffset += value;
-    this.validateOffset().updatePriceRangeInScreen();
-    return this;
-  }
-
-  public updateOffsetByDate(targetDate: Date): PainterService {
+  public setOffsetByDate(targetDate: Date): PainterService {
     if (!this.data || this.data.length === 0) return this;
 
     for (let i = 0; i < this.data.length; i++) {
@@ -146,22 +115,25 @@ class PainterService {
     return this;
   }
 
-  public updatePriceRangeInScreen(): PainterService {
-    if (this.data.length === 0) return this;
+  public getDataArrayOffset(): number {
+    return this.dataArrayOffset;
+  }
 
-    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
-    let min = this.data[startingIndex].low;
-    let max = this.data[startingIndex].high;
-    for (let i = startingIndex + 1; i < endingIndex; i++) {
-      if (this.data[i].low < min) {
-        min = this.data[i].low;
-      }
-      if (this.data[i].high > max) {
-        max = this.data[i].high;
-      }
-    }
-    this.priceRangeInScreen = { max, min };
+  public getMaxCandlesAmountInScreen(): number {
+    return this.maxCandlesAmountInScreen;
+  }
+
+  public getLastCandle(): Candle {
+    return this.data[this.data.length - 1];
+  }
+
+  public setOrders(orders: Order[]): PainterService {
+    this.orders = orders;
     return this;
+  }
+
+  public getOrders(): Order[] {
+    return this.orders;
   }
 
   public draw(): PainterService {
@@ -190,90 +162,65 @@ class PainterService {
     this.drawCurrentPriceLine();
     this.drawPointerLines();
 
-    if (this.replayTimer !== null) {
-      this.drawOrders();
-    }
-
+    this.drawOrders();
     return this;
   }
 
-  public startReplay(): PainterService {
-    if (this.replayTimer !== null) return this;
-
-    this.trades = [];
-
-    this.dataBackup = [...this.data];
-    this.data = this.data.slice(
-      0,
-      this.data.length - this.dataArrayOffset - Math.round(this.maxCandlesAmountInScreen / 5)
-    );
-    this.dataArrayOffset = -Math.round(this.maxCandlesAmountInScreen / 5);
-    this.draw();
-
-    this.isReplayPaused = false;
-    this.replayTimer = setInterval(() => {
-      if (this.isReplayPaused) return;
-      this.onReplayTimerTick();
-    }, this.replayTimerTickMilliseconds);
+  private drawOrders(): PainterService {
+    drawOrders({
+      ctx: this.ctx,
+      orders: this.orders,
+      priceRange: this.priceRangeInScreen,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.orders,
+      currentCandle: this.getLastCandle(),
+    });
     return this;
   }
 
-  public togglePause(): PainterService {
-    this.isReplayPaused = !this.isReplayPaused;
-    return this;
-  }
-
-  public stopReplay(): PainterService {
-    clearInterval(this.replayTimer!);
-    this.replayTimer = null;
-
-    this.isReplayPaused = false;
-    this.data = [...this.dataBackup];
-    this.draw();
-    return this;
-  }
-
-  public goBack(): PainterService {
-    if (!this.isReplayPaused) return this;
-
-    this.data.splice(this.data.length - 1, 1);
-
-    const indicesOfOrdersToRemove: number[] = [];
-    for (const [index, order] of this.orders.entries()) {
-      if (order.createdAt > this.data[this.data.length - 1].timestamp) {
-        indicesOfOrdersToRemove.push(index);
+  private updateMaxCandlesAmountInScreen(): PainterService {
+    let candlesInScreen = Math.round((this.getCandlesDisplayDimensions().width / 1000) * CANDLES_PER_1000_PX);
+    let i = this.zoomLevel;
+    if (i < 0) {
+      while (i < 0) {
+        candlesInScreen = candlesInScreen + candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
+        i++;
       }
     }
-    for (const i of indicesOfOrdersToRemove) {
-      this.orders.splice(i, 1);
+    if (i >= 0) {
+      while (i > 0) {
+        candlesInScreen = candlesInScreen - candlesInScreen * ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER;
+        i--;
+      }
     }
-
-    this.draw();
+    this.maxCandlesAmountInScreen = Math.round(candlesInScreen);
+    if (this.maxCandlesAmountInScreen >= this.data.length) {
+      this.maxCandlesAmountInScreen = this.data.length;
+    }
     return this;
   }
 
-  public goForward(): PainterService {
-    if (!this.isReplayPaused) return this;
+  private updatePriceRangeInScreen(): PainterService {
+    if (this.data.length === 0) return this;
 
-    this.onReplayTimerTick();
+    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
+    let min = this.data[startingIndex].low;
+    let max = this.data[startingIndex].high;
+    for (let i = startingIndex + 1; i < endingIndex; i++) {
+      if (this.data[i].low < min) {
+        min = this.data[i].low;
+      }
+      if (this.data[i].high > max) {
+        max = this.data[i].high;
+      }
+    }
+    this.priceRangeInScreen = { max, min };
     return this;
   }
 
-  public getLastCandle(): Candle {
-    return this.data[this.data.length - 1];
-  }
-
-  public setOrders(orders: Order[]): PainterService {
-    this.orders = orders;
+  private updateCandleWidth(): PainterService {
+    this.candleWidth = this.getCandlesDisplayDimensions().width / this.maxCandlesAmountInScreen;
     return this;
-  }
-
-  public getTrades(): Trade[] {
-    return this.trades;
-  }
-
-  public isReplayActive(): boolean {
-    return this.replayTimer !== null;
   }
 
   private drawCandles(): PainterService {
@@ -460,83 +407,19 @@ class PainterService {
     return this;
   }
 
-  private onReplayTimerTick(): void {
-    if (this.dataBackup.length > this.data.length) {
-      this.data.push(this.dataBackup[this.data.length]);
-
-      const limitOrders = this.orders.filter((o) => o.type === "limit");
-      const marketOrders = this.orders.filter((o) => o.type === "market");
-      const currentCandle = this.getLastCandle();
-
-      for (const order of limitOrders) {
-        if (order.price >= currentCandle.low && order.price <= currentCandle.high) {
-          order.createdAt = currentCandle.timestamp;
-          order.fillDate = currentCandle.timestamp;
-          order.type = "market";
-        }
-      }
-
-      const indicesOfMarketOrdersToRemove: number[] = [];
-      for (const [index, order] of marketOrders.entries()) {
-        if (!order.stopLoss && !order.takeProfit) continue;
-
-        if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          this.trades.push({
-            startDate: order.createdAt,
-            endDate: this.data[this.data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.stopLoss,
-            size: order.size,
-            position: order.position,
-          });
-          indicesOfMarketOrdersToRemove.push(index);
-          continue;
-        }
-
-        if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          this.trades.push({
-            startDate: order.createdAt,
-            endDate: this.data[this.data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.takeProfit,
-            size: order.size,
-            position: order.position,
-          });
-          indicesOfMarketOrdersToRemove.push(index);
-          continue;
-        }
-      }
-
-      for (const i of indicesOfMarketOrdersToRemove) {
-        this.orders.splice(i, 1);
-      }
-    } else {
-      this.stopReplay();
-      return;
-    }
-
-    console.log(this.trades);
-    this.draw();
-  }
-
-  private drawOrders(): PainterService {
-    drawOrders({
-      ctx: this.ctx,
-      orders: this.orders,
-      priceRange: this.priceRangeInScreen,
-      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
-      colors: this.colors.orders,
-      currentCandle: this.getLastCandle(),
-    });
-    return this;
-  }
-
   private getPriceYCoordinate(price: number): number {
     return (
       (this.getCandlesDisplayDimensions().height * (this.priceRangeInScreen.max - price)) /
         (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
       0.5
     );
+  }
+
+  private updateDataArrayOffset(value: number): PainterService {
+    if (!this.data || this.data.length === 0) return this;
+    this.dataArrayOffset += value;
+    this.validateOffset().updatePriceRangeInScreen();
+    return this;
   }
 }
 

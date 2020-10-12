@@ -1,13 +1,11 @@
-import { CandlesDisplayDimensions, Coords } from "../Types";
+import { DrawPointerLinesParameters } from "./Types";
 
-interface Parameters {
-  ctx: CanvasRenderingContext2D;
-  color: string;
-  mouseCoords: Coords;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-}
-
-export function drawPointerLines({ ctx, color, mouseCoords, candlesDisplayDimensions }: Parameters): void {
+export function drawPointerLines({
+  ctx,
+  color,
+  mouseCoords,
+  candlesDisplayDimensions,
+}: DrawPointerLinesParameters): void {
   ctx.setLineDash([10, 5]);
   ctx.strokeStyle = color;
 

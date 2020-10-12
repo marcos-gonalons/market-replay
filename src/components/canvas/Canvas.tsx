@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import PainterService from "../../services/painter/Painter";
+import ReplayerService from "../../services/painter/Replayer/Replayer";
 import styles from "./Canvas.module.css";
 
 const canvasContainerRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -13,7 +14,7 @@ interface ContainerDimensions {
 
 function Canvas(): JSX.Element {
   const {
-    state: { painterService, data },
+    state: { painterService, replayerService, data },
   } = useContext(GlobalContext);
 
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
@@ -31,10 +32,10 @@ function Canvas(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!painterService) return;
-    window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, painterService));
+    if (!painterService || !replayerService) return;
+    window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, replayerService));
     painterService.setCanvas(canvasRef.current!);
-  }, [painterService]);
+  }, [painterService, replayerService]);
 
   useEffect(() => {
     canvasRef.current!.height = containerDimensions.height;
@@ -42,13 +43,13 @@ function Canvas(): JSX.Element {
   }, [containerDimensions]);
 
   useEffect(() => {
-    if (!painterService) return;
+    if (!painterService || !replayerService) return;
 
-    if (!painterService.isReplayActive()) {
+    if (!replayerService.isReplayActive()) {
       painterService.setData(data ?? []);
       painterService.draw();
     }
-  }, [data, containerDimensions, painterService]);
+  }, [data, containerDimensions, painterService, replayerService]);
 
   useEffect(() => {
     if (!painterService || !data || data.length === 0) return;
@@ -128,16 +129,16 @@ function getCanvasContainerHeight(): string {
   return `${window.innerHeight - topBarFullHeight}px`;
 }
 
-function onKeyDown(e: KeyboardEvent, painterService: PainterService): void {
+function onKeyDown(e: KeyboardEvent, replayerService: ReplayerService): void {
   switch (e.code) {
     case "Space":
-      painterService.togglePause();
+      replayerService.togglePause();
       break;
     case "ArrowRight":
-      painterService.goForward();
+      replayerService.goForward();
       break;
     case "ArrowLeft":
-      painterService.goBack();
+      replayerService.goBack();
       break;
   }
 }
