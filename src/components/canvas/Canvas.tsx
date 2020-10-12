@@ -13,7 +13,7 @@ interface ContainerDimensions {
   height: number;
 }
 
-function Canvas(): JSX.Element {
+export default function Canvas(): JSX.Element {
   const {
     state: { painterService, replayerService, data },
   } = useContext(GlobalContext);
@@ -145,5 +145,3 @@ function onKeyDown(e: KeyboardEvent, replayerService: ReplayerService): void {
       break;
   }
 }
-
-export default Canvas;
