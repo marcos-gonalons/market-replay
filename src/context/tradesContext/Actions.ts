@@ -20,3 +20,10 @@ export function addTrade(payload: Trade): ReducerAction {
     payload,
   };
 }
+
+export function setOrders(payload: Order[]): ReducerAction {
+  return {
+    type: ActionTypes.SET_ORDERS,
+    payload,
+  };
+}

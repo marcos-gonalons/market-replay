@@ -61,7 +61,7 @@ class ReplayerService {
     this.replayTimer = null;
     this.isReplayPaused = false;
 
-    this.PainterService.setOrders([]);
+    this.PainterService.setOrders([], true);
     this.PainterService.setData([...this.dataBackup]);
     this.PainterService.draw();
     return this;
@@ -87,7 +87,7 @@ class ReplayerService {
       orders.splice(i, 1);
     }
 
-    this.PainterService.setOrders(orders);
+    this.PainterService.setOrders(orders, true);
     this.PainterService.draw();
     return this;
   }
@@ -156,7 +156,7 @@ class ReplayerService {
       for (const i of indicesOfMarketOrdersToRemove) {
         orders.splice(i, 1);
       }
-      this.PainterService.setOrders(orders);
+      this.PainterService.setOrders(orders, true);
     } else {
       this.stopReplay();
       return;

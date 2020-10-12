@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Dispatch } from "react";
 import { Candle } from "../../context/globalContext/Types";
+import { setOrders } from "../../context/tradesContext/Actions";
 import { Order } from "../../context/tradesContext/Types";
+import { ReducerAction } from "../../context/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -36,6 +39,7 @@ class PainterService {
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
   private orders: Order[] = [];
+  private tradesContextDispatch: Dispatch<ReducerAction> | null = null;
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -127,8 +131,11 @@ class PainterService {
     return this.data[this.data.length - 1];
   }
 
-  public setOrders(orders: Order[]): PainterService {
+  public setOrders(orders: Order[], updateContext: boolean = false): PainterService {
     this.orders = orders;
+    if (updateContext && this.tradesContextDispatch) {
+      this.tradesContextDispatch(setOrders(orders));
+    }
     return this;
   }
 
@@ -166,15 +173,8 @@ class PainterService {
     return this;
   }
 
-  private drawOrders(): PainterService {
-    drawOrders({
-      ctx: this.ctx,
-      orders: this.orders,
-      priceRange: this.priceRangeInScreen,
-      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
-      colors: this.colors.orders,
-      currentCandle: this.getLastCandle(),
-    });
+  public setTradesContextDispatch(d: Dispatch<ReducerAction>): PainterService {
+    this.tradesContextDispatch = d;
     return this;
   }
 
@@ -341,6 +341,18 @@ class PainterService {
     this.ctx.closePath();
     this.ctx.setLineDash([]);
 
+    return this;
+  }
+
+  private drawOrders(): PainterService {
+    drawOrders({
+      ctx: this.ctx,
+      orders: this.orders,
+      priceRange: this.priceRangeInScreen,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.orders,
+      currentCandle: this.getLastCandle(),
+    });
     return this;
   }
 

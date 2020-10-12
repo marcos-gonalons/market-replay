@@ -38,6 +38,11 @@ const reducer = (state: State, action: ReducerAction): State => {
         ...state,
         orders: [],
       };
+    case ActionTypes.SET_ORDERS:
+      return {
+        ...state,
+        orders: action.payload as State["orders"],
+      };
     default:
       return state;
   }
