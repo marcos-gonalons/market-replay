@@ -1,9 +1,22 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import { ReducerAction } from "../Types";
-import { ActionTypes, Script, State } from "./Types";
+import { ActionTypes, State } from "./Types";
+
+const defaultScriptContents = `
+/**
+ * Example script 
+ */
+    `.trim();
 
 const initialState: State = {
-  scripts: [],
+  scripts: [
+    {
+      name: "Script 1",
+      contents: defaultScriptContents,
+      isActive: false,
+    },
+  ],
+  indexOfTheScriptBeingEdited: 0,
 };
 
 export const ScriptsContext = createContext<{
@@ -19,7 +32,11 @@ const reducer = (state: State, action: ReducerAction): State => {
   switch (action.type) {
     case ActionTypes.ADD_SCRIPT:
       scriptsCopy = JSON.parse(JSON.stringify(state.scripts));
-      scriptsCopy.push(action.payload as Script);
+      scriptsCopy.push({
+        name: `Script ${state.scripts.length + 1}`,
+        contents: defaultScriptContents,
+        isActive: false,
+      });
       return {
         ...state,
         scripts: scriptsCopy,
@@ -61,6 +78,12 @@ const reducer = (state: State, action: ReducerAction): State => {
         scripts: scriptsCopy,
       };
 
+    case ActionTypes.SET_INDEX_OF_THE_SCRIPT_BEING_EDITED:
+      return {
+        ...state,
+        indexOfTheScriptBeingEdited: action.payload as State["indexOfTheScriptBeingEdited"],
+      };
+
     default:
       return state;
   }
@@ -68,7 +91,6 @@ const reducer = (state: State, action: ReducerAction): State => {
 
 export const ScriptsContextProvider: React.FC = ({ children }): React.ReactElement => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
   return <ScriptsContext.Provider value={{ state, dispatch }}>{children}</ScriptsContext.Provider>;
 };
 

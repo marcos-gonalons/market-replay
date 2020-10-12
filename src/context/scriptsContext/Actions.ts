@@ -1,10 +1,9 @@
 import { ReducerAction } from "../Types";
-import { ActionTypes, Script } from "./Types";
+import { ActionTypes } from "./Types";
 
-export function addScript(payload: Script): ReducerAction {
+export function addScript(): ReducerAction {
   return {
     type: ActionTypes.ADD_SCRIPT,
-    payload,
   };
 }
 
@@ -32,6 +31,13 @@ export function setScriptIsActive(payload: { scriptIndex: number; isActive: bool
 export function removeScript(scriptIndex: number): ReducerAction {
   return {
     type: ActionTypes.REMOVE_SCRIPT,
+    payload: scriptIndex,
+  };
+}
+
+export function setIndexOfTheScriptBeingEdited(scriptIndex: number): ReducerAction {
+  return {
+    type: ActionTypes.SET_INDEX_OF_THE_SCRIPT_BEING_EDITED,
     payload: scriptIndex,
   };
 }

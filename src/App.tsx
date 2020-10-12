@@ -13,6 +13,7 @@ import { TradesContextProvider } from "./context/tradesContext/TradesContext";
 import ScriptsPanel from "./components/scriptsPanel/ScriptsPanel";
 
 import "./App.css";
+import { ScriptsContextProvider } from "./context/scriptsContext/ScriptsContext";
 
 function App(): JSX.Element {
   return (
@@ -25,7 +26,9 @@ function App(): JSX.Element {
             <TradingPanel />
             <ReplayWidget />
           </TradesContextProvider>
-          <ScriptsPanel />
+          <ScriptsContextProvider>
+            <ScriptsPanel />
+          </ScriptsContextProvider>
         </main>
       </GlobalContextProvider>
       <ToastContainer />
