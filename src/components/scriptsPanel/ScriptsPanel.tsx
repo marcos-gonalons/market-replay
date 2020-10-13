@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
@@ -33,6 +33,8 @@ function ScriptsPanel(): JSX.Element {
     dispatch: scriptsContextDispatch,
   } = useContext(ScriptsContext);
 
+  const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
+
   useEffect(() => {
     if (!replayerService) return;
     replayerService.setScripts(scripts);
@@ -46,44 +48,50 @@ function ScriptsPanel(): JSX.Element {
     return <></>;
   }
   return (
-    <Modal
-      ariaHideApp={false}
-      aria-labelledby="simple-modal-title"
-      aria-describedby="simple-modal-description"
-      isOpen={true}
-      onRequestClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
-    >
-      <article className={styles["modal-container"]}>
-        <button
-          tabIndex={-1}
-          className={styles["x"]}
-          onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
-        >
-          X
-        </button>
-        <section className={styles["contents"]}>
-          <aside className={styles["script-names"]}>
-            {renderScriptNames(scripts, indexOfTheScriptBeingEdited, scriptsContextDispatch)}
-            {renderAddScriptButton(scriptsContextDispatch)}
-          </aside>
-          <section className={styles["script-contents"]}>
-            <Editor
-              value={scripts[indexOfTheScriptBeingEdited].contents}
-              onValueChange={(c) => {
-                scriptsContextDispatch(modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c }));
-              }}
-              highlight={(code) => highlight(code, languages.js, "js")}
-              padding={10}
-              style={{
-                fontFamily: '"Fira code", "Fira Mono", monospace',
-                fontSize: 14,
-              }}
-              preClassName={"language-markup line-numbers"}
-            />
+    <>
+      <Modal
+        ariaHideApp={false}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+        isOpen={true}
+        onRequestClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+      >
+        <article className={styles["modal-container"]}>
+          <button
+            tabIndex={-1}
+            className={styles["x"]}
+            onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+          >
+            X
+          </button>
+          <section className={styles["contents"]}>
+            <aside className={styles["script-names"]}>
+              {renderScriptNames(scripts, indexOfTheScriptBeingEdited, scriptsContextDispatch)}
+              {renderAddScriptButton(scriptsContextDispatch)}
+              {renderHelpModalButton(() => setIsHelpModalVisible(true))}
+            </aside>
+            <section className={styles["script-contents"]}>
+              <Editor
+                value={scripts[indexOfTheScriptBeingEdited].contents}
+                onValueChange={(c) => {
+                  scriptsContextDispatch(
+                    modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
+                  );
+                }}
+                highlight={(code) => highlight(code, languages.js, "js")}
+                padding={10}
+                style={{
+                  fontFamily: '"Fira code", "Fira Mono", monospace',
+                  fontSize: 14,
+                }}
+                preClassName={"language-markup line-numbers"}
+              />
+            </section>
           </section>
-        </section>
-      </article>
-    </Modal>
+        </article>
+      </Modal>
+      {renderHelpModal(isHelpModalVisible, () => setIsHelpModalVisible(false))}
+    </>
   );
 }
 
@@ -125,6 +133,47 @@ function renderScriptNames(
 
 function renderAddScriptButton(dispatch: React.Dispatch<ReducerAction>): JSX.Element {
   return <button onClick={() => dispatch(addScript())}>Add new script</button>;
+}
+
+function renderHelpModalButton(onClick: () => void): JSX.Element {
+  return <button onClick={onClick}>Help</button>;
+}
+
+function renderHelpModal(isVisible: boolean, onClose: () => void): JSX.Element {
+  return (
+    <Modal
+      ariaHideApp={false}
+      aria-labelledby="simple-modal-title"
+      aria-describedby="simple-modal-description"
+      isOpen={isVisible}
+      onRequestClose={onClose}
+      style={{
+        content: {},
+      }}
+    >
+      /** * Variables that are accessible * ----------------------------- * - candles * Array containing all the candles
+      * Every item of the array is an object with this properties: * timestamp, open, high, low, close, volume * * -
+      currentCandle * The candle where the replay is at * * * Functions that can be called *
+      ---------------------------- * - createOrder * Allows to create market/limit orders. Returns the index of the
+      order created. * * Example for a market order
+      {`createOrder({
+ *     type: "market",
+ *     position: "long",
+ *     size: 50,
+ *     stopLoss: 12345
+ *   })'`}
+      * * * Example for a limit order *{" "}
+      {`createOrder({
+ *     type: "limit",
+ *     position: "short",
+ *     size: 100,
+ *     price: 1234.56,
+ *     stopLoss: 1244.77,
+ *     takeProfit: 1200.02
+ *   })`}
+      * * */
+    </Modal>
+  );
 }
 
 export default ScriptsPanel;

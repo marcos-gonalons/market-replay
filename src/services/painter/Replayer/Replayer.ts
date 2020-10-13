@@ -194,6 +194,11 @@ class ReplayerService {
         // TODO: Function to close an order
         // TODO: Function to modify an order
 
+        // TODO: Move the example script code into a separated modal
+        // Button at the left, where the script names are, at the top
+        // The default script code will be a comment pointing to this button
+        // So the user can see what is available
+
         try {
           // eslint-disable-next-line
           eval(script.contents);

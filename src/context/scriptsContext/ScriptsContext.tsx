@@ -4,21 +4,9 @@ import { ActionTypes, State } from "./Types";
 
 const defaultScriptContents = `
 /**
- * Example script 
+ * Click the help button at the bottom left to learn more about how to code the scripts
  */
-
-
-
-
-
-
-
-
-
-
-
-
-    `;
+`;
 
 const initialState: State = {
   scripts: [
