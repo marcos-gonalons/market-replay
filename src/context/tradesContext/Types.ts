@@ -7,7 +7,7 @@ interface Order {
   position: Position;
   size: number;
   price: number;
-  createdAt: number;
+  createdAt?: number;
   stopLoss?: number;
   takeProfit?: number;
   fillDate?: number;

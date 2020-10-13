@@ -23,7 +23,7 @@ export function drawOrders({
   let y: number;
   ctx.font = "bold 15px Arial";
   for (const order of orders) {
-    if (order.createdAt > currentCandle.timestamp) continue;
+    if (order.createdAt! > currentCandle.timestamp) continue;
 
     if (isPriceWithinRange(order.price as number, priceRange)) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.price });

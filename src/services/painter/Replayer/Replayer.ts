@@ -1,7 +1,10 @@
+import { Dispatch } from "react";
 import { toast } from "react-toastify";
 import { Candle } from "../../../context/globalContext/Types";
 import { Script } from "../../../context/scriptsContext/Types";
-import { Trade } from "../../../context/tradesContext/Types";
+import { addOrder } from "../../../context/tradesContext/Actions";
+import { Order, Trade } from "../../../context/tradesContext/Types";
+import { ReducerAction } from "../../../context/Types";
 import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
 import PainterService from "../Painter";
 
@@ -87,7 +90,7 @@ class ReplayerService {
 
     const indicesOfOrdersToRemove: number[] = [];
     for (const [index, order] of orders.entries()) {
-      if (order.createdAt > data[data.length - 1].timestamp) {
+      if (order.createdAt! > data[data.length - 1].timestamp) {
         indicesOfOrdersToRemove.push(index);
       }
     }
@@ -140,7 +143,7 @@ class ReplayerService {
 
         if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
           this.trades.push({
-            startDate: order.createdAt,
+            startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.stopLoss,
@@ -153,7 +156,7 @@ class ReplayerService {
 
         if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
           this.trades.push({
-            startDate: order.createdAt,
+            startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.takeProfit,
@@ -182,9 +185,31 @@ class ReplayerService {
     for (const script of this.scripts) {
       if (!script.isActive) continue;
 
-      (function ({ candles, currentCandle }: ScriptFuncParameters) {
+      let createOrderFunc: (order: Order) => number;
+
+      (function (dispatch: Dispatch<ReducerAction>, ordersLength: number, currentCandle: Candle): void {
+        createOrderFunc = (order: Order): number => {
+          dispatch(
+            addOrder({
+              ...order,
+              createdAt: currentCandle.timestamp,
+            })
+          );
+          return ordersLength;
+        };
+      })(
+        this.PainterService.getTradesContextDispatch,
+        this.PainterService.getOrders().length,
+        this.PainterService.getLastCandle()
+      );
+
+      (function ({ candles, currentCandle, createOrderFunc }: ScriptFuncParameters) {
         void candles;
         void currentCandle;
+        void createOrderFunc;
+
+        // TODO: Function to close an order
+        // TODO: Function to modify an order
 
         try {
           // eslint-disable-next-line
@@ -196,6 +221,7 @@ class ReplayerService {
       })({
         candles: this.PainterService.getData(),
         currentCandle: this.PainterService.getLastCandle(),
+        createOrderFunc,
       });
     }
     return this;
@@ -205,6 +231,7 @@ class ReplayerService {
 interface ScriptFuncParameters {
   candles: Candle[];
   currentCandle: Candle;
+  createOrderFunc: (order: Order) => number;
 }
 
 export default ReplayerService;

@@ -178,6 +178,10 @@ class PainterService {
     return this;
   }
 
+  public getTradesContextDispatch(): Dispatch<ReducerAction> {
+    return this.tradesContextDispatch!;
+  }
+
   private updateMaxCandlesAmountInScreen(): PainterService {
     let candlesInScreen = Math.round((this.getCandlesDisplayDimensions().width / 1000) * CANDLES_PER_1000_PX);
     let i = this.zoomLevel;
