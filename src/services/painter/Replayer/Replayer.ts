@@ -185,28 +185,11 @@ class ReplayerService {
     for (const script of this.scripts) {
       if (!script.isActive) continue;
 
-      let createOrderFunc: (order: Order) => number;
-
-      (function (dispatch: Dispatch<ReducerAction>, ordersLength: number, currentCandle: Candle): void {
-        createOrderFunc = (order: Order): number => {
-          dispatch(
-            addOrder({
-              ...order,
-              createdAt: currentCandle.timestamp,
-            })
-          );
-          return ordersLength;
-        };
-      })(
-        this.PainterService.getTradesContextDispatch,
-        this.PainterService.getOrders().length,
-        this.PainterService.getLastCandle()
-      );
-
-      (function ({ candles, currentCandle, createOrderFunc }: ScriptFuncParameters) {
+      (function ({ candles, currentCandle, createOrder }: ScriptFuncParameters) {
+        // This void thingies is to avoid complains from eslint/typescript
         void candles;
         void currentCandle;
-        void createOrderFunc;
+        void createOrder;
 
         // TODO: Function to close an order
         // TODO: Function to modify an order
@@ -221,17 +204,39 @@ class ReplayerService {
       })({
         candles: this.PainterService.getData(),
         currentCandle: this.PainterService.getLastCandle(),
-        createOrderFunc,
+        createOrder: this.getCreateOrderFuncForScripts(),
       });
     }
     return this;
+  }
+
+  private getCreateOrderFuncForScripts(): (order: Order) => number {
+    let createOrderFunc: (order: Order) => number;
+
+    (function (dispatch: Dispatch<ReducerAction>, ordersLength: number, currentCandle: Candle): void {
+      createOrderFunc = (order: Order): number => {
+        dispatch(
+          addOrder({
+            ...order,
+            createdAt: currentCandle.timestamp,
+          })
+        );
+        return ordersLength;
+      };
+    })(
+      this.PainterService.getTradesContextDispatch(),
+      this.PainterService.getOrders().length,
+      this.PainterService.getLastCandle()
+    );
+
+    return createOrderFunc;
   }
 }
 
 interface ScriptFuncParameters {
   candles: Candle[];
   currentCandle: Candle;
-  createOrderFunc: (order: Order) => number;
+  createOrder: (order: Order) => number;
 }
 
 export default ReplayerService;

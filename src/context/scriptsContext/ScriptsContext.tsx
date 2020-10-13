@@ -6,7 +6,19 @@ const defaultScriptContents = `
 /**
  * Example script 
  */
-    `.trim();
+
+
+
+
+
+
+
+
+
+
+
+
+    `;
 
 const initialState: State = {
   scripts: [
