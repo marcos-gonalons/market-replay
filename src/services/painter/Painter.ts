@@ -471,7 +471,6 @@ class PainterService {
     return {
       width: this.canvas.width - PRICE_SCALE_WITH_IN_PX,
       height: this.canvas.height - TIME_SCALE_HEIGHT_IN_PX,
-      heightPadding: 100,
     };
   }
 
