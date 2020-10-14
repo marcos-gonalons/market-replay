@@ -69,6 +69,7 @@ class ReplayerService {
     this.isPaused = false;
 
     this.PainterService.setOrders([], true);
+    this.PainterService.setTrades([], true);
     this.PainterService.setData([...this.dataBackup]);
     this.PainterService.draw();
     return this;

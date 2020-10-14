@@ -23,7 +23,8 @@ import {
 } from "./PriceScalePainter/PriceScalePainter";
 import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
 import { drawFinishedTrades } from "./TradesPainter/TradesPainter";
-import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
+import { CandlesDisplayDimensions, Colors, Coords, Range } from "./Types";
+import { drawVolume } from "./VolumePainter/VolumePainter";
 
 class PainterService {
   private data: Candle[] = [];
@@ -33,7 +34,8 @@ class PainterService {
   private dataArrayOffset: number = 0;
   private candleWidth: number = 0;
   private maxCandlesAmountInScreen: number = 0;
-  private priceRangeInScreen: PriceRange = { min: 0, max: 0 };
+  private priceRangeInScreen: Range = { min: 0, max: 0 };
+  private volumeRangeInScreen: Range = { min: 0, max: 0 };
   private mouseCoords: Coords = { x: 0, y: 0 };
   private isDragging: boolean = false;
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
@@ -99,7 +101,7 @@ class PainterService {
       }
     }
 
-    this.validateOffset().updatePriceRangeInScreen();
+    this.validateOffset().updatePriceAndVolumeRangeInScreen();
     return this;
   }
 
@@ -169,16 +171,19 @@ class PainterService {
 
     this.updateMaxCandlesAmountInScreen();
     this.updateCandleWidth();
-    this.updatePriceRangeInScreen();
+    this.updatePriceAndVolumeRangeInScreen();
 
-    this.drawCandles();
+    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
+
+    this.drawVolume(startingIndex, endingIndex);
+    this.drawCandles(startingIndex, endingIndex);
 
     this.drawPriceScale();
     this.drawCurrentPriceInPriceScale();
     this.drawPriceInPointerPosition();
 
-    this.drawTimeScale();
-    this.drawDateInPointerPosition();
+    this.drawTimeScale(startingIndex, endingIndex);
+    this.drawDateInPointerPosition(startingIndex);
 
     this.drawCurrentPriceLine();
     this.drawPointerLines();
@@ -219,21 +224,31 @@ class PainterService {
     return this;
   }
 
-  private updatePriceRangeInScreen(): PainterService {
+  private updatePriceAndVolumeRangeInScreen(): PainterService {
     if (this.data.length === 0) return this;
 
     const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
-    let min = this.data[startingIndex].low;
-    let max = this.data[startingIndex].high;
+    let minPrice = this.data[startingIndex].low;
+    let maxPrice = this.data[startingIndex].high;
+    let minVolume = this.data[startingIndex].volume;
+    let maxVolume = minVolume;
     for (let i = startingIndex + 1; i < endingIndex; i++) {
-      if (this.data[i].low < min) {
-        min = this.data[i].low;
+      if (this.data[i].low < minPrice) {
+        minPrice = this.data[i].low;
       }
-      if (this.data[i].high > max) {
-        max = this.data[i].high;
+      if (this.data[i].high > maxPrice) {
+        maxPrice = this.data[i].high;
+      }
+      if (this.data[i].volume < minVolume) {
+        minVolume = this.data[i].volume;
+      }
+      if (this.data[i].volume > maxVolume) {
+        maxVolume = this.data[i].volume;
       }
     }
-    this.priceRangeInScreen = { max, min };
+
+    this.priceRangeInScreen = { max: maxPrice, min: minPrice };
+    this.volumeRangeInScreen = { max: maxVolume, min: minVolume };
     return this;
   }
 
@@ -242,12 +257,25 @@ class PainterService {
     return this;
   }
 
-  private drawCandles(): PainterService {
-    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
+  private drawVolume(dataStartIndex: number, dataEndIndex: number): PainterService {
+    drawVolume({
+      ctx: this.ctx,
+      data: this.data,
+      canvasHeight: this.canvas.height,
+      dataStartIndex,
+      dataEndIndex,
+      candleWidth: this.candleWidth,
+      colors: this.colors.volume,
+      volumeRange: this.volumeRangeInScreen,
+    });
+    return this;
+  }
+
+  private drawCandles(dataStartIndex: number, dataEndIndex: number): PainterService {
     drawCandles({
       ctx: this.ctx,
-      dataStartIndex: startingIndex,
-      dataEndIndex: endingIndex,
+      dataStartIndex,
+      dataEndIndex,
       data: this.data,
       priceRange: this.priceRangeInScreen,
       candleWidth: this.candleWidth,
@@ -290,14 +318,13 @@ class PainterService {
     return this;
   }
 
-  private drawTimeScale(): PainterService {
-    const [startingIndex, endingIndex] = this.getStartAndEndIndexForCandlesInScreen();
+  private drawTimeScale(dataStartIndex: number, dataEndIndex: number): PainterService {
     drawTimeScale({
       ctx: this.ctx,
       colors: { ...this.colors.timeScale },
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
-      dataStartIndex: startingIndex,
-      dataEndIndex: endingIndex,
+      dataStartIndex,
+      dataEndIndex,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
       dataTemporality: this.dataTemporality,
       data: this.data,
@@ -307,7 +334,7 @@ class PainterService {
     return this;
   }
 
-  private drawDateInPointerPosition(): PainterService {
+  private drawDateInPointerPosition(startingIndex: number): PainterService {
     drawDateInPointerPosition({
       ctx: this.ctx,
       mousePointerX: this.mouseCoords.x,
@@ -318,7 +345,7 @@ class PainterService {
       highlightColors: this.colors.highlight,
       maxCandlesAmountInScreen: this.maxCandlesAmountInScreen,
       dataTemporality: this.dataTemporality,
-      startingIndex: this.getStartAndEndIndexForCandlesInScreen()[0],
+      startingIndex,
       candleWidth: this.candleWidth,
     });
     return this;
@@ -466,7 +493,7 @@ class PainterService {
   private updateDataArrayOffset(value: number): PainterService {
     if (!this.data || this.data.length === 0) return this;
     this.dataArrayOffset += value;
-    this.validateOffset().updatePriceRangeInScreen();
+    this.validateOffset().updatePriceAndVolumeRangeInScreen();
     return this;
   }
 }

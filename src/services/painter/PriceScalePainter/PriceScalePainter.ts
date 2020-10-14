@@ -1,8 +1,10 @@
-import { Candle } from "../../../context/globalContext/Types";
 import { DEFAULT_FONT, MAX_PRICES_IN_PRICE_SCALE_PER_1000_PX, PRICE_SCALE_WITH_IN_PX } from "../Constants";
-import { CandlesDisplayDimensions, Colors, PriceRange } from "../Types";
 import { getPriceOfYCoord, getYCoordOfPrice } from "../Utils/Utils";
-import { DrawPriceInPointerPositionParameters, DrawPriceScaleParameters } from "./Types";
+import {
+  DrawCurrentPriceInPriceScaleParams,
+  DrawPriceInPointerPositionParameters,
+  DrawPriceScaleParameters,
+} from "./Types";
 
 export function drawPriceScale({
   ctx,
@@ -66,13 +68,6 @@ export function drawPriceInPointerPosition({
   ctx.font = DEFAULT_FONT;
 }
 
-interface DrawCurrentPriceInPriceScaleParams {
-  ctx: CanvasRenderingContext2D;
-  data: Candle[];
-  priceRange: PriceRange;
-  candlesDisplayDimensions: CandlesDisplayDimensions;
-  colors: Colors["currentPrice"];
-}
 export function drawCurrentPriceInPriceScale({
   ctx,
   data,

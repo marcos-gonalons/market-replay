@@ -53,9 +53,9 @@ export function drawFinishedTrades({
 
       x += candleWidth;
       if (data[i].timestamp === date) {
-        break;
+        return x;
       }
     }
-    return x;
+    return 0;
   }
 }

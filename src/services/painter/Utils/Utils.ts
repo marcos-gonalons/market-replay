@@ -1,4 +1,4 @@
-import { CandlesDisplayDimensions, PriceRange } from "../Types";
+import { CandlesDisplayDimensions, Range } from "../Types";
 
 export function getYCoordOfPrice({
   candlesDisplayDimensions,
@@ -6,7 +6,7 @@ export function getYCoordOfPrice({
   price,
 }: {
   candlesDisplayDimensions: CandlesDisplayDimensions;
-  priceRange: PriceRange;
+  priceRange: Range;
   price: number;
 }): number {
   return (
@@ -19,7 +19,7 @@ export function getPriceOfYCoord({
   yCoord,
   candlesDisplayDimensions,
 }: {
-  priceRange: PriceRange;
+  priceRange: Range;
   yCoord: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
 }): number {
