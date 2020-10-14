@@ -11,21 +11,17 @@ export function drawVolume({
   colors,
   volumeRange,
 }: DrawVolumeParameters): void {
-  void data;
-
-  const volumeHeightInPx = canvasHeight * VOLUME_HEIGHT_IN_PERCENTAGE;
-
+  const maxVolumeHeightInPx = canvasHeight * VOLUME_HEIGHT_IN_PERCENTAGE;
   let candleNumber = 0;
   for (let i = dataStartIndex; i <= dataEndIndex; i++) {
     const candle = data[i];
     if (!candle) continue;
 
-    const isPositive = candle.close >= candle.open;
     const x = candleWidth * candleNumber;
     const height =
-      (volumeHeightInPx / (volumeRange.max - volumeRange.min || 1)) * (candle.volume - volumeRange.min) || 1;
+      (maxVolumeHeightInPx / (volumeRange.max - volumeRange.min || 1)) * (candle.volume - volumeRange.min) || 1;
 
-    ctx.fillStyle = isPositive ? colors.positive : colors.negative;
+    ctx.fillStyle = candle.close >= candle.open ? colors.positive : colors.negative;
     ctx.fillRect(x, canvasHeight - height - TIME_SCALE_HEIGHT_IN_PX, candleWidth, height);
 
     candleNumber++;

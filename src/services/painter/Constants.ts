@@ -10,6 +10,7 @@ export const MAX_DATES_IN_DATE_SCALE_PER_1000_PX = 10;
 export const DEFAULT_REPLAY_TIMER_TICK_IN_MS = 500;
 export const DEFAULT_FONT = "14px Arial";
 export const VOLUME_HEIGHT_IN_PERCENTAGE = 0.2;
+export const CANDLES_DISPLAY_PADDING_IN_PERCENTAGE = 0.075;
 
 export const SECONDS_IN_AN_HOUR = 3600;
 export const SECONDS_IN_A_DAY = SECONDS_IN_AN_HOUR * 24;
@@ -65,7 +66,7 @@ export const DEFAULT_COLORS: Colors = {
     slText: "rgb(212,0,56)",
   },
   volume: {
-    positive: "rgb(0,201,10)",
-    negative: "rgb(201,10,0)",
+    positive: "rgba(0,201,10,.25)",
+    negative: "rgba(201,10,0,.25)",
   },
 };

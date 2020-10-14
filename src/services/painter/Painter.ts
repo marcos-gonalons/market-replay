@@ -24,6 +24,7 @@ import {
 import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
 import { drawFinishedTrades } from "./TradesPainter/TradesPainter";
 import { CandlesDisplayDimensions, Colors, Coords, Range } from "./Types";
+import { getYCoordOfPrice } from "./Utils/Utils";
 import { drawVolume } from "./VolumePainter/VolumePainter";
 
 class PainterService {
@@ -375,7 +376,11 @@ class PainterService {
       lastCandleInScreen = this.data[index];
     }
 
-    const y = this.getPriceYCoordinate(lastCandleInScreen.close);
+    const y = getYCoordOfPrice({
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      priceRange: this.priceRangeInScreen,
+      price: lastCandleInScreen.close,
+    });
 
     this.ctx.strokeStyle = this.colors.currentPrice.line;
 
@@ -466,6 +471,7 @@ class PainterService {
     return {
       width: this.canvas.width - PRICE_SCALE_WITH_IN_PX,
       height: this.canvas.height - TIME_SCALE_HEIGHT_IN_PX,
+      heightPadding: 100,
     };
   }
 
@@ -480,14 +486,6 @@ class PainterService {
       this.dataArrayOffset = this.data.length - this.maxCandlesAmountInScreen;
     }
     return this;
-  }
-
-  private getPriceYCoordinate(price: number): number {
-    return (
-      (this.getCandlesDisplayDimensions().height * (this.priceRangeInScreen.max - price)) /
-        (this.priceRangeInScreen.max - this.priceRangeInScreen.min) +
-      0.5
-    );
   }
 
   private updateDataArrayOffset(value: number): PainterService {

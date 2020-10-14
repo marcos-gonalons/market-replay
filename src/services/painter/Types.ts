@@ -64,4 +64,5 @@ export interface Coords {
 export interface CandlesDisplayDimensions {
   width: number;
   height: number;
+  heightPadding: number;
 }
