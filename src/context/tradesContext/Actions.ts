@@ -27,3 +27,10 @@ export function setOrders(payload: Order[]): ReducerAction {
     payload,
   };
 }
+
+export function setTrades(payload: Trade[]): ReducerAction {
+  return {
+    type: ActionTypes.SET_TRADES,
+    payload,
+  };
+}

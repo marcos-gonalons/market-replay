@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dispatch } from "react";
 import { Candle } from "../../context/globalContext/Types";
-import { setOrders } from "../../context/tradesContext/Actions";
-import { Order } from "../../context/tradesContext/Types";
+import { setOrders, setTrades } from "../../context/tradesContext/Actions";
+import { Order, Trade } from "../../context/tradesContext/Types";
 import { ReducerAction } from "../../context/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
@@ -22,6 +22,7 @@ import {
   drawPriceScale,
 } from "./PriceScalePainter/PriceScalePainter";
 import { drawDateInPointerPosition, drawTimeScale } from "./TimeScalePainter/TimeScalePainter";
+import { drawFinishedTrades } from "./TradesPainter/TradesPainter";
 import { CandlesDisplayDimensions, Colors, Coords, PriceRange } from "./Types";
 
 class PainterService {
@@ -39,6 +40,7 @@ class PainterService {
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
   private orders: Order[] = [];
+  private trades: Trade[] = [];
   private tradesContextDispatch: Dispatch<ReducerAction> | null = null;
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
@@ -143,6 +145,18 @@ class PainterService {
     return this.orders;
   }
 
+  public setTrades(trades: Trade[], updateContext: boolean = false): PainterService {
+    this.trades = trades;
+    if (updateContext && this.tradesContextDispatch) {
+      this.tradesContextDispatch(setTrades(trades));
+    }
+    return this;
+  }
+
+  public getTrades(): Trade[] {
+    return this.trades;
+  }
+
   public draw(): PainterService {
     if (!this.data || this.data.length === 0) {
       return this;
@@ -170,6 +184,7 @@ class PainterService {
     this.drawPointerLines();
 
     this.drawOrders();
+    this.drawFinishedTrades();
     return this;
   }
 
@@ -356,6 +371,23 @@ class PainterService {
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       colors: this.colors.orders,
       currentCandle: this.getLastCandle(),
+    });
+    return this;
+  }
+
+  private drawFinishedTrades(): PainterService {
+    const [dataStartIndex, dataEndIndex] = this.getStartAndEndIndexForCandlesInScreen();
+    drawFinishedTrades({
+      ctx: this.ctx,
+      trades: this.trades,
+      colors: this.colors.trades,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      priceRange: this.priceRangeInScreen,
+      canvasHeight: this.canvas.height,
+      dataStartIndex,
+      dataEndIndex,
+      candleWidth: this.candleWidth,
+      data: this.data,
     });
     return this;
   }

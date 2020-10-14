@@ -44,6 +44,12 @@ export interface Colors {
     buyText: string;
     sellText: string;
   };
+  trades: {
+    background: string;
+    openText: string;
+    tpText: string;
+    slText: string;
+  };
 }
 
 export interface Coords {

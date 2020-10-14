@@ -50,6 +50,12 @@ export const DEFAULT_COLORS: Colors = {
     buyText: "rgb(26,156,0)",
     sellText: "rgb(156,3,0)",
   },
+  trades: {
+    background: "rgb(252,219,3)",
+    openText: "rgb(0,0,0)",
+    tpText: "rgb(0,212,95)",
+    slText: "rgb(212,0,56)",
+  },
 };
 export const SECONDS_IN_AN_HOUR = 3600;
 export const SECONDS_IN_A_DAY = SECONDS_IN_AN_HOUR * 24;

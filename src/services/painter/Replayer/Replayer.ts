@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { Candle } from "../../../context/globalContext/Types";
 import { Script } from "../../../context/scriptsContext/Types";
 import { addOrder } from "../../../context/tradesContext/Actions";
-import { Order, Trade } from "../../../context/tradesContext/Types";
+import { Order } from "../../../context/tradesContext/Types";
 import { ReducerAction } from "../../../context/Types";
 import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
 import PainterService from "../Painter";
@@ -14,7 +14,6 @@ class ReplayerService {
   private replayTimer: NodeJS.Timeout | null = null;
   private isPaused: boolean = false;
   private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
-  private trades: Trade[] = [];
   private dataBackup: Candle[] = [];
   private scripts: Script[] = [];
 
@@ -27,13 +26,10 @@ class ReplayerService {
     return this;
   }
 
-  public getTrades(): Trade[] {
-    return this.trades;
-  }
-
   public startReplay(): ReplayerService {
     if (this.replayTimer !== null) return this;
-    this.trades = [];
+
+    this.PainterService.setTrades([]);
 
     const painterData = this.PainterService.getData();
 
@@ -121,6 +117,7 @@ class ReplayerService {
   private onReplayTimerTick(): void {
     const data = this.PainterService.getData();
     const orders = [...this.PainterService.getOrders()];
+    const trades = [...this.PainterService.getTrades()];
 
     if (this.dataBackup.length > data.length) {
       data.push(this.dataBackup[data.length]);
@@ -142,7 +139,7 @@ class ReplayerService {
         if (!order.stopLoss && !order.takeProfit) continue;
 
         if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          this.trades.push({
+          trades.push({
             startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
@@ -155,7 +152,7 @@ class ReplayerService {
         }
 
         if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          this.trades.push({
+          trades.push({
             startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
@@ -171,6 +168,8 @@ class ReplayerService {
       for (const i of indicesOfMarketOrdersToRemove) {
         orders.splice(i, 1);
       }
+
+      this.PainterService.setTrades(trades, true);
       this.PainterService.setOrders(orders, true);
     } else {
       this.stopReplay();
@@ -193,11 +192,6 @@ class ReplayerService {
 
         // TODO: Function to close an order
         // TODO: Function to modify an order
-
-        // TODO: Move the example script code into a separated modal
-        // Button at the left, where the script names are, at the top
-        // The default script code will be a comment pointing to this button
-        // So the user can see what is available
 
         try {
           // eslint-disable-next-line

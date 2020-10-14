@@ -29,7 +29,6 @@ function TradingPanel(): JSX.Element {
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
   useEffect(() => {
-    console.log("setting orders");
     painterService.setOrders(orders);
     painterService.draw();
   }, [painterService, orders]);

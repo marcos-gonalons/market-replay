@@ -43,6 +43,11 @@ const reducer = (state: State, action: ReducerAction): State => {
         ...state,
         orders: action.payload as State["orders"],
       };
+    case ActionTypes.SET_TRADES:
+      return {
+        ...state,
+        trades: action.payload as State["trades"],
+      };
     default:
       return state;
   }

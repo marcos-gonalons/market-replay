@@ -6,6 +6,13 @@ const defaultScriptContents = `
 /**
  * Click the help button at the bottom left to learn more about how to code the scripts
  */
+
+
+
+
+
+
+
 `;
 
 const initialState: State = {
