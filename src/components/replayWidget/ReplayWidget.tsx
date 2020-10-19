@@ -42,7 +42,7 @@ function ReplayWidget(): JSX.Element {
             <span onClick={() => getDatepickerButton(styles["hidden-datepicker"]).click()}>Move to</span>
             <button
               onClick={() => {
-                replayerService.startReplay();
+                replayerService!.startReplay();
                 globalContextDispatch(setIsReplayActive(true));
               }}
             >
@@ -50,7 +50,7 @@ function ReplayWidget(): JSX.Element {
             </button>
             <button
               onClick={() => {
-                replayerService.togglePause();
+                replayerService!.togglePause();
               }}
             >
               Pause/Resume
@@ -59,14 +59,14 @@ function ReplayWidget(): JSX.Element {
               onClick={() => {
                 tradesContextDispatch(removeAllOrders());
                 globalContextDispatch(setIsReplayActive(false));
-                replayerService.stopReplay();
+                replayerService!.stopReplay();
               }}
             >
               Stop
             </button>
             <button
               onClick={() => {
-                replayerService.stopReplay();
+                replayerService!.stopReplay();
                 tradesContextDispatch(removeAllOrders());
                 globalContextDispatch(setIsTradingPanelVisible(false));
                 globalContextDispatch(setIsReplayActive(false));
@@ -82,7 +82,7 @@ function ReplayWidget(): JSX.Element {
         </div>
       </Draggable>
       {renderHiddenDatePicker(data[0].timestamp, data[data.length - 1].timestamp, (d: Date) =>
-        painterService.setOffsetByDate(d)
+        painterService!.setOffsetByDate(d)
       )}
     </>
   );

@@ -1,3 +1,4 @@
+import { CANDLES_DISPLAY_PADDING_IN_PERCENTAGE } from "../Constants";
 import { getYCoordOfPrice } from "../Utils/Utils";
 import { DrawCandlesParameters } from "./Types";
 
@@ -13,6 +14,7 @@ export function drawCandles({
 }: DrawCandlesParameters): void {
   let candleNumber = 0;
   const priceRangeDiff = priceRange.max - priceRange.min || 100;
+  const paddingInPx = candlesDisplayDimensions.height * CANDLES_DISPLAY_PADDING_IN_PERCENTAGE;
   for (let i = dataStartIndex; i < dataEndIndex; i++) {
     const candle = data[i];
     const isPositive = candle.close >= candle.open;
@@ -26,7 +28,9 @@ export function drawCandles({
     });
 
     const w = candleWidth;
-    const h = (candlesDisplayDimensions.height / priceRangeDiff) * Math.abs(candle.open - candle.close) || 1;
+    const h =
+      ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * Math.abs(candle.open - candle.close) ||
+      1;
 
     // Candle body
     ctx.fillStyle = isPositive ? colors.body.positive : colors.body.negative;
@@ -39,7 +43,7 @@ export function drawCandles({
     const wickX = x + candleWidth / 2;
     ctx.beginPath();
     ctx.moveTo(wickX, y);
-    ctx.lineTo(wickX, y - (candlesDisplayDimensions.height / priceRangeDiff) * wickDiff);
+    ctx.lineTo(wickX, y - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff);
     ctx.stroke();
     ctx.closePath();
 
@@ -47,9 +51,14 @@ export function drawCandles({
     wickDiff = candle.low - (isPositive ? candle.open : candle.close);
     ctx.beginPath();
     ctx.moveTo(wickX, y + h);
-    ctx.lineTo(wickX, y + h - (candlesDisplayDimensions.height / priceRangeDiff) * wickDiff);
+    ctx.lineTo(wickX, y + h - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff);
     ctx.stroke();
     ctx.closePath();
+
+    if (candle.highlightHigh) {
+      ctx.fillStyle = "rgb(255,0,255)";
+      ctx.fillRect(x, getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: candle.high }), 15, 15);
+    }
 
     candleNumber++;
   }

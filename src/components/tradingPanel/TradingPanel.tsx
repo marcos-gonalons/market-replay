@@ -17,7 +17,7 @@ function TradingPanel(): JSX.Element {
     dispatch: globalContextDispath,
   } = useContext(GlobalContext);
   const {
-    state: { orders },
+    state: { orders, trades },
     dispatch: tradesContextDispatch,
   } = useContext(TradesContext);
   const [size, setSize] = useState<number>(0);
@@ -29,9 +29,10 @@ function TradingPanel(): JSX.Element {
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
   useEffect(() => {
-    painterService.setOrders(orders);
+    if (!painterService) return;
+
     painterService.draw();
-  }, [painterService, orders]);
+  }, [painterService, orders, trades]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
   const ref = useRef(null);
@@ -151,13 +152,13 @@ function TradingPanel(): JSX.Element {
                   type: orderType,
                   position: "long",
                   size,
-                  painterService,
+                  painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
-                  createdAt: painterService.getLastCandle().timestamp,
+                  createdAt: painterService!.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);
@@ -176,13 +177,13 @@ function TradingPanel(): JSX.Element {
                   type: orderType,
                   position: "short",
                   size,
-                  painterService,
+                  painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
-                  createdAt: painterService.getLastCandle().timestamp,
+                  createdAt: painterService!.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);

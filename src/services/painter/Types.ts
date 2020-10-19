@@ -1,4 +1,4 @@
-export interface PriceRange {
+export interface Range {
   min: number;
   max: number;
 }
@@ -43,6 +43,16 @@ export interface Colors {
     background: string;
     buyText: string;
     sellText: string;
+  };
+  trades: {
+    background: string;
+    openText: string;
+    tpText: string;
+    slText: string;
+  };
+  volume: {
+    positive: string;
+    negative: string;
   };
 }
 

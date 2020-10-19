@@ -1,28 +1,43 @@
-import { Candle } from "../../../context/globalContext/Types";
-import { Trade } from "../../../context/tradesContext/Types";
-import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
-import PainterService from "../Painter";
+import { Candle } from "../../context/globalContext/Types";
+import {
+  removeAllOrders,
+  removeAllTrades,
+  setBalance,
+  setOrders,
+  setTrades,
+} from "../../context/tradesContext/Actions";
+import { Trade, TradesContext, State as TradesContextState } from "../../context/tradesContext/Types";
+import PainterService from "../painter/Painter";
+import ScriptsExecutionerService from "../scriptsExecutioner/ScriptsExecutioner";
 
 class ReplayerService {
   private PainterService: PainterService;
+  private ScriptsExecutionerService: ScriptsExecutionerService;
+
+  private tradesContext: TradesContext;
 
   private replayTimer: NodeJS.Timeout | null = null;
-  private isReplayPaused: boolean = false;
-  private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
-  private trades: Trade[] = [];
+  private isPaused: boolean = false;
+  private replayTimerTickMilliseconds: number = 1;
   private dataBackup: Candle[] = [];
 
-  public constructor(painterService: PainterService) {
+  public constructor(
+    painterService: PainterService,
+    scriptsExecutionerService: ScriptsExecutionerService,
+    tradesContext: TradesContext
+  ) {
     this.PainterService = painterService;
+    this.ScriptsExecutionerService = scriptsExecutionerService;
+    this.tradesContext = tradesContext;
   }
 
-  public getTrades(): Trade[] {
-    return this.trades;
+  public updateTradesContextState(state: TradesContextState): ReplayerService {
+    this.tradesContext.state = state;
+    return this;
   }
 
   public startReplay(): ReplayerService {
     if (this.replayTimer !== null) return this;
-    this.trades = [];
 
     const painterData = this.PainterService.getData();
 
@@ -41,9 +56,9 @@ class ReplayerService {
 
     this.PainterService.draw();
 
-    this.isReplayPaused = false;
+    this.isPaused = false;
     this.replayTimer = setInterval(() => {
-      if (this.isReplayPaused) return;
+      if (this.isPaused) return;
       this.onReplayTimerTick();
     }, this.replayTimerTickMilliseconds);
 
@@ -51,7 +66,7 @@ class ReplayerService {
   }
 
   public togglePause(): ReplayerService {
-    this.isReplayPaused = !this.isReplayPaused;
+    this.isPaused = !this.isPaused;
     return this;
   }
 
@@ -59,27 +74,28 @@ class ReplayerService {
     clearInterval(this.replayTimer!);
 
     this.replayTimer = null;
-    this.isReplayPaused = false;
+    this.isPaused = false;
 
-    this.PainterService.setOrders([], true);
+    this.tradesContext.dispatch(removeAllOrders());
+    this.tradesContext.dispatch(removeAllTrades());
     this.PainterService.setData([...this.dataBackup]);
     this.PainterService.draw();
     return this;
   }
 
   public goBack(): ReplayerService {
-    if (!this.isReplayPaused) return this;
+    if (!this.isPaused) return this;
 
     const data = [...this.PainterService.getData()];
     data.splice(data.length - 1, 1);
 
     this.PainterService.setData(data);
 
-    const orders = [...this.PainterService.getOrders()];
+    const orders = [...this.tradesContext.state.orders];
 
     const indicesOfOrdersToRemove: number[] = [];
     for (const [index, order] of orders.entries()) {
-      if (order.createdAt > data[data.length - 1].timestamp) {
+      if (order.createdAt! > data[data.length - 1].timestamp) {
         indicesOfOrdersToRemove.push(index);
       }
     }
@@ -87,13 +103,12 @@ class ReplayerService {
       orders.splice(i, 1);
     }
 
-    this.PainterService.setOrders(orders, true);
-    this.PainterService.draw();
+    this.tradesContext.dispatch(setOrders(orders));
     return this;
   }
 
   public goForward(): ReplayerService {
-    if (!this.isReplayPaused) return this;
+    if (!this.isPaused) return this;
 
     this.onReplayTimerTick();
     return this;
@@ -103,9 +118,14 @@ class ReplayerService {
     return this.replayTimer !== null;
   }
 
+  public isReplayPaused(): boolean {
+    return this.isPaused;
+  }
+
   private onReplayTimerTick(): void {
     const data = this.PainterService.getData();
-    const orders = [...this.PainterService.getOrders()];
+    const orders = [...this.tradesContext.state.orders];
+    const trades = [...this.tradesContext.state.trades];
 
     if (this.dataBackup.length > data.length) {
       data.push(this.dataBackup[data.length]);
@@ -125,30 +145,35 @@ class ReplayerService {
       const indicesOfMarketOrdersToRemove: number[] = [];
       for (const [index, order] of marketOrders.entries()) {
         if (!order.stopLoss && !order.takeProfit) continue;
+        let trade: Trade;
 
         if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          this.trades.push({
-            startDate: order.createdAt,
+          trade = {
+            startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.stopLoss,
             size: order.size,
             position: order.position,
-          });
+          };
+          trades.push(trade);
           indicesOfMarketOrdersToRemove.push(index);
+          this.adjustAccountBalance(trade);
           continue;
         }
 
         if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          this.trades.push({
-            startDate: order.createdAt,
+          trade = {
+            startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.takeProfit,
             size: order.size,
             position: order.position,
-          });
+          };
+          trades.push(trade);
           indicesOfMarketOrdersToRemove.push(index);
+          this.adjustAccountBalance(trade);
           continue;
         }
       }
@@ -156,13 +181,24 @@ class ReplayerService {
       for (const i of indicesOfMarketOrdersToRemove) {
         orders.splice(i, 1);
       }
-      this.PainterService.setOrders(orders, true);
+
+      this.tradesContext.dispatch(setTrades(trades));
+      this.tradesContext.dispatch(setOrders(orders));
     } else {
       this.stopReplay();
       return;
     }
 
+    this.ScriptsExecutionerService.executeAllScriptsOnReplayTick();
     this.PainterService.draw();
+  }
+
+  private adjustAccountBalance(trade: Trade): ReplayerService {
+    let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
+    if (trade.position === "short") tradeResult = -tradeResult;
+
+    this.tradesContext.dispatch(setBalance(this.tradesContext.state.balance + tradeResult));
+    return this;
   }
 }
 

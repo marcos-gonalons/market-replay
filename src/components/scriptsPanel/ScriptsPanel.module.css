@@ -1,10 +1,40 @@
 .panel-container {
   background-color: white;
   position: fixed;
-  top: 20px;
   left: 20px;
 }
 
 .handle {
   cursor: grab;
+}
+
+article.modal-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+button.x {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: bold;
+  position: absolute;
+  right: 0px;
+  top: 4px;
+}
+
+section.contents {
+  display: flex;
+  height: 100%;
+}
+
+aside.script-names {
+  width: 200px;
+}
+
+section.script-contents {
+  flex-grow: 1;
+  background: #2d2d2d;
+  height: 100%;
+  overflow: auto;
 }
