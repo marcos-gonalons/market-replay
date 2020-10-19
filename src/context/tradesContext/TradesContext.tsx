@@ -5,6 +5,7 @@ import { ActionTypes, Order, State, Trade } from "./Types";
 const initialState: State = {
   orders: [],
   trades: [],
+  balance: 100000,
 };
 
 export const TradesContext = createContext<{
@@ -47,6 +48,11 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         trades: action.payload as State["trades"],
+      };
+    case ActionTypes.SET_BALANCE:
+      return {
+        ...state,
+        balance: action.payload as State["balance"],
       };
     default:
       return state;

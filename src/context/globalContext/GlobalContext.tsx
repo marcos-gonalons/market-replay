@@ -1,6 +1,6 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import PainterService from "../../services/painter/Painter";
-import ReplayerService from "../../services/painter/Replayer/Replayer";
+import ReplayerService from "../../services/replayer/Replayer";
 import { ReducerAction } from "../Types";
 import { ActionTypes, State } from "./Types";
 

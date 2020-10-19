@@ -25,6 +25,7 @@ interface Trade {
 interface State {
   readonly orders: Order[];
   readonly trades: Trade[];
+  readonly balance: number;
 }
 
 const ActionTypes = {
@@ -33,6 +34,7 @@ const ActionTypes = {
   REMOVE_ALL_ORDERS: "TRADES_CONTEXT_REMOVE_ALL_ORDERS",
   SET_ORDERS: "TRADES_CONTEXT_SET_ORDERS",
   SET_TRADES: "TRADES_CONTEXT_SET_TRADES",
+  SET_BALANCE: "TRADES_CONTEXT_SET_BALANCE",
 };
 
 export { ActionTypes };

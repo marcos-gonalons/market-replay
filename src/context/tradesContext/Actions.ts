@@ -34,3 +34,10 @@ export function setTrades(payload: Trade[]): ReducerAction {
     payload,
   };
 }
+
+export function setBalance(payload: number): ReducerAction {
+  return {
+    type: ActionTypes.SET_BALANCE,
+    payload,
+  };
+}

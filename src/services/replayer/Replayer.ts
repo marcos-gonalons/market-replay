@@ -1,19 +1,20 @@
 import { toast } from "react-toastify";
-import { Candle } from "../../../context/globalContext/Types";
-import { Script } from "../../../context/scriptsContext/Types";
-import { Order } from "../../../context/tradesContext/Types";
-import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
-import PainterService from "../Painter";
+import { Candle } from "../../context/globalContext/Types";
+import { Script } from "../../context/scriptsContext/Types";
+import { setBalance } from "../../context/tradesContext/Actions";
+import { Order, Trade } from "../../context/tradesContext/Types";
+import PainterService from "../painter/Painter";
 
 class ReplayerService {
   private PainterService: PainterService;
 
   private replayTimer: NodeJS.Timeout | null = null;
   private isPaused: boolean = false;
-  private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
+  private replayTimerTickMilliseconds: number = 1;
   private dataBackup: Candle[] = [];
   private scripts: Script[] = [];
   private persistedVars: { [key: string]: unknown } = {};
+  private accountBalance: number = 0;
 
   public constructor(painterService: PainterService) {
     this.PainterService = painterService;
@@ -21,6 +22,11 @@ class ReplayerService {
 
   public setScripts(scripts: Script[]): ReplayerService {
     this.scripts = scripts;
+    return this;
+  }
+
+  public setAccountBalance(balance: number): ReplayerService {
+    this.accountBalance = balance;
     return this;
   }
 
@@ -136,30 +142,35 @@ class ReplayerService {
       const indicesOfMarketOrdersToRemove: number[] = [];
       for (const [index, order] of marketOrders.entries()) {
         if (!order.stopLoss && !order.takeProfit) continue;
+        let trade: Trade;
 
         if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          trades.push({
+          trade = {
             startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.stopLoss,
             size: order.size,
             position: order.position,
-          });
+          };
+          trades.push(trade);
           indicesOfMarketOrdersToRemove.push(index);
+          this.adjustAccountBalance(trade);
           continue;
         }
 
         if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          trades.push({
+          trade = {
             startDate: order.createdAt!,
             endDate: data[data.length - 1].timestamp,
             startPrice: order.price,
             endPrice: order.takeProfit,
             size: order.size,
             position: order.position,
-          });
+          };
+          trades.push(trade);
           indicesOfMarketOrdersToRemove.push(index);
+          this.adjustAccountBalance(trade);
           continue;
         }
       }
@@ -176,7 +187,6 @@ class ReplayerService {
     }
 
     this.executeScripts();
-    this.PainterService.draw();
   }
 
   private executeScripts(): ReplayerService {
@@ -189,10 +199,11 @@ class ReplayerService {
         candles,
         currentCandle,
         drawings,
-        createOrder,
         orders,
         persistedVars,
         painterService,
+        balance,
+        createOrder,
       }: ScriptFuncParameters) {
         // This void thingies is to avoid complains from eslint/typescript
         void canvas;
@@ -200,10 +211,11 @@ class ReplayerService {
         void candles;
         void currentCandle;
         void drawings;
-        void createOrder;
         void orders;
         void persistedVars;
         void painterService;
+        void balance;
+        void createOrder;
 
         // TODO: Function to close an order
         // TODO: Function to modify an order
@@ -225,6 +237,7 @@ class ReplayerService {
         orders: this.PainterService.getOrders(),
         persistedVars: this.persistedVars,
         painterService: this.PainterService,
+        balance: this.accountBalance,
       });
     }
     return this;
@@ -247,6 +260,16 @@ class ReplayerService {
 
     return createOrderFunc;
   }
+
+  private adjustAccountBalance(trade: Trade): ReplayerService {
+    const dispatch = this.PainterService.getTradesContextDispatch();
+
+    let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
+    if (trade.position === "short") tradeResult = -tradeResult;
+
+    dispatch(setBalance(this.accountBalance + tradeResult));
+    return this;
+  }
 }
 
 interface ScriptFuncParameters {
@@ -258,6 +281,7 @@ interface ScriptFuncParameters {
   orders: Order[];
   persistedVars: { [key: string]: unknown };
   painterService: PainterService;
+  balance: number;
   createOrder: (order: Order) => number;
 }
 
