@@ -55,6 +55,11 @@ export function drawCandles({
     ctx.stroke();
     ctx.closePath();
 
+    if (candle.highlightHigh) {
+      ctx.fillStyle = "rgb(255,0,255)";
+      ctx.fillRect(x, getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: candle.high }), 15, 15);
+    }
+
     candleNumber++;
   }
 }

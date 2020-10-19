@@ -1,10 +1,7 @@
-import { Dispatch } from "react";
 import { toast } from "react-toastify";
 import { Candle } from "../../../context/globalContext/Types";
 import { Script } from "../../../context/scriptsContext/Types";
-import { addOrder } from "../../../context/tradesContext/Actions";
 import { Order } from "../../../context/tradesContext/Types";
-import { ReducerAction } from "../../../context/Types";
 import { DEFAULT_REPLAY_TIMER_TICK_IN_MS } from "../Constants";
 import PainterService from "../Painter";
 
@@ -16,6 +13,7 @@ class ReplayerService {
   private replayTimerTickMilliseconds: number = DEFAULT_REPLAY_TIMER_TICK_IN_MS;
   private dataBackup: Candle[] = [];
   private scripts: Script[] = [];
+  private persistedVars: { [key: string]: unknown } = {};
 
   public constructor(painterService: PainterService) {
     this.PainterService = painterService;
@@ -185,26 +183,48 @@ class ReplayerService {
     for (const script of this.scripts) {
       if (!script.isActive) continue;
 
-      (function ({ candles, currentCandle, createOrder }: ScriptFuncParameters) {
+      (function ({
+        canvas,
+        ctx,
+        candles,
+        currentCandle,
+        drawings,
+        createOrder,
+        orders,
+        persistedVars,
+        painterService,
+      }: ScriptFuncParameters) {
         // This void thingies is to avoid complains from eslint/typescript
+        void canvas;
+        void ctx;
         void candles;
         void currentCandle;
+        void drawings;
         void createOrder;
+        void orders;
+        void persistedVars;
+        void painterService;
 
         // TODO: Function to close an order
         // TODO: Function to modify an order
 
         try {
           // eslint-disable-next-line
-          eval(script.contents);
+          eval(`(function (){${script.contents}}());`);
         } catch (err) {
           toast.error("There is an error in your scripts; Check console for more details.");
           console.error(err);
         }
       })({
+        canvas: this.PainterService.getCanvas(),
+        ctx: this.PainterService.getContext(),
         candles: this.PainterService.getData(),
         currentCandle: this.PainterService.getLastCandle(),
+        drawings: this.PainterService.getExternalDrawings(),
         createOrder: this.getCreateOrderFuncForScripts(),
+        orders: this.PainterService.getOrders(),
+        persistedVars: this.persistedVars,
+        painterService: this.PainterService,
       });
     }
     return this;
@@ -213,29 +233,32 @@ class ReplayerService {
   private getCreateOrderFuncForScripts(): (order: Order) => number {
     let createOrderFunc: (order: Order) => number;
 
-    (function (dispatch: Dispatch<ReducerAction>, ordersLength: number, currentCandle: Candle): void {
+    (function (painterService: PainterService): void {
       createOrderFunc = (order: Order): number => {
-        dispatch(
-          addOrder({
-            ...order,
-            createdAt: currentCandle.timestamp,
-          })
-        );
-        return ordersLength;
+        const orders = [...painterService.getOrders()];
+        orders.push({
+          ...order,
+          createdAt: painterService.getLastCandle().timestamp,
+        });
+        console.log("setting orders from func", orders);
+        painterService.setOrders(orders, true);
+        return orders.length;
       };
-    })(
-      this.PainterService.getTradesContextDispatch(),
-      this.PainterService.getOrders().length,
-      this.PainterService.getLastCandle()
-    );
+    })(this.PainterService);
 
     return createOrderFunc;
   }
 }
 
 interface ScriptFuncParameters {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
   candles: Candle[];
   currentCandle: Candle;
+  drawings: (() => void)[];
+  orders: Order[];
+  persistedVars: { [key: string]: unknown };
+  painterService: PainterService;
   createOrder: (order: Order) => number;
 }
 

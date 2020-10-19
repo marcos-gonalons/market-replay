@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { setIsTradingPanelVisible } from "../../context/globalContext/Actions";
 
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
-import { addOrder } from "../../context/tradesContext/Actions";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
 import { Order, OrderType, Position } from "../../context/tradesContext/Types";
 import PainterService from "../../services/painter/Painter";
@@ -18,7 +17,6 @@ function TradingPanel(): JSX.Element {
   } = useContext(GlobalContext);
   const {
     state: { orders },
-    dispatch: tradesContextDispatch,
   } = useContext(TradesContext);
   const [size, setSize] = useState<number>(0);
   const [orderType, setOrderType] = useState<Order["type"]>("market");
@@ -29,7 +27,6 @@ function TradingPanel(): JSX.Element {
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
   useEffect(() => {
-    painterService.setOrders(orders);
     painterService.draw();
   }, [painterService, orders]);
 
@@ -165,7 +162,9 @@ function TradingPanel(): JSX.Element {
                   toast.error((err as Error).message);
                   return;
                 }
-                tradesContextDispatch(addOrder(order));
+                const orders = [...painterService.getOrders()];
+                orders.push(order);
+                painterService.setOrders(orders, true);
               }}
             >
               Buy
@@ -190,7 +189,9 @@ function TradingPanel(): JSX.Element {
                   toast.error((err as Error).message);
                   return;
                 }
-                tradesContextDispatch(addOrder(order));
+                const orders = [...painterService.getOrders()];
+                orders.push(order);
+                painterService.setOrders(orders, true);
               }}
             >
               Sell
