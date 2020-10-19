@@ -39,7 +39,6 @@ const reducer = (state: State, action: ReducerAction): State => {
         orders: [],
       };
     case ActionTypes.SET_ORDERS:
-      console.log("setting orders in the state", action.payload);
       return {
         ...state,
         orders: action.payload as State["orders"],

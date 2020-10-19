@@ -240,7 +240,6 @@ class ReplayerService {
           ...order,
           createdAt: painterService.getLastCandle().timestamp,
         });
-        console.log("setting orders from func", orders);
         painterService.setOrders(orders, true);
         return orders.length;
       };

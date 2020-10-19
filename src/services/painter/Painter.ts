@@ -146,10 +146,8 @@ class PainterService {
   }
 
   public setOrders(orders: Order[], updateContext: boolean = false): PainterService {
-    console.log("painter service settings orders", orders, updateContext);
     this.orders = orders;
     if (updateContext && this.tradesContextDispatch) {
-      console.log("dispatching orders", orders);
       this.tradesContextDispatch(setOrders(orders));
     }
     return this;
