@@ -1,15 +1,14 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import PainterService from "../../services/painter/Painter";
 import ReplayerService from "../../services/replayer/Replayer";
+import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
 import { ReducerAction } from "../Types";
 import { ActionTypes, State } from "./Types";
 
-const painterService = new PainterService();
-const replayerService = new ReplayerService(painterService);
-
 const initialState: State = {
-  painterService: painterService,
-  replayerService: replayerService,
+  painterService: null,
+  replayerService: null,
+  scriptsExecutionerService: null,
   data: [],
   isParsingData: false,
   isReplayWidgetVisible: false,
@@ -62,6 +61,19 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         isScriptsPanelVisible: action.payload as State["isScriptsPanelVisible"],
+      };
+
+    case ActionTypes.SET_SERVICES:
+      const { painterService, replayerService, scriptsExecutionerService } = action.payload as {
+        painterService: PainterService;
+        replayerService: ReplayerService;
+        scriptsExecutionerService: ScriptsExecutionerService;
+      };
+      return {
+        ...state,
+        painterService,
+        replayerService,
+        scriptsExecutionerService,
       };
 
     default:

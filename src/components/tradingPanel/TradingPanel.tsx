@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { setIsTradingPanelVisible } from "../../context/globalContext/Actions";
 
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
+import { addOrder } from "../../context/tradesContext/Actions";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
 import { Order, OrderType, Position } from "../../context/tradesContext/Types";
 import PainterService from "../../services/painter/Painter";
@@ -17,6 +18,7 @@ function TradingPanel(): JSX.Element {
   } = useContext(GlobalContext);
   const {
     state: { orders, trades, balance },
+    dispatch: tradesContextDispatch,
   } = useContext(TradesContext);
   const [size, setSize] = useState<number>(0);
   const [orderType, setOrderType] = useState<Order["type"]>("market");
@@ -27,12 +29,15 @@ function TradingPanel(): JSX.Element {
   const [stopLossPrice, setStopLossPrice] = useState<number>(0);
 
   useEffect(() => {
+    if (!painterService) return;
+
     painterService.draw();
   }, [painterService, orders, trades]);
 
   useEffect(() => {
+    if (!replayerService) return;
+
     replayerService.setAccountBalance(balance);
-    console.log(balance);
   }, [replayerService, balance]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
@@ -153,13 +158,13 @@ function TradingPanel(): JSX.Element {
                   type: orderType,
                   position: "long",
                   size,
-                  painterService,
+                  painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
-                  createdAt: painterService.getLastCandle().timestamp,
+                  createdAt: painterService!.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);
@@ -167,9 +172,7 @@ function TradingPanel(): JSX.Element {
                   toast.error((err as Error).message);
                   return;
                 }
-                const orders = [...painterService.getOrders()];
-                orders.push(order);
-                painterService.setOrders(orders, true);
+                tradesContextDispatch(addOrder(order));
               }}
             >
               Buy
@@ -180,13 +183,13 @@ function TradingPanel(): JSX.Element {
                   type: orderType,
                   position: "short",
                   size,
-                  painterService,
+                  painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
                   limitPrice: limitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
-                  createdAt: painterService.getLastCandle().timestamp,
+                  createdAt: painterService!.getLastCandle().timestamp,
                 });
                 try {
                   validateOrder(order);
@@ -194,9 +197,7 @@ function TradingPanel(): JSX.Element {
                   toast.error((err as Error).message);
                   return;
                 }
-                const orders = [...painterService.getOrders()];
-                orders.push(order);
-                painterService.setOrders(orders, true);
+                tradesContextDispatch(addOrder(order));
               }}
             >
               Sell

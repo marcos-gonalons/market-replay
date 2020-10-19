@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
-import { TradesContext } from "../../context/tradesContext/TradesContext";
 import PainterService from "../../services/painter/Painter";
-import ReplayerService from "../../services/painter/Replayer/Replayer";
+import ReplayerService from "../../services/replayer/Replayer";
 import styles from "./Canvas.module.css";
 
 const canvasContainerRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -17,7 +16,6 @@ export default function Canvas(): JSX.Element {
   const {
     state: { painterService, replayerService, data },
   } = useContext(GlobalContext);
-  const { dispatch: tradesContextDispatch } = useContext(TradesContext);
 
   const [containerDimensions, setContainerDimensions] = useState<ContainerDimensions>({
     width: 0,
@@ -37,8 +35,7 @@ export default function Canvas(): JSX.Element {
     if (!painterService || !replayerService) return;
     window.addEventListener("keydown", (e: KeyboardEvent) => onKeyDown(e, replayerService));
     painterService.setCanvas(canvasRef.current!);
-    painterService.setTradesContextDispatch(tradesContextDispatch);
-  }, [painterService, replayerService, tradesContextDispatch]);
+  }, [painterService, replayerService]);
 
   useEffect(() => {
     canvasRef.current!.height = containerDimensions.height;

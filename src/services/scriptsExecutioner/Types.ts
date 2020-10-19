@@ -1,6 +1,5 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
-import PainterService from "../painter/Painter";
 
 export interface ScriptFuncParameters {
   canvas: HTMLCanvasElement;
@@ -10,7 +9,7 @@ export interface ScriptFuncParameters {
   drawings: (() => void)[];
   orders: Order[];
   persistedVars: { [key: string]: unknown };
-  painterService: PainterService;
   balance: number;
-  createOrder: (order: Order) => number;
+  createOrder: (order: Order) => void;
+  removeAllOrders: () => void;
 }

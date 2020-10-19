@@ -1,12 +1,26 @@
 import { toast } from "react-toastify";
 import { Script } from "../../context/scriptsContext/Types";
-import { Order } from "../../context/tradesContext/Types";
+import { addOrder, removeAllOrders } from "../../context/tradesContext/Actions";
+import { Order, TradesContext, State as TradesContextState } from "../../context/tradesContext/Types";
 import PainterService from "../painter/Painter";
 import { ScriptFuncParameters } from "./Types";
 
 class ScriptsExecutionerService {
+  private PainterService: PainterService;
+
+  private tradesContext: TradesContext;
   private scripts: Script[] = [];
   private persistedVars: { [key: string]: unknown } = {};
+
+  public constructor(painterService: PainterService, tradesContext: TradesContext) {
+    this.PainterService = painterService;
+    this.tradesContext = tradesContext;
+  }
+
+  public updateTradesContextState(state: TradesContextState): ScriptsExecutionerService {
+    this.tradesContext.state = state;
+    return this;
+  }
 
   public setScripts(scripts: Script[]): ScriptsExecutionerService {
     this.scripts = scripts;
@@ -25,9 +39,9 @@ class ScriptsExecutionerService {
         drawings,
         orders,
         persistedVars,
-        painterService,
         balance,
         createOrder,
+        removeAllOrders,
       }: ScriptFuncParameters) {
         // This void thingies is to avoid complains from eslint/typescript
         void canvas;
@@ -37,9 +51,9 @@ class ScriptsExecutionerService {
         void drawings;
         void orders;
         void persistedVars;
-        void painterService;
         void balance;
         void createOrder;
+        void removeAllOrders;
 
         // TODO: Function to close an order
         // TODO: Function to modify an order
@@ -57,32 +71,34 @@ class ScriptsExecutionerService {
         candles: this.PainterService.getData(),
         currentCandle: this.PainterService.getLastCandle(),
         drawings: this.PainterService.getExternalDrawings(),
-        createOrder: this.getCreateOrderFuncForScripts(),
-        orders: this.PainterService.getOrders(),
+        orders: this.tradesContext.state.orders,
         persistedVars: this.persistedVars,
-        painterService: this.PainterService,
-        balance: this.accountBalance,
+        balance: this.tradesContext.state.balance,
+        createOrder: this.getCreateOrderFunc(),
+        removeAllOrders: this.getRemoveAllOrdersFunc(),
       });
     }
     return this;
   }
 
-  private getCreateOrderFuncForScripts(): (order: Order) => number {
-    let createOrderFunc: (order: Order) => number;
+  private getCreateOrderFunc(): ScriptFuncParameters["createOrder"] {
+    let createOrderFunc: ScriptFuncParameters["createOrder"];
 
-    (function (painterService: PainterService): void {
-      createOrderFunc = (order: Order): number => {
-        const orders = [...painterService.getOrders()];
-        orders.push({
-          ...order,
-          createdAt: painterService.getLastCandle().timestamp,
-        });
-        painterService.setOrders(orders, true);
-        return orders.length;
-      };
-    })(this.PainterService);
+    (function (tradesContext: TradesContext): void {
+      createOrderFunc = (order: Order): void => tradesContext.dispatch(addOrder(order));
+    })(this.tradesContext);
 
     return createOrderFunc;
+  }
+
+  private getRemoveAllOrdersFunc(): ScriptFuncParameters["removeAllOrders"] {
+    let removeAllOrdersFunc: ScriptFuncParameters["removeAllOrders"];
+
+    (function (tradesContext: TradesContext): void {
+      removeAllOrdersFunc = (): void => tradesContext.dispatch(removeAllOrders());
+    })(this.tradesContext);
+
+    return removeAllOrdersFunc;
   }
 }
 

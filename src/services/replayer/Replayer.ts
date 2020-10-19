@@ -1,27 +1,39 @@
-import { toast } from "react-toastify";
 import { Candle } from "../../context/globalContext/Types";
-import { Script } from "../../context/scriptsContext/Types";
-import { setBalance } from "../../context/tradesContext/Actions";
-import { Order, Trade } from "../../context/tradesContext/Types";
+import {
+  removeAllOrders,
+  removeAllTrades,
+  setBalance,
+  setOrders,
+  setTrades,
+} from "../../context/tradesContext/Actions";
+import { Trade, TradesContext, State as TradesContextState } from "../../context/tradesContext/Types";
 import PainterService from "../painter/Painter";
+import ScriptsExecutionerService from "../scriptsExecutioner/ScriptsExecutioner";
 
 class ReplayerService {
   private PainterService: PainterService;
+  private ScriptsExecutionerService: ScriptsExecutionerService;
+
+  private tradesContext: TradesContext;
 
   private replayTimer: NodeJS.Timeout | null = null;
   private isPaused: boolean = false;
   private replayTimerTickMilliseconds: number = 1;
   private dataBackup: Candle[] = [];
-  private scripts: Script[] = [];
-  private persistedVars: { [key: string]: unknown } = {};
   private accountBalance: number = 0;
 
-  public constructor(painterService: PainterService) {
+  public constructor(
+    painterService: PainterService,
+    scriptsExecutionerService: ScriptsExecutionerService,
+    tradesContext: TradesContext
+  ) {
     this.PainterService = painterService;
+    this.ScriptsExecutionerService = scriptsExecutionerService;
+    this.tradesContext = tradesContext;
   }
 
-  public setScripts(scripts: Script[]): ReplayerService {
-    this.scripts = scripts;
+  public updateTradesContextState(state: TradesContextState): ReplayerService {
+    this.tradesContext.state = state;
     return this;
   }
 
@@ -32,8 +44,6 @@ class ReplayerService {
 
   public startReplay(): ReplayerService {
     if (this.replayTimer !== null) return this;
-
-    this.PainterService.setTrades([]);
 
     const painterData = this.PainterService.getData();
 
@@ -72,8 +82,8 @@ class ReplayerService {
     this.replayTimer = null;
     this.isPaused = false;
 
-    this.PainterService.setOrders([], true);
-    this.PainterService.setTrades([], true);
+    this.tradesContext.dispatch(removeAllOrders());
+    this.tradesContext.dispatch(removeAllTrades());
     this.PainterService.setData([...this.dataBackup]);
     this.PainterService.draw();
     return this;
@@ -87,7 +97,7 @@ class ReplayerService {
 
     this.PainterService.setData(data);
 
-    const orders = [...this.PainterService.getOrders()];
+    const orders = [...this.tradesContext.state.orders];
 
     const indicesOfOrdersToRemove: number[] = [];
     for (const [index, order] of orders.entries()) {
@@ -99,8 +109,7 @@ class ReplayerService {
       orders.splice(i, 1);
     }
 
-    this.PainterService.setOrders(orders, true);
-    this.PainterService.draw();
+    this.tradesContext.dispatch(setOrders(orders));
     return this;
   }
 
@@ -121,8 +130,8 @@ class ReplayerService {
 
   private onReplayTimerTick(): void {
     const data = this.PainterService.getData();
-    const orders = [...this.PainterService.getOrders()];
-    const trades = [...this.PainterService.getTrades()];
+    const orders = [...this.tradesContext.state.orders];
+    const trades = [...this.tradesContext.state.trades];
 
     if (this.dataBackup.length > data.length) {
       data.push(this.dataBackup[data.length]);
@@ -179,110 +188,24 @@ class ReplayerService {
         orders.splice(i, 1);
       }
 
-      this.PainterService.setTrades(trades, true);
-      this.PainterService.setOrders(orders, true);
+      this.tradesContext.dispatch(setTrades(trades));
+      this.tradesContext.dispatch(setOrders(orders));
     } else {
       this.stopReplay();
       return;
     }
 
-    this.executeScripts();
-  }
-
-  private executeScripts(): ReplayerService {
-    for (const script of this.scripts) {
-      if (!script.isActive) continue;
-
-      (function ({
-        canvas,
-        ctx,
-        candles,
-        currentCandle,
-        drawings,
-        orders,
-        persistedVars,
-        painterService,
-        balance,
-        createOrder,
-      }: ScriptFuncParameters) {
-        // This void thingies is to avoid complains from eslint/typescript
-        void canvas;
-        void ctx;
-        void candles;
-        void currentCandle;
-        void drawings;
-        void orders;
-        void persistedVars;
-        void painterService;
-        void balance;
-        void createOrder;
-
-        // TODO: Function to close an order
-        // TODO: Function to modify an order
-
-        try {
-          // eslint-disable-next-line
-          eval(`(function (){${script.contents}}());`);
-        } catch (err) {
-          toast.error("There is an error in your scripts; Check console for more details.");
-          console.error(err);
-        }
-      })({
-        canvas: this.PainterService.getCanvas(),
-        ctx: this.PainterService.getContext(),
-        candles: this.PainterService.getData(),
-        currentCandle: this.PainterService.getLastCandle(),
-        drawings: this.PainterService.getExternalDrawings(),
-        createOrder: this.getCreateOrderFuncForScripts(),
-        orders: this.PainterService.getOrders(),
-        persistedVars: this.persistedVars,
-        painterService: this.PainterService,
-        balance: this.accountBalance,
-      });
-    }
-    return this;
-  }
-
-  private getCreateOrderFuncForScripts(): (order: Order) => number {
-    let createOrderFunc: (order: Order) => number;
-
-    (function (painterService: PainterService): void {
-      createOrderFunc = (order: Order): number => {
-        const orders = [...painterService.getOrders()];
-        orders.push({
-          ...order,
-          createdAt: painterService.getLastCandle().timestamp,
-        });
-        painterService.setOrders(orders, true);
-        return orders.length;
-      };
-    })(this.PainterService);
-
-    return createOrderFunc;
+    this.ScriptsExecutionerService.execute();
+    this.PainterService.draw();
   }
 
   private adjustAccountBalance(trade: Trade): ReplayerService {
-    const dispatch = this.PainterService.getTradesContextDispatch();
-
     let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
     if (trade.position === "short") tradeResult = -tradeResult;
 
-    dispatch(setBalance(this.accountBalance + tradeResult));
+    this.tradesContext.dispatch(setBalance(this.accountBalance + tradeResult));
     return this;
   }
-}
-
-interface ScriptFuncParameters {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  candles: Candle[];
-  currentCandle: Candle;
-  drawings: (() => void)[];
-  orders: Order[];
-  persistedVars: { [key: string]: unknown };
-  painterService: PainterService;
-  balance: number;
-  createOrder: (order: Order) => number;
 }
 
 export default ReplayerService;

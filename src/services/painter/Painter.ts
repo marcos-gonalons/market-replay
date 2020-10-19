@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dispatch } from "react";
 import { Candle } from "../../context/globalContext/Types";
-import { setOrders, setTrades } from "../../context/tradesContext/Actions";
-import { Order, Trade } from "../../context/tradesContext/Types";
-import { ReducerAction } from "../../context/Types";
+import { State as TradesContextState, TradesContext } from "../../context/tradesContext/Types";
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
@@ -28,6 +25,7 @@ import { getYCoordOfPrice } from "./Utils/Utils";
 import { drawVolume } from "./VolumePainter/VolumePainter";
 
 class PainterService {
+  private tradesContext: TradesContext;
   private data: Candle[] = [];
   private canvas: HTMLCanvasElement = null as any;
   private ctx: CanvasRenderingContext2D = null as any;
@@ -42,10 +40,16 @@ class PainterService {
   private dragStartMouseCoords: Coords = { x: 0, y: 0 };
   private dataTemporality: number = 0;
   private colors: Colors = DEFAULT_COLORS;
-  private orders: Order[] = [];
-  private trades: Trade[] = [];
   private externalDrawings: (() => void)[] = [];
-  private tradesContextDispatch: Dispatch<ReducerAction> | null = null;
+
+  public constructor(tradesContext: TradesContext) {
+    this.tradesContext = tradesContext;
+  }
+
+  public updateTradesContextState(state: TradesContextState): PainterService {
+    this.tradesContext.state = state;
+    return this;
+  }
 
   public setCanvas(canvas: HTMLCanvasElement): PainterService {
     this.canvas = canvas;
@@ -145,30 +149,6 @@ class PainterService {
     return this.data[this.data.length - 1];
   }
 
-  public setOrders(orders: Order[], updateContext: boolean = false): PainterService {
-    this.orders = orders;
-    if (updateContext && this.tradesContextDispatch) {
-      this.tradesContextDispatch(setOrders(orders));
-    }
-    return this;
-  }
-
-  public getOrders(): Order[] {
-    return this.orders;
-  }
-
-  public setTrades(trades: Trade[], updateContext: boolean = false): PainterService {
-    this.trades = trades;
-    if (updateContext && this.tradesContextDispatch) {
-      this.tradesContextDispatch(setTrades(trades));
-    }
-    return this;
-  }
-
-  public getTrades(): Trade[] {
-    return this.trades;
-  }
-
   public getCandlesDisplayDimensions(): CandlesDisplayDimensions {
     return {
       width: this.canvas.width - PRICE_SCALE_WITH_IN_PX,
@@ -245,15 +225,6 @@ class PainterService {
       drawing();
     }
     return this;
-  }
-
-  public setTradesContextDispatch(d: Dispatch<ReducerAction>): PainterService {
-    this.tradesContextDispatch = d;
-    return this;
-  }
-
-  public getTradesContextDispatch(): Dispatch<ReducerAction> {
-    return this.tradesContextDispatch!;
   }
 
   private updateMaxCandlesAmountInScreen(): PainterService {
@@ -451,7 +422,7 @@ class PainterService {
   private drawOrders(): PainterService {
     drawOrders({
       ctx: this.ctx,
-      orders: this.orders,
+      orders: this.tradesContext.state.orders,
       priceRange: this.priceRangeInScreen,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       colors: this.colors.orders,
@@ -464,7 +435,7 @@ class PainterService {
     const [dataStartIndex, dataEndIndex] = this.getStartAndEndIndexForCandlesInScreen();
     drawFinishedTrades({
       ctx: this.ctx,
-      trades: this.trades,
+      trades: this.tradesContext.state.trades,
       colors: this.colors.trades,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
       priceRange: this.priceRangeInScreen,

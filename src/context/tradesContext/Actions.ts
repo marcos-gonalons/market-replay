@@ -7,6 +7,12 @@ export function removeAllOrders(): ReducerAction {
   };
 }
 
+export function removeAllTrades(): ReducerAction {
+  return {
+    type: ActionTypes.REMOVE_ALL_TRADES,
+  };
+}
+
 export function addOrder(payload: Order): ReducerAction {
   return {
     type: ActionTypes.ADD_ORDER,

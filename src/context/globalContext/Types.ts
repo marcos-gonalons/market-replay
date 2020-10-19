@@ -1,5 +1,6 @@
 import PainterService from "../../services/painter/Painter";
-import ReplayerService from "../../services/painter/Replayer/Replayer";
+import ReplayerService from "../../services/replayer/Replayer";
+import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
 
 interface Candle {
   timestamp: number;
@@ -13,8 +14,9 @@ interface Candle {
 }
 
 interface State {
-  readonly painterService: PainterService;
-  readonly replayerService: ReplayerService;
+  readonly painterService: PainterService | null;
+  readonly replayerService: ReplayerService | null;
+  readonly scriptsExecutionerService: ScriptsExecutionerService | null;
   readonly data: Candle[];
   readonly isParsingData: boolean;
   readonly isReplayWidgetVisible: boolean;
@@ -30,6 +32,7 @@ const ActionTypes = {
   SET_IS_REPLAY_ACTIVE: "GLOBAL_CONTEXT_SET_IS_REPLAY_ACTIVE",
   SET_IS_TRADING_PANEL_VISIBLE: "GLOBAL_CONTEXT_SET_IS_TRADING_PANEL_VISIBLE",
   SET_IS_SCRIPTS_PANEL_VISIBLE: "GLOBAL_CONTEXT_SET_IS_SCRIPTS_PANEL_VISIBLE",
+  SET_SERVICES: "GLOBAL_CONTEXT_SET_SERVICES",
 };
 
 export { ActionTypes };

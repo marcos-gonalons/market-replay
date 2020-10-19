@@ -1,6 +1,6 @@
-import React, { useReducer, createContext, Dispatch } from "react";
+import React, { useReducer, createContext } from "react";
 import { ReducerAction } from "../Types";
-import { ActionTypes, Order, State, Trade } from "./Types";
+import { ActionTypes, Order, State, Trade, TradesContext as TradesContextType } from "./Types";
 
 const initialState: State = {
   orders: [],
@@ -8,10 +8,7 @@ const initialState: State = {
   balance: 100000,
 };
 
-export const TradesContext = createContext<{
-  state: State;
-  dispatch: Dispatch<ReducerAction>;
-}>({
+export const TradesContext = createContext<TradesContextType>({
   state: initialState,
   dispatch: () => null,
 });
@@ -38,6 +35,11 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         orders: [],
+      };
+    case ActionTypes.REMOVE_ALL_TRADES:
+      return {
+        ...state,
+        trades: [],
       };
     case ActionTypes.SET_ORDERS:
       return {

@@ -1,3 +1,6 @@
+import PainterService from "../../services/painter/Painter";
+import ReplayerService from "../../services/replayer/Replayer";
+import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
 import { ReducerAction } from "../Types";
 import { ActionTypes } from "./Types";
 
@@ -41,6 +44,17 @@ export function setIsTradingPanelVisible(payload: State["isTradingPanelVisible"]
 export function setIsScriptsPanelVisible(payload: State["isScriptsPanelVisible"]): ReducerAction {
   return {
     type: ActionTypes.SET_IS_SCRIPTS_PANEL_VISIBLE,
+    payload,
+  };
+}
+
+export function setServices(payload: {
+  painterService: PainterService;
+  replayerService: ReplayerService;
+  scriptsExecutionerService: ScriptsExecutionerService;
+}): ReducerAction {
+  return {
+    type: ActionTypes.SET_SERVICES,
     payload,
   };
 }

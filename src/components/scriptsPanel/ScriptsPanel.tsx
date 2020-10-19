@@ -25,7 +25,7 @@ import { ReducerAction } from "../../context/Types";
 
 function ScriptsPanel(): JSX.Element {
   const {
-    state: { isScriptsPanelVisible, replayerService },
+    state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService },
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
   const {
@@ -36,13 +36,13 @@ function ScriptsPanel(): JSX.Element {
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!replayerService) return;
-    replayerService.setScripts(scripts);
+    if (!scriptsExecutionerService) return;
+    scriptsExecutionerService.setScripts(scripts);
 
-    if (replayerService.isReplayActive() && !replayerService.isReplayPaused()) {
-      replayerService.togglePause();
+    if (replayerService!.isReplayActive() && !replayerService!.isReplayPaused()) {
+      replayerService!.togglePause();
     }
-  }, [scripts, replayerService]);
+  }, [scripts, replayerService, scriptsExecutionerService]);
 
   if (!isScriptsPanelVisible) {
     return <></>;
