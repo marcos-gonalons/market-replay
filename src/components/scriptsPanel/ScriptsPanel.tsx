@@ -22,6 +22,7 @@ import {
 } from "../../context/scriptsContext/Actions";
 import { Script } from "../../context/scriptsContext/Types";
 import { ReducerAction } from "../../context/Types";
+import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
 
 function ScriptsPanel(): JSX.Element {
   const {
@@ -66,7 +67,12 @@ function ScriptsPanel(): JSX.Element {
           </button>
           <section className={styles["contents"]}>
             <aside className={styles["script-names"]}>
-              {renderScriptNames(scripts, indexOfTheScriptBeingEdited, scriptsContextDispatch)}
+              {renderScriptNames(
+                scripts,
+                indexOfTheScriptBeingEdited,
+                scriptsContextDispatch,
+                scriptsExecutionerService!
+              )}
               {renderAddScriptButton(scriptsContextDispatch)}
               {renderHelpModalButton(() => setIsHelpModalVisible(true))}
             </aside>
@@ -98,7 +104,8 @@ function ScriptsPanel(): JSX.Element {
 function renderScriptNames(
   scripts: Script[],
   indexOfTheScriptBeingEdited: number,
-  dispatch: React.Dispatch<ReducerAction>
+  dispatch: React.Dispatch<ReducerAction>,
+  scriptsExecutionerService: ScriptsExecutionerService
 ): JSX.Element[] {
   return scripts.map((s, index) => (
     <div key={index}>
@@ -127,6 +134,7 @@ function renderScriptNames(
       ) : (
         ""
       )}
+      <button onClick={() => scriptsExecutionerService.executeWithFullData(s)}>Execute</button>
     </div>
   ));
 }

@@ -13,11 +13,11 @@ import styles from "./TradingPanel.module.css";
 
 function TradingPanel(): JSX.Element {
   const {
-    state: { isTradingPanelVisible, painterService, replayerService },
+    state: { isTradingPanelVisible, painterService },
     dispatch: globalContextDispath,
   } = useContext(GlobalContext);
   const {
-    state: { orders, trades, balance },
+    state: { orders, trades },
     dispatch: tradesContextDispatch,
   } = useContext(TradesContext);
   const [size, setSize] = useState<number>(0);
@@ -33,12 +33,6 @@ function TradingPanel(): JSX.Element {
 
     painterService.draw();
   }, [painterService, orders, trades]);
-
-  useEffect(() => {
-    if (!replayerService) return;
-
-    replayerService.setAccountBalance(balance);
-  }, [replayerService, balance]);
 
   // This weird ref is necessary for the Draggable component otherwise the console throws a warning.
   const ref = useRef(null);

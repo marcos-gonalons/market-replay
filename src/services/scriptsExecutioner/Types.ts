@@ -5,7 +5,6 @@ export interface ScriptFuncParameters {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   candles: Candle[];
-  currentCandle: Candle;
   drawings: (() => void)[];
   orders: Order[];
   persistedVars: { [key: string]: unknown };

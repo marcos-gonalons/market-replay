@@ -74,6 +74,7 @@ class PainterService {
   }
 
   public setData(data: Candle[]): PainterService {
+    // TODO: maybe use data from global context instead of var in service
     this.data = data;
     this.setDataTemporality();
     return this;

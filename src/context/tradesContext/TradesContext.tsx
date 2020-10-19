@@ -5,7 +5,7 @@ import { ActionTypes, Order, State, Trade, TradesContext as TradesContextType } 
 const initialState: State = {
   orders: [],
   trades: [],
-  balance: 100000,
+  balance: 10000,
 };
 
 export const TradesContext = createContext<TradesContextType>({

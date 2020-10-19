@@ -20,7 +20,6 @@ class ReplayerService {
   private isPaused: boolean = false;
   private replayTimerTickMilliseconds: number = 1;
   private dataBackup: Candle[] = [];
-  private accountBalance: number = 0;
 
   public constructor(
     painterService: PainterService,
@@ -34,11 +33,6 @@ class ReplayerService {
 
   public updateTradesContextState(state: TradesContextState): ReplayerService {
     this.tradesContext.state = state;
-    return this;
-  }
-
-  public setAccountBalance(balance: number): ReplayerService {
-    this.accountBalance = balance;
     return this;
   }
 
@@ -195,7 +189,7 @@ class ReplayerService {
       return;
     }
 
-    this.ScriptsExecutionerService.execute();
+    this.ScriptsExecutionerService.executeAllScriptsOnReplayTick();
     this.PainterService.draw();
   }
 
@@ -203,7 +197,7 @@ class ReplayerService {
     let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
     if (trade.position === "short") tradeResult = -tradeResult;
 
-    this.tradesContext.dispatch(setBalance(this.accountBalance + tradeResult));
+    this.tradesContext.dispatch(setBalance(this.tradesContext.state.balance + tradeResult));
     return this;
   }
 }
