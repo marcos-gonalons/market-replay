@@ -3,6 +3,7 @@ import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
 import { addOrder, removeAllOrders, setBalance, setOrders, setTrades } from "../../context/tradesContext/Actions";
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
+import processOrders from "../ordersHandler/OrdersHandler";
 import PainterService from "../painter/Painter";
 import { ScriptFuncParameters } from "./Types";
 
@@ -45,63 +46,12 @@ class ScriptsExecutionerService {
     const data = this.PainterService.getData();
 
     for (let i = 0; i < data.length; i++) {
-      const limitOrders = this.orders.filter((o) => o.type === "limit");
-      const marketOrders = this.orders.filter((o) => o.type === "market");
-      const currentCandle = data[i];
-
-      for (const order of limitOrders) {
-        if (order.price >= currentCandle.low && order.price <= currentCandle.high) {
-          order.createdAt = currentCandle.timestamp;
-          order.fillDate = currentCandle.timestamp;
-          order.type = "market";
-        }
-      }
-
-      const indicesOfMarketOrdersToRemove: number[] = [];
-      for (const [index, order] of marketOrders.entries()) {
-        if (!order.stopLoss && !order.takeProfit) continue;
-        let trade: Trade;
-
-        if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          trade = {
-            startDate: order.createdAt!,
-            endDate: data[data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.stopLoss,
-            size: order.size,
-            position: order.position,
-          };
-          this.trades.push(trade);
-          indicesOfMarketOrdersToRemove.push(index);
-
-          let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-          if (trade.position === "short") tradeResult = -tradeResult;
-          this.balance = this.balance + tradeResult;
-          continue;
-        }
-
-        if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          trade = {
-            startDate: order.createdAt!,
-            endDate: data[data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.takeProfit,
-            size: order.size,
-            position: order.position,
-          };
-          this.trades.push(trade);
-          indicesOfMarketOrdersToRemove.push(index);
-
-          let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-          if (trade.position === "short") tradeResult = -tradeResult;
-          this.balance = this.balance + tradeResult;
-          continue;
-        }
-      }
-
-      for (const i of indicesOfMarketOrdersToRemove) {
-        this.orders.splice(i, 1);
-      }
+      this.balance = processOrders({
+        orders: this.orders,
+        trades: this.trades,
+        currentCandle: data[i],
+        balance: this.balance,
+      });
 
       this.executeScriptCode(script, data.slice(0, i), this.balance, false);
     }
