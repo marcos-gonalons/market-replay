@@ -3,8 +3,6 @@ import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({ orders, trades, currentCandle, balance }: ProcessOrdersParameters): number {
   const limitOrders = orders.filter((o) => o.type === "limit");
-  const marketOrders = orders.filter((o) => o.type === "market");
-
   for (const order of limitOrders) {
     if (order.price >= currentCandle.low && order.price <= currentCandle.high) {
       order.createdAt = currentCandle.timestamp;
@@ -13,6 +11,7 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     }
   }
 
+  const marketOrders = orders.filter((o) => o.type === "market");
   const indicesOfMarketOrdersToRemove: number[] = [];
   for (const [index, order] of marketOrders.entries()) {
     if (!order.stopLoss && !order.takeProfit) continue;

@@ -36,9 +36,17 @@ class ScriptsExecutionerService {
   }
 
   public executeAllScriptsOnReplayTick(): ScriptsExecutionerService {
+    const data = this.PainterService!.getData();
     for (const script of this.scripts) {
       if (!script.isActive) continue;
-      this.executeScriptCode(script, this.PainterService!.getData(), this.tradesContext!.state.balance, true);
+      this.executeScriptCode(
+        script,
+        data,
+        this.tradesContext!.state.balance,
+        true,
+        this.tradesContext!.state.orders,
+        data.length - 1
+      );
     }
     return this;
   }
@@ -61,9 +69,9 @@ class ScriptsExecutionerService {
         balance,
       });
 
-      this.executeScriptCode(script, data.slice(0, i), balance, false, orders);
+      this.executeScriptCode(script, data, balance, false, orders, i);
 
-      if (worker && i % Math.round(data.length / 10000) === 0) {
+      if (worker && i % Math.round(data.length / 100) === 0) {
         worker.postMessage({
           type: "scripts-executioner",
           payload: {
@@ -78,7 +86,7 @@ class ScriptsExecutionerService {
       worker.postMessage({
         type: "scripts-executioner",
         payload: {
-          balance: balance,
+          balance,
           progress: 100,
         },
       });
@@ -118,8 +126,7 @@ class ScriptsExecutionerService {
       })(this.tradesContext!);
     } else {
       removeAllOrdersFunc = (): void => {
-        void orders;
-        orders = [];
+        orders!.splice(0, orders!.length);
       };
     }
 
@@ -131,7 +138,8 @@ class ScriptsExecutionerService {
     candles: Candle[],
     balance: number,
     replayMode: boolean,
-    orders?: Order[]
+    orders: Order[],
+    currentDataIndex: number
   ): ScriptsExecutionerService {
     (function ({
       canvas,
@@ -141,6 +149,7 @@ class ScriptsExecutionerService {
       orders,
       persistedVars,
       balance,
+      currentDataIndex,
       createOrder,
       removeAllOrders,
     }: ScriptFuncParameters) {
@@ -152,6 +161,7 @@ class ScriptsExecutionerService {
       void orders;
       void persistedVars;
       void balance;
+      void currentDataIndex;
       void createOrder;
       void removeAllOrders;
 
@@ -170,9 +180,10 @@ class ScriptsExecutionerService {
       ctx: this.PainterService?.getContext(),
       candles,
       drawings: this.PainterService?.getExternalDrawings(),
-      orders: orders ? orders : this.tradesContext ? this.tradesContext.state.orders : [],
+      orders,
       persistedVars: this.persistedVars,
       balance,
+      currentDataIndex,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
     });
