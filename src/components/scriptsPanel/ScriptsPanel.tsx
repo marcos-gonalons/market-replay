@@ -22,11 +22,14 @@ import {
 } from "../../context/scriptsContext/Actions";
 import { Script } from "../../context/scriptsContext/Types";
 import { ReducerAction } from "../../context/Types";
-import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
+import { toast } from "react-toastify";
+import HelpModal from "./helpModal/HelpModal";
+import { Candle } from "../../context/globalContext/Types";
+import { AppWorker, MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
 
 function ScriptsPanel(): JSX.Element {
   const {
-    state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService },
+    state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService, painterService, worker },
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
   const {
@@ -35,6 +38,24 @@ function ScriptsPanel(): JSX.Element {
   } = useContext(ScriptsContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    worker.addEventListener("message", ({ data }: MessageEvent) => {
+      const { error, type, payload } = data as MessageOut & { error: Error };
+
+      if (error) {
+        toast.error(`An error occurred: ${error.message}`);
+        return;
+      }
+
+      if (type !== "scripts-executioner") return;
+
+      const { balance, progress } = payload as ScriptExecutionerWorkerMessageOut;
+
+      console.log("balance", balance);
+      console.log("progress", progress);
+    });
+  }, [worker, scriptsContextDispatch]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;
@@ -71,7 +92,8 @@ function ScriptsPanel(): JSX.Element {
                 scripts,
                 indexOfTheScriptBeingEdited,
                 scriptsContextDispatch,
-                scriptsExecutionerService!
+                worker,
+                painterService!.getData()
               )}
               {renderAddScriptButton(scriptsContextDispatch)}
               {renderHelpModalButton(() => setIsHelpModalVisible(true))}
@@ -96,7 +118,7 @@ function ScriptsPanel(): JSX.Element {
           </section>
         </article>
       </Modal>
-      {renderHelpModal(isHelpModalVisible, () => setIsHelpModalVisible(false))}
+      <HelpModal isVisible={isHelpModalVisible} onClose={() => setIsHelpModalVisible(false)} />
     </>
   );
 }
@@ -105,7 +127,8 @@ function renderScriptNames(
   scripts: Script[],
   indexOfTheScriptBeingEdited: number,
   dispatch: React.Dispatch<ReducerAction>,
-  scriptsExecutionerService: ScriptsExecutionerService
+  worker: AppWorker,
+  data: Candle[]
 ): JSX.Element[] {
   return scripts.map((s, index) => (
     <div key={index}>
@@ -134,7 +157,16 @@ function renderScriptNames(
       ) : (
         ""
       )}
-      <button onClick={() => scriptsExecutionerService.executeWithFullData(s)}>Execute</button>
+      <button
+        onClick={() => {
+          worker.postMessage({
+            type: "scripts-executioner",
+            payload: { script: s, data, initialBalance: 10000 },
+          });
+        }}
+      >
+        Execute
+      </button>
     </div>
   ));
 }
@@ -145,43 +177,6 @@ function renderAddScriptButton(dispatch: React.Dispatch<ReducerAction>): JSX.Ele
 
 function renderHelpModalButton(onClick: () => void): JSX.Element {
   return <button onClick={onClick}>Help</button>;
-}
-
-function renderHelpModal(isVisible: boolean, onClose: () => void): JSX.Element {
-  return (
-    <Modal
-      ariaHideApp={false}
-      aria-labelledby="simple-modal-title"
-      aria-describedby="simple-modal-description"
-      isOpen={isVisible}
-      onRequestClose={onClose}
-      style={{
-        content: {},
-      }}
-    >
-      /** * Variables that are accessible * ----------------------------- * - candles * Array containing all the candles
-      * Every item of the array is an object with this properties: * timestamp, open, high, low, close, volume * * -
-      currentCandle * The candle where the replay is at * * * Functions that can be called *
-      ---------------------------- * - createOrder * Allows to create market/limit orders. Returns the index of the
-      order created. * * Example for a market order
-      {`createOrder({
- *     type: "market",
- *     position: "long",
- *     size: 50,
- *     stopLoss: 12345
- *   })'`}
-      * * * Example for a limit order *{" "}
-      {`createOrder({
- *     type: "limit",
- *     position: "short",
- *     size: 100,
- *     price: 1234.56,
- *     stopLoss: 1244.77,
- *     takeProfit: 1200.02
- *   })`}
-      * * */
-    </Modal>
-  );
 }
 
 export default ScriptsPanel;

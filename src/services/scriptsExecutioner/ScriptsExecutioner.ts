@@ -3,29 +3,30 @@ import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
 import { addOrder, removeAllOrders, setBalance, setOrders, setTrades } from "../../context/tradesContext/Actions";
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
+import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import PainterService from "../painter/Painter";
 import { ScriptFuncParameters } from "./Types";
 
 class ScriptsExecutionerService {
-  private PainterService: PainterService;
+  private PainterService?: PainterService;
+  private tradesContext?: TradesContext;
 
-  private tradesContext: TradesContext;
   private scripts: Script[] = [];
   private persistedVars: { [key: string]: unknown } = {};
 
-  private orders: Order[] = [];
-  private trades: Trade[] = [];
-  private balance: number = 0;
-
-  public constructor(painterService: PainterService, tradesContext: TradesContext) {
+  public setPainterService(painterService: PainterService): ScriptsExecutionerService {
     this.PainterService = painterService;
+    return this;
+  }
+
+  public setTradesContext(tradesContext: TradesContext): ScriptsExecutionerService {
     this.tradesContext = tradesContext;
+    return this;
   }
 
   public updateTradesContextState(state: TradesContextState): ScriptsExecutionerService {
-    this.tradesContext.state = state;
-    this.balance = this.tradesContext.state.balance;
+    this.tradesContext!.state = state;
     return this;
   }
 
@@ -37,63 +38,89 @@ class ScriptsExecutionerService {
   public executeAllScriptsOnReplayTick(): ScriptsExecutionerService {
     for (const script of this.scripts) {
       if (!script.isActive) continue;
-      this.executeScriptCode(script, this.PainterService.getData(), this.tradesContext.state.balance, true);
+      this.executeScriptCode(script, this.PainterService!.getData(), this.tradesContext!.state.balance, true);
     }
     return this;
   }
 
-  public executeWithFullData(script: Script): ScriptsExecutionerService {
-    const data = this.PainterService.getData();
+  public executeWithFullData(
+    script: Script,
+    data: Candle[],
+    initialBalance: number,
+    worker?: AppWorker
+  ): ScriptsExecutionerService {
+    const orders: Order[] = [];
+    const trades: Trade[] = [];
+    let balance = initialBalance;
 
     for (let i = 0; i < data.length; i++) {
-      this.balance = processOrders({
-        orders: this.orders,
-        trades: this.trades,
+      balance = processOrders({
+        orders,
+        trades,
         currentCandle: data[i],
-        balance: this.balance,
+        balance,
       });
 
-      this.executeScriptCode(script, data.slice(0, i), this.balance, false);
+      this.executeScriptCode(script, data.slice(0, i), balance, false, orders);
+
+      if (worker && i % Math.round(data.length / 10000) === 0) {
+        worker.postMessage({
+          type: "scripts-executioner",
+          payload: {
+            balance,
+            progress: (i * 100) / data.length,
+          },
+        });
+      }
     }
 
-    this.tradesContext.dispatch(setTrades(this.trades));
-    this.tradesContext.dispatch(setBalance(this.balance));
-    this.tradesContext.dispatch(setOrders(this.orders));
+    if (worker) {
+      worker.postMessage({
+        type: "scripts-executioner",
+        payload: {
+          balance: balance,
+          progress: 100,
+        },
+      });
+    }
+
+    if (this.tradesContext) {
+      this.tradesContext.dispatch(setTrades(trades));
+      this.tradesContext.dispatch(setBalance(balance));
+      this.tradesContext.dispatch(setOrders(orders));
+    }
 
     return this;
   }
 
-  private getCreateOrderFunc(replayMode: boolean): ScriptFuncParameters["createOrder"] {
+  private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["createOrder"] {
     let createOrderFunc: ScriptFuncParameters["createOrder"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
         createOrderFunc = (order: Order): void => tradesContext.dispatch(addOrder(order));
-      })(this.tradesContext);
+      })(this.tradesContext!);
     } else {
-      (function (service: ScriptsExecutionerService): void {
-        createOrderFunc = (order: Order): void => {
-          service.orders.push(order);
-        };
-      })(this);
+      createOrderFunc = (order: Order): void => {
+        orders!.push(order);
+      };
     }
 
     return createOrderFunc;
   }
 
-  private getRemoveAllOrdersFunc(replayMode: boolean): ScriptFuncParameters["removeAllOrders"] {
+  private getRemoveAllOrdersFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["removeAllOrders"] {
     let removeAllOrdersFunc: ScriptFuncParameters["removeAllOrders"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
         removeAllOrdersFunc = (): void => tradesContext.dispatch(removeAllOrders());
-      })(this.tradesContext);
+      })(this.tradesContext!);
     } else {
-      (function (service: ScriptsExecutionerService): void {
-        removeAllOrdersFunc = (): void => {
-          service.orders = [];
-        };
-      })(this);
+      removeAllOrdersFunc = (): void => {
+        void orders;
+        orders = [];
+      };
     }
 
     return removeAllOrdersFunc;
@@ -103,7 +130,8 @@ class ScriptsExecutionerService {
     script: Script,
     candles: Candle[],
     balance: number,
-    replayMode: boolean
+    replayMode: boolean,
+    orders?: Order[]
   ): ScriptsExecutionerService {
     (function ({
       canvas,
@@ -138,15 +166,15 @@ class ScriptsExecutionerService {
         console.error(err);
       }
     })({
-      canvas: this.PainterService.getCanvas(),
-      ctx: this.PainterService.getContext(),
+      canvas: this.PainterService?.getCanvas(),
+      ctx: this.PainterService?.getContext(),
       candles,
-      drawings: this.PainterService.getExternalDrawings(),
-      orders: this.tradesContext.state.orders,
+      drawings: this.PainterService?.getExternalDrawings(),
+      orders: orders ? orders : this.tradesContext ? this.tradesContext.state.orders : [],
       persistedVars: this.persistedVars,
       balance,
-      createOrder: this.getCreateOrderFunc(replayMode),
-      removeAllOrders: this.getRemoveAllOrdersFunc(replayMode),
+      createOrder: this.getCreateOrderFunc(replayMode, orders),
+      removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
     });
     return this;
   }

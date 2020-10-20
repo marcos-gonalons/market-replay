@@ -129,6 +129,8 @@ class ReplayerService {
     const trades = [...this.tradesContext.state.trades];
 
     if (this.dataBackup.length > data.length) {
+      data.push(this.dataBackup[data.length]);
+
       const balance = processOrders({
         orders,
         trades,

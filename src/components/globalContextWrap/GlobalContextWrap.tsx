@@ -21,10 +21,13 @@ function GlobalContextWrap(): JSX.Element {
 
   useEffect(() => {
     const painterService = new PainterService(tradesContext);
-    const scriptsExecutionerService = new ScriptsExecutionerService(painterService, tradesContext);
+    const scriptsExecutionerService = new ScriptsExecutionerService();
+    scriptsExecutionerService.setPainterService(painterService);
+    scriptsExecutionerService.setTradesContext(tradesContext);
     const replayerService = new ReplayerService(painterService, scriptsExecutionerService, tradesContext);
 
     dispatch(setServices({ painterService, replayerService, scriptsExecutionerService }));
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
