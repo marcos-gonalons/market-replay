@@ -59,8 +59,8 @@ export const DEFAULT_COLORS: Colors = {
     sellText: "rgb(156,3,0)",
   },
   trades: {
-    positive: "rgba(65,242,77,.8)",
-    negative: "rgba(242,77,65,.8)",
+    positive: "rgba(65,242,77,.9)",
+    negative: "rgba(242,77,65,.9)",
   },
   volume: {
     positive: "rgba(0,201,10,.25)",

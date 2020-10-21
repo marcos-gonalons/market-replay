@@ -17,7 +17,12 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     if (!order.stopLoss && !order.takeProfit) continue;
     let trade: Trade;
 
-    if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
+    if (
+      order.stopLoss &&
+      order.stopLoss >= currentCandle.low &&
+      order.stopLoss <= currentCandle.high &&
+      currentCandle.timestamp > order.createdAt!
+    ) {
       trade = {
         startDate: order.createdAt!,
         endDate: currentCandle.timestamp,
@@ -35,7 +40,12 @@ export default function processOrders({ orders, trades, currentCandle, balance }
       continue;
     }
 
-    if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
+    if (
+      order.takeProfit &&
+      order.takeProfit >= currentCandle.low &&
+      order.takeProfit <= currentCandle.high &&
+      currentCandle.timestamp > order.createdAt!
+    ) {
       trade = {
         startDate: order.createdAt!,
         endDate: currentCandle.timestamp,

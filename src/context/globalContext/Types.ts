@@ -10,7 +10,7 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
-  highlightHigh?: boolean;
+  meta?: { [key: string]: unknown };
 }
 
 interface State {

@@ -29,8 +29,8 @@ export default (function tops({
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 17;
-  const takeProfitDistance = 11;
+  const stopLossDistance = 10;
+  const takeProfitDistance = 7;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -71,7 +71,7 @@ export default (function tops({
       j++
     ) {
       if (!candles[j]) continue;
-      if (candles[j].highlightHigh) {
+      if (candles[j].meta?.isTop) {
         isFalsePositive = true;
         break;
       }
@@ -90,25 +90,29 @@ export default (function tops({
       }
     }
 
-    if (isThereALimitOrder) {
-      removeAllOrders();
-    }
-
     const price = candles[i].high - 2;
-    const stopLoss = price + stopLossDistance;
-    const takeProfit = price - takeProfitDistance;
-    const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
-    if (!isThereAMarketOrder) {
-      createOrder({
-        type: "limit",
-        position: "short",
-        size,
-        price,
-        stopLoss,
-        takeProfit,
-      });
+    if (price > candles[currentDataIndex].high) {
+      if (isThereALimitOrder) {
+        removeAllOrders();
+      }
 
-      candles[i].highlightHigh = true;
+      const stopLoss = price + stopLossDistance;
+      const takeProfit = price - takeProfitDistance;
+      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
+      if (!isThereAMarketOrder) {
+        createOrder({
+          type: "limit",
+          position: "short",
+          size,
+          price,
+          stopLoss,
+          takeProfit,
+        });
+
+        if (!candles[i].meta) {
+          candles[i].meta = { isTop: true };
+        }
+      }
     }
   }
 
