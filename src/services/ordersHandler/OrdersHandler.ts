@@ -25,13 +25,13 @@ export default function processOrders({ orders, trades, currentCandle, balance }
         endPrice: order.stopLoss,
         size: order.size,
         position: order.position,
+        result: (order.stopLoss - order.price) * order.size,
       };
       trades.push(trade);
       indicesOfMarketOrdersToRemove.push(index);
 
-      let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-      if (trade.position === "short") tradeResult = -tradeResult;
-      balance = balance + tradeResult;
+      if (trade.position === "short") trade.result = -trade.result;
+      balance = balance + trade.result;
       continue;
     }
 
@@ -43,13 +43,13 @@ export default function processOrders({ orders, trades, currentCandle, balance }
         endPrice: order.takeProfit,
         size: order.size,
         position: order.position,
+        result: (order.takeProfit - order.price) * order.size,
       };
       trades.push(trade);
       indicesOfMarketOrdersToRemove.push(index);
 
-      let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-      if (trade.position === "short") tradeResult = -tradeResult;
-      balance = balance + tradeResult;
+      if (trade.position === "short") trade.result = -trade.result;
+      balance = balance + trade.result;
       continue;
     }
   }

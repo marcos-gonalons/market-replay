@@ -141,7 +141,12 @@ class ReplayerService {
       this.tradesContext.dispatch(setBalance(balance));
       this.tradesContext.dispatch(setTrades(trades));
       this.tradesContext.dispatch(setOrders(orders));
+
+      if (data.length % Math.round(this.dataBackup.length / 1000) === 0) {
+        console.log(balance);
+      }
     } else {
+      console.log("end", this.tradesContext.state.balance);
       this.stopReplay();
       return;
     }

@@ -45,10 +45,8 @@ export interface Colors {
     sellText: string;
   };
   trades: {
-    background: string;
-    openText: string;
-    tpText: string;
-    slText: string;
+    positive: string;
+    negative: string;
   };
   volume: {
     positive: string;

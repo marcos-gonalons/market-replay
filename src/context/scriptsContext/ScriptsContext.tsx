@@ -1,5 +1,6 @@
 import React, { useReducer, createContext, Dispatch } from "react";
 import { ReducerAction } from "../Types";
+import SCRIPTS from "./Scripts";
 import { ActionTypes, State } from "./Types";
 
 const defaultScriptContents = `
@@ -22,7 +23,7 @@ const initialState: State = {
       contents: defaultScriptContents,
       isActive: false,
     },
-  ],
+  ].concat(SCRIPTS),
   indexOfTheScriptBeingEdited: 0,
 };
 

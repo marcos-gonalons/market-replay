@@ -23,6 +23,7 @@ interface Trade {
   endPrice: number;
   size: number;
   position: Position;
+  result: number;
 }
 
 interface State {
