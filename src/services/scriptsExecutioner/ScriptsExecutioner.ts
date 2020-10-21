@@ -108,6 +108,7 @@ class ScriptsExecutionerService {
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
+        // TODO: Add ID to the order
         createOrderFunc = (order: Order): void => tradesContext.dispatch(addOrder(order));
       })(this.tradesContext!);
     } else {

@@ -41,10 +41,12 @@ function ScriptsPanel(): JSX.Element {
   const tradesContext = useContext(TradesContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
+  const [isListenerSetted, setIsListenerSetted] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!scriptsExecutionerService || !painterService) return;
+    if (!scriptsExecutionerService || !painterService || isListenerSetted) return;
 
+    setIsListenerSetted(true);
     worker.addEventListener("message", ({ data }: MessageEvent) => {
       const { error, type, payload } = data as MessageOut & { error: Error };
 
@@ -66,7 +68,7 @@ function ScriptsPanel(): JSX.Element {
         painterService.draw();
       }
     });
-  }, [scriptsExecutionerService, painterService, tradesContext, worker]);
+  }, [scriptsExecutionerService, painterService, tradesContext, worker, isListenerSetted]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;

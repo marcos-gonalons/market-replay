@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { toast } from "react-toastify";
 import { setDataAction, setIsParsingDataAction } from "../../../context/globalContext/Actions";
 import { GlobalContext } from "../../../context/globalContext/GlobalContext";
@@ -13,7 +13,12 @@ function FileSelector(): JSX.Element {
     state: { worker },
   } = useContext(GlobalContext);
 
+  const [isListenerSetted, setIsListenerSetted] = useState<boolean>(false);
+
   useEffect(() => {
+    if (isListenerSetted) return;
+
+    setIsListenerSetted(true);
     worker.addEventListener("message", ({ data }: MessageEvent) => {
       const { error, type, payload } = data as MessageOut & { error: Error };
 
@@ -27,7 +32,7 @@ function FileSelector(): JSX.Element {
       dispatch(setIsParsingDataAction(false));
       dispatch(setDataAction(payload as ParserWorkerMessageOut));
     });
-  }, [worker, dispatch]);
+  }, [worker, dispatch, isListenerSetted]);
 
   return (
     <div>

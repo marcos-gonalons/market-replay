@@ -39,6 +39,7 @@ export default (function tops({
   const date = new Date(candles[currentDataIndex].timestamp);
 
   if (date.getHours() < 10 || date.getHours() > 21) {
+    // TODO: If there is a market order: transform it to a trade. Somehow.
     removeAllOrders();
     return;
   }
