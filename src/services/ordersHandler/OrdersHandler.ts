@@ -14,15 +14,10 @@ export default function processOrders({ orders, trades, currentCandle, balance }
   const marketOrders = orders.filter((o) => o.type === "market");
   const indicesOfMarketOrdersToRemove: number[] = [];
   for (const [index, order] of marketOrders.entries()) {
-    if (!order.stopLoss && !order.takeProfit) continue;
-    let trade: Trade;
+    if ((!order.stopLoss && !order.takeProfit) || currentCandle.timestamp === order.createdAt!) continue;
 
-    if (
-      order.stopLoss &&
-      order.stopLoss >= currentCandle.low &&
-      order.stopLoss <= currentCandle.high &&
-      currentCandle.timestamp > order.createdAt!
-    ) {
+    let trade: Trade;
+    if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
       trade = {
         startDate: order.createdAt!,
         endDate: currentCandle.timestamp,
@@ -40,12 +35,7 @@ export default function processOrders({ orders, trades, currentCandle, balance }
       continue;
     }
 
-    if (
-      order.takeProfit &&
-      order.takeProfit >= currentCandle.low &&
-      order.takeProfit <= currentCandle.high &&
-      currentCandle.timestamp > order.createdAt!
-    ) {
+    if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
       trade = {
         startDate: order.createdAt!,
         endDate: currentCandle.timestamp,

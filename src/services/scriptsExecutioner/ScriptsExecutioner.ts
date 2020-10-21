@@ -77,6 +77,7 @@ class ScriptsExecutionerService {
           payload: {
             balance,
             progress: (i * 100) / data.length,
+            trades,
           },
         });
       }
@@ -88,6 +89,7 @@ class ScriptsExecutionerService {
         payload: {
           balance,
           progress: 100,
+          trades,
         },
       });
     }

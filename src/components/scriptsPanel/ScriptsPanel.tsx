@@ -26,6 +26,8 @@ import { toast } from "react-toastify";
 import HelpModal from "./helpModal/HelpModal";
 import { Candle } from "../../context/globalContext/Types";
 import { AppWorker, MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
+import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { setBalance, setTrades } from "../../context/tradesContext/Actions";
 
 function ScriptsPanel(): JSX.Element {
   const {
@@ -36,10 +38,13 @@ function ScriptsPanel(): JSX.Element {
     state: { scripts, indexOfTheScriptBeingEdited },
     dispatch: scriptsContextDispatch,
   } = useContext(ScriptsContext);
+  const tradesContext = useContext(TradesContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!scriptsExecutionerService || !painterService) return;
+
     worker.addEventListener("message", ({ data }: MessageEvent) => {
       const { error, type, payload } = data as MessageOut & { error: Error };
 
@@ -50,12 +55,18 @@ function ScriptsPanel(): JSX.Element {
 
       if (type !== "scripts-executioner") return;
 
-      const { balance, progress } = payload as ScriptExecutionerWorkerMessageOut;
+      const { balance, progress, trades } = payload as ScriptExecutionerWorkerMessageOut;
 
       console.log("balance", balance);
       console.log("progress", progress);
+
+      if (progress === 100) {
+        tradesContext.dispatch(setTrades(trades));
+        tradesContext.dispatch(setBalance(balance));
+        painterService.draw();
+      }
     });
-  }, [worker, scriptsContextDispatch]);
+  }, [scriptsExecutionerService, painterService, tradesContext, worker]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;

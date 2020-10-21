@@ -1,5 +1,6 @@
 import { Candle } from "../context/globalContext/Types";
 import { Script } from "../context/scriptsContext/Types";
+import { Trade } from "../context/tradesContext/Types";
 
 export type WorkerType = "parser" | "scripts-executioner";
 
@@ -22,6 +23,7 @@ export interface ScriptExecutionerWorkerMessageIn {
 export interface ScriptExecutionerWorkerMessageOut {
   balance: number;
   progress: number;
+  trades: Trade[];
 }
 
 export interface AppWorker extends Worker {

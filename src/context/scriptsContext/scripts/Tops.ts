@@ -29,8 +29,10 @@ export default (function tops({
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 10;
-  const takeProfitDistance = 7;
+  const stopLossDistance = 14; // 11  (+ 3 because of the spread when opening and closing the position)
+  const takeProfitDistance = 20; // 17
+
+  // Check with sl 11 and tp 20
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -96,13 +98,13 @@ export default (function tops({
         removeAllOrders();
       }
 
-      const stopLoss = price + stopLossDistance;
-      const takeProfit = price - takeProfitDistance;
+      const stopLoss = price - stopLossDistance;
+      const takeProfit = price + takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
       if (!isThereAMarketOrder) {
         createOrder({
           type: "limit",
-          position: "short",
+          position: "long",
           size,
           price,
           stopLoss,
