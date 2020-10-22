@@ -53,7 +53,7 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     if (order.stopLoss) {
       const slRealPrice =
         order.position === "long" ? order.stopLoss - DEFAULT_SPREAD / 2 : order.stopLoss + DEFAULT_SPREAD / 2;
-      if (slRealPrice >= currentCandle.low && order.stopLoss <= currentCandle.high) {
+      if (slRealPrice >= currentCandle.low && slRealPrice <= currentCandle.high) {
         const spreadAdjustment = order.position === "short" ? DEFAULT_SPREAD : -DEFAULT_SPREAD;
         const endPrice = order.stopLoss + spreadAdjustment;
         trade = {
