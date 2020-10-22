@@ -5,6 +5,7 @@ import { addOrder, removeAllOrders, setBalance, setOrders, setTrades } from "../
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
+import { DEFAULT_SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { ScriptFuncParameters } from "./Types";
 
@@ -109,7 +110,20 @@ class ScriptsExecutionerService {
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
         // TODO: Add ID to the order
-        createOrderFunc = (order: Order): void => tradesContext.dispatch(addOrder(order));
+        createOrderFunc = (order: Order): void => {
+          if (order.type === "market") {
+            if (order.position === "short") {
+              order.price -= DEFAULT_SPREAD / 2;
+              order.stopLoss = order.stopLoss ? (order.stopLoss -= DEFAULT_SPREAD / 2) : order.stopLoss;
+              order.takeProfit = order.takeProfit ? (order.takeProfit -= DEFAULT_SPREAD / 2) : order.takeProfit;
+            } else {
+              order.price += DEFAULT_SPREAD / 2;
+              order.stopLoss = order.stopLoss ? (order.stopLoss += DEFAULT_SPREAD / 2) : order.stopLoss;
+              order.takeProfit = order.takeProfit ? (order.takeProfit += DEFAULT_SPREAD / 2) : order.takeProfit;
+            }
+          }
+          tradesContext.dispatch(addOrder(order));
+        };
       })(this.tradesContext!);
     } else {
       createOrderFunc = (order: Order): void => {

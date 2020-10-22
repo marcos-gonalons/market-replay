@@ -1,7 +1,7 @@
 import { Dispatch } from "react";
 import { ReducerAction } from "../Types";
 
-type OrderType = "market" | "limit";
+type OrderType = "market" | "buy-limit" | "buy-stop" | "sell-limit" | "sell-stop";
 
 type Position = "long" | "short";
 

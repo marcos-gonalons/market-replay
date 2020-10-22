@@ -22,7 +22,7 @@ export function drawOrders({
 
     if (isPriceWithinRange(order.price as number)) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.price });
-      drawOrderLine(y, order.type === "limit" ? colors.limit : colors.market);
+      drawOrderLine(y, order.type !== "market" ? colors.limit : colors.market);
       drawOrderData(y, order);
     }
 
@@ -55,7 +55,7 @@ export function drawOrders({
   }
 
   function drawOrderData(y: number, order: Order): void {
-    ctx.strokeStyle = order.type === "limit" ? colors.limit : colors.market;
+    ctx.strokeStyle = order.type !== "market" ? colors.limit : colors.market;
     const boxY = y - boxHeight / 2;
 
     const closeOrderText = "X";

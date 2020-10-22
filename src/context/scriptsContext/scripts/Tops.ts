@@ -23,16 +23,18 @@ export default (function tops({
   void createOrder;
   void removeAllOrders;
 
+  // TODO: CHECK A SOMEWHAT RANDOM ENTRY/EXIT SYSTEM
+
+  // todo: create limit order on ibroker, check at what price the order is filled, check spread, check candle
+
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 14; // 11  (+ 3 because of the spread when opening and closing the position)
-  const takeProfitDistance = 20; // 17
-
-  // Check with sl 11 and tp 20
+  const stopLossDistance = 11;
+  const takeProfitDistance = 17;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -83,19 +85,19 @@ export default (function tops({
     if (isFalsePositive) break;
 
     let isThereAMarketOrder = false;
-    let isThereALimitOrder = false;
+    let isThereALimitOrStopOrder = false;
     for (const order of orders) {
       if (order.type === "market") {
         isThereAMarketOrder = true;
       }
-      if (order.type === "limit") {
-        isThereALimitOrder = true;
+      if (order.type !== "market") {
+        isThereALimitOrStopOrder = true;
       }
     }
 
     const price = candles[i].high - 2;
     if (price > candles[currentDataIndex].high) {
-      if (isThereALimitOrder) {
+      if (isThereALimitOrStopOrder) {
         removeAllOrders();
       }
 
@@ -104,7 +106,7 @@ export default (function tops({
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
       if (!isThereAMarketOrder) {
         createOrder({
-          type: "limit",
+          type: "buy-stop",
           position: "long",
           size,
           price,

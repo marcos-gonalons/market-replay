@@ -21,8 +21,8 @@ function TradingPanel(): JSX.Element {
     dispatch: tradesContextDispatch,
   } = useContext(TradesContext);
   const [size, setSize] = useState<number>(0);
-  const [orderType, setOrderType] = useState<Order["type"]>("market");
-  const [limitOrderPrice, setLimitOrderPrice] = useState<number>(0);
+  const [orderType, setOrderType] = useState<"market" | "stop-or-limit">("market");
+  const [stopOrLimitOrderPrice, setStopOrLimitOrderPrice] = useState<number>(0);
   const [hasTakeProfit, setHasTakeProfit] = useState<boolean>(false);
   const [hasStopLoss, setHasStopLoss] = useState<boolean>(false);
   const [takeProfitPrice, setTakeProfitPrice] = useState<number>(0);
@@ -76,22 +76,22 @@ function TradingPanel(): JSX.Element {
                 Market
               </span>
               <span
-                className={orderType === "limit" ? styles["selected"] : ""}
+                className={orderType === "stop-or-limit" ? styles["selected"] : ""}
                 onClick={() => {
-                  setOrderType("limit");
+                  setOrderType("stop-or-limit");
                 }}
               >
-                Limit
+                Limit / Stop
               </span>
             </div>
-            {orderType === "limit" ? (
+            {orderType === "stop-or-limit" ? (
               <div>
                 <label>Price</label>
                 <input
                   type="text"
-                  value={limitOrderPrice}
+                  value={stopOrLimitOrderPrice}
                   onChange={(e) => {
-                    setLimitOrderPrice(parseInt(e.target.value));
+                    setStopOrLimitOrderPrice(parseInt(e.target.value));
                   }}
                 />
               </div>
@@ -149,13 +149,16 @@ function TradingPanel(): JSX.Element {
             <button
               onClick={() => {
                 const order = getOrder({
-                  type: orderType,
+                  type:
+                    orderType === "stop-or-limit"
+                      ? getStopOrLimitOrderType("long", stopOrLimitOrderPrice, painterService!.getLastCandle().close!)
+                      : "market",
                   position: "long",
                   size,
                   painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
-                  limitPrice: limitOrderPrice,
+                  stopOrLimitPrice: stopOrLimitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
                   createdAt: painterService!.getLastCandle().timestamp,
@@ -174,13 +177,16 @@ function TradingPanel(): JSX.Element {
             <button
               onClick={() => {
                 const order = getOrder({
-                  type: orderType,
+                  type:
+                    orderType === "stop-or-limit"
+                      ? getStopOrLimitOrderType("long", stopOrLimitOrderPrice, painterService!.getLastCandle().close!)
+                      : "market",
                   position: "short",
                   size,
                   painterService: painterService!,
                   hasStopLoss,
                   hasTakeProfit,
-                  limitPrice: limitOrderPrice,
+                  stopOrLimitPrice: stopOrLimitOrderPrice,
                   stopLossPrice: stopLossPrice,
                   takeProfitPrice: takeProfitPrice,
                   createdAt: painterService!.getLastCandle().timestamp,
@@ -211,7 +217,7 @@ interface GetOrderParams {
   createdAt: number;
   hasStopLoss: boolean;
   hasTakeProfit: boolean;
-  limitPrice?: number;
+  stopOrLimitPrice?: number;
   stopLossPrice?: number;
   takeProfitPrice?: number;
 }
@@ -222,14 +228,14 @@ function getOrder({
   painterService,
   hasStopLoss,
   hasTakeProfit,
-  limitPrice,
+  stopOrLimitPrice,
   stopLossPrice,
   takeProfitPrice,
   createdAt,
 }: GetOrderParams): Order {
   const order: Order = { type, position, size, price: 0, createdAt };
-  if (type === "limit") {
-    order.price = limitPrice as number;
+  if (type !== "market") {
+    order.price = stopOrLimitPrice as number;
   } else {
     order.fillDate = painterService.getLastCandle().timestamp;
     order.price = painterService.getLastCandle().close;
@@ -263,6 +269,22 @@ function validateOrder(order: Order): void {
       (order.position === "short" && order.takeProfit >= order.price)
     ) {
       throw new Error("Invalid take profit");
+    }
+  }
+}
+
+function getStopOrLimitOrderType(position: Order["position"], orderPrice: number, currentPrice: number): Order["type"] {
+  if (position === "long") {
+    if (orderPrice < currentPrice) {
+      return "buy-limit";
+    } else {
+      return "buy-stop";
+    }
+  } else {
+    if (orderPrice < currentPrice) {
+      return "sell-stop";
+    } else {
+      return "sell-limit";
     }
   }
 }
