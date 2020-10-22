@@ -57,7 +57,7 @@ function ScriptsPanel(): JSX.Element {
 
       if (type !== "scripts-executioner") return;
 
-      const { balance, progress, trades } = payload as ScriptExecutionerWorkerMessageOut;
+      const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
 
       console.log("balance", balance);
       console.log("progress", progress);
@@ -66,6 +66,10 @@ function ScriptsPanel(): JSX.Element {
         tradesContext.dispatch(setTrades(trades));
         tradesContext.dispatch(setBalance(balance));
         painterService.draw();
+
+        if (reports) {
+          console.log(reports);
+        }
       }
     });
   }, [scriptsExecutionerService, painterService, tradesContext, worker, isListenerSetted]);

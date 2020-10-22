@@ -32,7 +32,7 @@ export function drawFinishedTrades({
     if (x > 0) {
       ctx.fillStyle = trade.result >= 0 ? colors.positive : colors.negative;
       ctx.beginPath();
-      ctx.arc(x, y, 10, 0, 2 * Math.PI);
+      ctx.arc(x + candleWidth / 2, y, 10, 0, 2 * Math.PI);
       ctx.fill();
     }
   }
@@ -45,7 +45,7 @@ export function drawFinishedTrades({
     if (x > 0) {
       ctx.fillStyle = trade.result >= 0 ? colors.positive : colors.negative;
       ctx.beginPath();
-      ctx.arc(x, y, 10, 0, 2 * Math.PI);
+      ctx.arc(x + candleWidth / 2, y, 10, 0, 2 * Math.PI);
       ctx.fill();
     }
   }

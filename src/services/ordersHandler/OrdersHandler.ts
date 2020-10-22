@@ -40,20 +40,18 @@ export default function processOrders({ orders, trades, currentCandle, balance }
   const marketOrders = orders.filter((o) => o.type === "market");
   const indicesOfMarketOrdersToRemove: number[] = [];
   for (const [index, order] of marketOrders.entries()) {
-    /**
-      if currentCandle.timestamp === order.createdAt! {
-        pedazo vela
-        Si la vela es positiva y la positon es long , es una ganancia (si llega al TP claro)
-
-      }
-     */
-    if ((!order.stopLoss && !order.takeProfit) || currentCandle.timestamp === order.createdAt!) continue;
+    if (!order.stopLoss && !order.takeProfit) continue;
 
     let trade: Trade;
     if (order.stopLoss) {
       const slRealPrice =
         order.position === "long" ? order.stopLoss - DEFAULT_SPREAD / 2 : order.stopLoss + DEFAULT_SPREAD / 2;
-      if (slRealPrice >= currentCandle.low && slRealPrice <= currentCandle.high) {
+
+      if (
+        (slRealPrice >= currentCandle.low && slRealPrice <= currentCandle.high) ||
+        (order.position === "short" && currentCandle.low > slRealPrice) ||
+        (order.position === "long" && currentCandle.high < slRealPrice)
+      ) {
         const spreadAdjustment = order.position === "short" ? DEFAULT_SPREAD : -DEFAULT_SPREAD;
         const endPrice = order.stopLoss + spreadAdjustment;
         trade = {
@@ -77,7 +75,11 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     if (order.takeProfit) {
       const tpRealPrice =
         order.position === "short" ? order.takeProfit - DEFAULT_SPREAD / 2 : order.takeProfit + DEFAULT_SPREAD / 2;
-      if (tpRealPrice >= currentCandle.low && tpRealPrice <= currentCandle.high) {
+      if (
+        (tpRealPrice >= currentCandle.low && tpRealPrice <= currentCandle.high) ||
+        (order.position === "long" && currentCandle.low > tpRealPrice) ||
+        (order.position === "short" && currentCandle.high < tpRealPrice)
+      ) {
         trade = {
           startDate: order.createdAt!,
           endDate: currentCandle.timestamp,

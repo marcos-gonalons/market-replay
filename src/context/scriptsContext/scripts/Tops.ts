@@ -33,14 +33,14 @@ export default (function tops({
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 11;
-  const takeProfitDistance = 17;
+  const stopLossDistance = 17;
+  const takeProfitDistance = 11;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   const date = new Date(candles[currentDataIndex].timestamp);
 
-  if (date.getHours() < 10 || date.getHours() > 21) {
+  if (date.getHours() < 8 || date.getHours() > 21) {
     // TODO: If there is a market order: transform it to a trade. Somehow.
     removeAllOrders();
     return;
@@ -101,13 +101,13 @@ export default (function tops({
         removeAllOrders();
       }
 
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
+      const stopLoss = price + stopLossDistance;
+      const takeProfit = price - takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
       if (!isThereAMarketOrder) {
         createOrder({
-          type: "buy-stop",
-          position: "long",
+          type: "sell-limit",
+          position: "short",
           size,
           price,
           stopLoss,

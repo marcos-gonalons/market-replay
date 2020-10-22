@@ -7,7 +7,7 @@ import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
-import { ScriptFuncParameters } from "./Types";
+import { Report, ScriptFuncParameters } from "./Types";
 
 class ScriptsExecutionerService {
   private PainterService?: PainterService;
@@ -91,6 +91,7 @@ class ScriptsExecutionerService {
           balance,
           progress: 100,
           trades,
+          reports: this.generateReports(trades),
         },
       });
     }
@@ -205,6 +206,58 @@ class ScriptsExecutionerService {
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
     });
     return this;
+  }
+
+  private generateReports(trades: Trade[]): Report[] {
+    const hourlyReport: Report = {};
+    const weekdayReport: Report = {};
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    for (const trade of trades) {
+      const date = new Date(trade.startDate);
+      const hour = date.getHours().toString();
+      const weekday = weekdays[date.getDay()];
+      if (!hourlyReport[hour]) {
+        hourlyReport[hour] = {
+          total: 0,
+          positives: 0,
+          negatives: 0,
+          successPercentage: 0,
+        };
+      }
+      if (!weekdayReport[weekday]) {
+        weekdayReport[weekday] = {
+          total: 0,
+          positives: 0,
+          negatives: 0,
+          successPercentage: 0,
+        };
+      }
+
+      hourlyReport[hour].total++;
+      if (trade.result >= 0) {
+        hourlyReport[hour].positives++;
+      } else {
+        hourlyReport[hour].negatives++;
+      }
+
+      weekdayReport[weekday].total++;
+      if (trade.result >= 0) {
+        weekdayReport[weekday].positives++;
+      } else {
+        weekdayReport[weekday].negatives++;
+      }
+    }
+
+    for (const hour in hourlyReport) {
+      hourlyReport[hour].successPercentage = (hourlyReport[hour].positives / hourlyReport[hour].total) * 100;
+    }
+
+    for (const weekday in weekdayReport) {
+      weekdayReport[weekday].successPercentage =
+        (weekdayReport[weekday].positives / weekdayReport[weekday].total) * 100;
+    }
+
+    return [hourlyReport, weekdayReport];
   }
 }
 
