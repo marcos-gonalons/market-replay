@@ -1,6 +1,6 @@
 import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
 
-export default (function tops({
+export default (function f({
   canvas,
   ctx,
   candles,
@@ -31,8 +31,8 @@ export default (function tops({
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 13;
-  const takeProfitDistance = 26;
+  const stopLossDistance = 26;
+  const takeProfitDistance = 13;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -99,22 +99,19 @@ export default (function tops({
         removeAllOrders();
       }
 
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
+      const stopLoss = price + stopLossDistance;
+      const takeProfit = price - takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
       if (!isThereAMarketOrder) {
         createOrder({
-          type: "buy-stop",
-          position: "long",
+          type: "sell-limit",
+          position: "short",
           size,
           price,
           stopLoss,
           takeProfit,
         });
-
-        if (!candles[i].meta) {
-          candles[i].meta = { isTop: true };
-        }
+        candles[i].meta = { isTop: true };
       }
     }
   }
@@ -124,7 +121,7 @@ export default (function tops({
   .toString()
   .replace(
     `
-function tops({
+function f({
   canvas,
   ctx,
   candles,

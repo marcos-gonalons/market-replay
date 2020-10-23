@@ -1,11 +1,17 @@
 import { Script } from "./Types";
-import Tops from "./scripts/Tops";
+import ResistanceBounce from "./scripts/ResistanceBounce";
+import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
 
 const SCRIPTS: Script[] = [
   {
-    name: "Tops",
+    name: "Resistance Bounce",
     isActive: true,
-    contents: Tops,
+    contents: ResistanceBounce,
+  },
+  {
+    name: "Resistance Breakout Anticipation",
+    isActive: true,
+    contents: ResistanceBreakoutAnticipation,
   },
 ];
 

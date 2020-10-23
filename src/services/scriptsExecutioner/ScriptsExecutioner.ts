@@ -111,7 +111,7 @@ class ScriptsExecutionerService {
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
       if (order.type !== "market") return;
 
-      const adjustment = DEFAULT_SPREAD / 2;
+      const adjustment = DEFAULT_SPREAD;
       if (order.position === "short") {
         order.price -= adjustment;
         order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;
