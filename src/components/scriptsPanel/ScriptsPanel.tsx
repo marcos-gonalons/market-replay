@@ -59,9 +59,6 @@ function ScriptsPanel(): JSX.Element {
 
       const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
 
-      console.log("balance", balance);
-      console.log("progress", progress);
-
       if (progress === 100) {
         tradesContext.dispatch(setTrades(trades));
         tradesContext.dispatch(setBalance(balance));

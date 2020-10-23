@@ -26,6 +26,8 @@ export function parse(csvContents: string): Candle[] {
       close: parseFloat(close ?? 0),
       volume: parseFloat(volume ?? 0),
     });
+
+    // TODO: Same as the scripts executioner, return from time to time the progress %
   }
 
   return data;

@@ -108,26 +108,32 @@ class ScriptsExecutionerService {
   private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["createOrder"] {
     let createOrderFunc: ScriptFuncParameters["createOrder"];
 
+    function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
+      if (order.type !== "market") return;
+
+      const adjustment = DEFAULT_SPREAD / 2;
+      if (order.position === "short") {
+        order.price -= adjustment;
+        order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;
+        order.takeProfit = order.takeProfit ? (order.takeProfit -= adjustment) : order.takeProfit;
+      } else {
+        order.price += adjustment;
+        order.stopLoss = order.stopLoss ? (order.stopLoss += adjustment) : order.stopLoss;
+        order.takeProfit = order.takeProfit ? (order.takeProfit += adjustment) : order.takeProfit;
+      }
+    }
+
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
         // TODO: Add ID to the order
         createOrderFunc = (order: Order): void => {
-          if (order.type === "market") {
-            if (order.position === "short") {
-              order.price -= DEFAULT_SPREAD / 2;
-              order.stopLoss = order.stopLoss ? (order.stopLoss -= DEFAULT_SPREAD / 2) : order.stopLoss;
-              order.takeProfit = order.takeProfit ? (order.takeProfit -= DEFAULT_SPREAD / 2) : order.takeProfit;
-            } else {
-              order.price += DEFAULT_SPREAD / 2;
-              order.stopLoss = order.stopLoss ? (order.stopLoss += DEFAULT_SPREAD / 2) : order.stopLoss;
-              order.takeProfit = order.takeProfit ? (order.takeProfit += DEFAULT_SPREAD / 2) : order.takeProfit;
-            }
-          }
+          adjustPricesTakingSpreadIntoConsideration(order);
           tradesContext.dispatch(addOrder(order));
         };
       })(this.tradesContext!);
     } else {
       createOrderFunc = (order: Order): void => {
+        adjustPricesTakingSpreadIntoConsideration(order);
         orders!.push(order);
       };
     }
