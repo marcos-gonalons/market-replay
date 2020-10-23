@@ -5,8 +5,7 @@ import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({ orders, trades, currentCandle, balance }: ProcessOrdersParameters): number {
   for (const order of orders.filter((o) => o.type !== "market")) {
-    const orderPrice = getOrderPriceTakingSpreadIntoAccount(order);
-    if (orderPrice >= currentCandle.low && orderPrice <= currentCandle.high) {
+    if (isPriceWithinCandle(getOrderPriceTakingSpreadIntoAccount(order), currentCandle)) {
       transformOrderIntoAMarketOrder(order);
     }
   }
@@ -19,11 +18,13 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
 
     if (order.stopLoss && order.takeProfit && orderCreatedInCurrentCandle) {
-      if (areBracketPricesWithinCandle(slRealPrice, tpRealPrice, currentCandle)) {
+      if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
         randomizeTradeResult(order, index);
         continue;
       }
     }
+
+    if (orderCreatedInCurrentCandle) continue;
 
     if (shouldProcessStopLoss(slRealPrice, order, currentCandle)) {
       processStopLossTrade(order, index);
@@ -84,8 +85,8 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     return [slRealPrice, tpRealPrice];
   }
 
-  function areBracketPricesWithinCandle(sl: number, tp: number, candle: Candle): boolean {
-    return sl >= candle.low && sl <= candle.high && tp >= candle.low && tp <= candle.high;
+  function isPriceWithinCandle(price: number, candle: Candle): boolean {
+    return price >= candle.low && price <= candle.high;
   }
 
   function randomizeTradeResult(order: Order, orderIndex: number): void {
