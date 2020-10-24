@@ -1,28 +1,13 @@
 import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
 
 export default (function f({
-  canvas,
-  ctx,
   candles,
-  drawings,
   orders,
-  persistedVars,
   balance,
   currentDataIndex,
   createOrder,
   removeAllOrders,
 }: ScriptFuncParameters) {
-  void canvas;
-  void ctx;
-  void candles;
-  void drawings;
-  void orders;
-  void persistedVars;
-  void balance;
-  void currentDataIndex;
-  void createOrder;
-  void removeAllOrders;
-
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
@@ -108,6 +93,7 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
+          executeHours: [16],
         });
         candles[i].meta = { isTop: true };
       }
@@ -120,27 +106,13 @@ export default (function f({
   .replace(
     `
 function f({
-  canvas,
-  ctx,
   candles,
-  drawings,
   orders,
-  persistedVars,
   balance,
   currentDataIndex,
   createOrder,
   removeAllOrders
 }) {
-  void canvas;
-  void ctx;
-  void candles;
-  void drawings;
-  void orders;
-  void persistedVars;
-  void balance;
-  void currentDataIndex;
-  void createOrder;
-  void removeAllOrders;
 `.trim(),
     ``
   )

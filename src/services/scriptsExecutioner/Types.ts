@@ -7,7 +7,7 @@ export interface ScriptFuncParameters {
   persistedVars: { [key: string]: unknown };
   balance: number;
   currentDataIndex: number;
-  createOrder: (order: Order) => number;
+  createOrder: (order: Order) => string;
   removeAllOrders: () => void;
   removeOrder: (orderId: string) => void;
 

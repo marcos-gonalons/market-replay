@@ -17,6 +17,12 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
 
+    const d = new Date(order.createdAt!);
+    if (order.executeHours && order.executeHours.length > 0 && !order.executeHours.includes(d.getHours())) {
+      indicesOfMarketOrdersToRemove.push(index);
+      continue;
+    }
+
     if (order.stopLoss && order.takeProfit && orderCreatedInCurrentCandle) {
       if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
         randomizeTradeResult(order, index);

@@ -1,4 +1,6 @@
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
+
 import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
 import {
@@ -114,6 +116,7 @@ class ScriptsExecutionerService {
 
   private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["createOrder"] {
     let createOrderFunc: ScriptFuncParameters["createOrder"];
+    const orderId: string = uuidv4();
 
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
       if (order.type !== "market") return;
@@ -132,17 +135,19 @@ class ScriptsExecutionerService {
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
-        createOrderFunc = (order: Order): number => {
+        createOrderFunc = (order: Order): string => {
+          order.id = orderId;
           adjustPricesTakingSpreadIntoConsideration(order);
           tradesContext.dispatch(addOrder(order));
-          return tradesContext.state.orders.length;
+          return orderId;
         };
       })(this.tradesContext!);
     } else {
-      createOrderFunc = (order: Order): number => {
+      createOrderFunc = (order: Order): string => {
+        order.id = orderId;
         adjustPricesTakingSpreadIntoConsideration(order);
         orders!.push(order);
-        return orders!.length - 1;
+        return orderId;
       };
     }
 
@@ -203,6 +208,7 @@ class ScriptsExecutionerService {
       currentDataIndex,
       createOrder,
       removeAllOrders,
+      removeOrder,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -215,6 +221,7 @@ class ScriptsExecutionerService {
       void currentDataIndex;
       void createOrder;
       void removeAllOrders;
+      void removeOrder;
 
       // TODO: Function to close an order
       // TODO: Function to modify an order
@@ -250,6 +257,7 @@ class ScriptsExecutionerService {
       const date = new Date(trade.startDate);
       const hour = date.getHours().toString();
       const weekday = weekdays[date.getDay()];
+
       if (!hourlyReport[hour]) {
         hourlyReport[hour] = {
           total: 0,
