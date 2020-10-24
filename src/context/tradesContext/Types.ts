@@ -6,6 +6,7 @@ type OrderType = "market" | "buy-limit" | "buy-stop" | "sell-limit" | "sell-stop
 type Position = "long" | "short";
 
 interface Order {
+  id?: string;
   type: OrderType;
   position: Position;
   size: number;
@@ -45,6 +46,7 @@ const ActionTypes = {
   SET_ORDERS: "TRADES_CONTEXT_SET_ORDERS",
   SET_TRADES: "TRADES_CONTEXT_SET_TRADES",
   SET_BALANCE: "TRADES_CONTEXT_SET_BALANCE",
+  REMOVE_ORDER: "TRADES_CONTEXT_REMOVE_ORDER",
 };
 
 export { ActionTypes };

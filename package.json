@@ -16,6 +16,7 @@
     "react-modal": "^3.11.2",
     "react-simple-code-editor": "^0.11.0",
     "react-toastify": "^6.0.8",
+    "uuid": "^8.3.1",
     "worker-loader": "^3.0.3"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/react-modal": "^3.10.6",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "canvas": "^2.6.1",

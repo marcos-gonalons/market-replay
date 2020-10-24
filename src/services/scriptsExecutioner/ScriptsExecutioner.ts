@@ -1,7 +1,14 @@
 import { toast } from "react-toastify";
 import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
-import { addOrder, removeAllOrders, setBalance, setOrders, setTrades } from "../../context/tradesContext/Actions";
+import {
+  addOrder,
+  removeAllOrders,
+  removeOrder,
+  setBalance,
+  setOrders,
+  setTrades,
+} from "../../context/tradesContext/Actions";
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
@@ -125,16 +132,17 @@ class ScriptsExecutionerService {
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
-        // TODO: Add ID to the order
-        createOrderFunc = (order: Order): void => {
+        createOrderFunc = (order: Order): number => {
           adjustPricesTakingSpreadIntoConsideration(order);
           tradesContext.dispatch(addOrder(order));
+          return tradesContext.state.orders.length;
         };
       })(this.tradesContext!);
     } else {
-      createOrderFunc = (order: Order): void => {
+      createOrderFunc = (order: Order): number => {
         adjustPricesTakingSpreadIntoConsideration(order);
         orders!.push(order);
+        return orders!.length - 1;
       };
     }
 
@@ -155,6 +163,25 @@ class ScriptsExecutionerService {
     }
 
     return removeAllOrdersFunc;
+  }
+
+  private getRemoveOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["removeOrder"] {
+    let removeOrderFunc: ScriptFuncParameters["removeOrder"];
+
+    if (replayMode) {
+      (function (tradesContext: TradesContext): void {
+        removeOrderFunc = (id: string): void => tradesContext.dispatch(removeOrder(id));
+      })(this.tradesContext!);
+    } else {
+      removeOrderFunc = (id: string): void => {
+        orders!.splice(
+          orders!.findIndex((o) => id === o.id),
+          1
+        );
+      };
+    }
+
+    return removeOrderFunc;
   }
 
   private executeScriptCode(
@@ -210,6 +237,7 @@ class ScriptsExecutionerService {
       currentDataIndex,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
+      removeOrder: this.getRemoveOrderFunc(replayMode, orders),
     });
     return this;
   }

@@ -47,3 +47,10 @@ export function setBalance(payload: number): ReducerAction {
     payload,
   };
 }
+
+export function removeOrder(orderId: string): ReducerAction {
+  return {
+    type: ActionTypes.REMOVE_ORDER,
+    payload: orderId,
+  };
+}

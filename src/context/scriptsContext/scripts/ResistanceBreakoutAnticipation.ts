@@ -23,8 +23,6 @@ export default (function f({
   void createOrder;
   void removeAllOrders;
 
-  // TODO: CHECK A SOMEWHAT RANDOM ENTRY/EXIT SYSTEM
-
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;

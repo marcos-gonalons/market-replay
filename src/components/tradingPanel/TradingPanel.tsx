@@ -1,6 +1,8 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
 import Draggable from "react-draggable";
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
+
 import { setIsTradingPanelVisible } from "../../context/globalContext/Actions";
 
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
@@ -233,7 +235,7 @@ function getOrder({
   takeProfitPrice,
   createdAt,
 }: GetOrderParams): Order {
-  const order: Order = { type, position, size, price: 0, createdAt };
+  const order: Order = { id: uuidv4(), type, position, size, price: 0, createdAt };
   if (type !== "market") {
     order.price = stopOrLimitPrice as number;
   } else {

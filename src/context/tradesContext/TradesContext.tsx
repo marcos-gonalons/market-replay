@@ -16,6 +16,7 @@ export const TradesContext = createContext<TradesContextType>({
 const reducer = (state: State, action: ReducerAction): State => {
   let ordersCopy: State["orders"];
   let tradesCopy: State["trades"];
+  let id: string;
   switch (action.type) {
     case ActionTypes.ADD_ORDER:
       ordersCopy = JSON.parse(JSON.stringify(state.orders));
@@ -55,6 +56,17 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         balance: action.payload as State["balance"],
+      };
+    case ActionTypes.REMOVE_ORDER:
+      id = action.payload as string;
+      ordersCopy = JSON.parse(JSON.stringify(state.orders));
+      ordersCopy.splice(
+        ordersCopy.findIndex((o) => id === o.id),
+        1
+      );
+      return {
+        ...state,
+        orders: ordersCopy,
       };
     default:
       return state;

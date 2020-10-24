@@ -7,8 +7,9 @@ export interface ScriptFuncParameters {
   persistedVars: { [key: string]: unknown };
   balance: number;
   currentDataIndex: number;
-  createOrder: (order: Order) => void;
+  createOrder: (order: Order) => number;
   removeAllOrders: () => void;
+  removeOrder: (orderId: string) => void;
 
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;

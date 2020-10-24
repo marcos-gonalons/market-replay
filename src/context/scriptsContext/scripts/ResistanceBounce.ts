@@ -23,16 +23,14 @@ export default (function f({
   void createOrder;
   void removeAllOrders;
 
-  // TODO: CHECK A SOMEWHAT RANDOM ENTRY/EXIT SYSTEM
-
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
   const candlesAmountWithoutOtherTops = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 26;
-  const takeProfitDistance = 13;
+  const stopLossDistance = 16;
+  const takeProfitDistance = 18;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
