@@ -6,7 +6,7 @@ export default (function f({
   balance,
   currentDataIndex,
   createOrder,
-  removeAllOrders,
+  closeOrder,
 }: ScriptFuncParameters) {
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
@@ -22,8 +22,7 @@ export default (function f({
   const date = new Date(candles[currentDataIndex].timestamp);
 
   if (date.getHours() < 8 || date.getHours() > 21) {
-    // TODO: If there is a market order: transform it to a trade. Somehow.
-    removeAllOrders();
+    orders.filter((o) => o.type === "market").map((mo) => closeOrder(mo.id!));
     return;
   }
 
@@ -66,21 +65,15 @@ export default (function f({
     if (isFalsePositive) break;
 
     let isThereAMarketOrder = false;
-    let isThereALimitOrStopOrder = false;
     for (const order of orders) {
       if (order.type === "market") {
         isThereAMarketOrder = true;
-      }
-      if (order.type !== "market") {
-        isThereALimitOrStopOrder = true;
       }
     }
 
     const price = candles[i].high - 2;
     if (price > candles[currentDataIndex].high) {
-      if (isThereALimitOrStopOrder) {
-        removeAllOrders();
-      }
+      orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
       const stopLoss = price - stopLossDistance;
       const takeProfit = price + takeProfitDistance;
@@ -111,7 +104,7 @@ function f({
   balance,
   currentDataIndex,
   createOrder,
-  removeAllOrders
+  closeOrder
 }) {
 `.trim(),
     ``

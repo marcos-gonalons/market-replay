@@ -9,7 +9,7 @@ export interface ScriptFuncParameters {
   currentDataIndex: number;
   createOrder: (order: Order) => string;
   removeAllOrders: () => void;
-  removeOrder: (orderId: string) => void;
+  closeOrder: (orderId: string) => void;
 
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;

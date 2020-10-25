@@ -5,6 +5,7 @@ import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
 import {
   addOrder,
+  addTrade,
   removeAllOrders,
   removeOrder,
   setBalance,
@@ -55,6 +56,7 @@ class ScriptsExecutionerService {
         this.tradesContext!.state.balance,
         true,
         this.tradesContext!.state.orders,
+        this.tradesContext!.state.trades,
         data.length - 1
       );
     }
@@ -79,7 +81,7 @@ class ScriptsExecutionerService {
         balance,
       });
 
-      this.executeScriptCode(script, data, balance, false, orders, i);
+      this.executeScriptCode(script, data, balance, false, orders, trades, i);
 
       if (worker && i % Math.round(data.length / 100) === 0) {
         worker.postMessage({
@@ -170,15 +172,54 @@ class ScriptsExecutionerService {
     return removeAllOrdersFunc;
   }
 
-  private getRemoveOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["removeOrder"] {
-    let removeOrderFunc: ScriptFuncParameters["removeOrder"];
+  private getCloseOrderFunc(
+    replayMode: boolean,
+    orders?: Order[],
+    trades?: Trade[],
+    currentCandle?: Candle
+  ): ScriptFuncParameters["closeOrder"] {
+    let closeOrderFunc: ScriptFuncParameters["closeOrder"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
-        removeOrderFunc = (id: string): void => tradesContext.dispatch(removeOrder(id));
+        closeOrderFunc = (id: string): void => {
+          const order = tradesContext.state.orders.find((o) => o.id === id);
+          if (!order) return;
+
+          if (order.type === "market") {
+            tradesContext.dispatch(
+              addTrade({
+                startDate: order.createdAt!,
+                endDate: currentCandle!.timestamp,
+                startPrice: order.price,
+                endPrice: currentCandle!.close,
+                size: order.size,
+                position: order.position,
+                result: (currentCandle!.close - order.price) * order.size,
+              })
+            );
+          }
+
+          tradesContext.dispatch(removeOrder(id));
+        };
       })(this.tradesContext!);
     } else {
-      removeOrderFunc = (id: string): void => {
+      closeOrderFunc = (id: string): void => {
+        const order = orders!.find((o) => o.id === id);
+        if (!order) return;
+
+        if (order.type === "market") {
+          trades!.push({
+            startDate: order.createdAt!,
+            endDate: currentCandle!.timestamp,
+            startPrice: order.price,
+            endPrice: currentCandle!.close,
+            size: order.size,
+            position: order.position,
+            result: (currentCandle!.close - order.price) * order.size,
+          });
+        }
+
         orders!.splice(
           orders!.findIndex((o) => id === o.id),
           1
@@ -186,7 +227,7 @@ class ScriptsExecutionerService {
       };
     }
 
-    return removeOrderFunc;
+    return closeOrderFunc;
   }
 
   private executeScriptCode(
@@ -195,6 +236,7 @@ class ScriptsExecutionerService {
     balance: number,
     replayMode: boolean,
     orders: Order[],
+    trades: Trade[],
     currentDataIndex: number
   ): ScriptsExecutionerService {
     (function ({
@@ -208,7 +250,7 @@ class ScriptsExecutionerService {
       currentDataIndex,
       createOrder,
       removeAllOrders,
-      removeOrder,
+      closeOrder,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -221,7 +263,7 @@ class ScriptsExecutionerService {
       void currentDataIndex;
       void createOrder;
       void removeAllOrders;
-      void removeOrder;
+      void closeOrder;
 
       // TODO: Function to close an order
       // TODO: Function to modify an order
@@ -244,7 +286,7 @@ class ScriptsExecutionerService {
       currentDataIndex,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
-      removeOrder: this.getRemoveOrderFunc(replayMode, orders),
+      closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
     });
     return this;
   }

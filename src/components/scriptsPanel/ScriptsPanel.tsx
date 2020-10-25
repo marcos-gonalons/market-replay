@@ -116,7 +116,8 @@ function ScriptsPanel(): JSX.Element {
                 progress,
                 scriptsContextDispatch,
                 worker,
-                painterService!.getData()
+                painterService!.getData(),
+                tradesContext.state.balance
               )}
               {renderAddScriptButton(scriptsContextDispatch)}
               {renderHelpModalButton(() => setIsHelpModalVisible(true))}
@@ -153,7 +154,8 @@ function renderScriptNames(
   progress: number,
   dispatch: React.Dispatch<ReducerAction>,
   worker: AppWorker,
-  data: Candle[]
+  data: Candle[],
+  initialBalance: number
 ): JSX.Element[] {
   return scripts.map((s, index) => (
     <div key={index}>
@@ -187,7 +189,7 @@ function renderScriptNames(
           dispatch(setIndexOfTheScriptBeingExecuted(index));
           worker.postMessage({
             type: "scripts-executioner",
-            payload: { script: s, data, initialBalance: 10000 },
+            payload: { script: s, data, initialBalance },
           });
         }}
       >
