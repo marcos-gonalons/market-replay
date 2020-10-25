@@ -136,6 +136,7 @@ class ReplayerService {
         trades,
         currentCandle: this.PainterService.getLastCandle(),
         balance: this.tradesContext.state.balance,
+        previousCandle: data.length - 2 >= 0 ? data[data.length - 2] : null,
       });
 
       this.tradesContext.dispatch(setBalance(balance));

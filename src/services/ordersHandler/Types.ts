@@ -6,4 +6,5 @@ export interface ProcessOrdersParameters {
   trades: Trade[];
   currentCandle: Candle;
   balance: number;
+  previousCandle: Candle | null;
 }

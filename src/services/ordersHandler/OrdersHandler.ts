@@ -3,10 +3,19 @@ import { Order } from "../../context/tradesContext/Types";
 import { DEFAULT_SPREAD } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
-export default function processOrders({ orders, trades, currentCandle, balance }: ProcessOrdersParameters): number {
+export default function processOrders({
+  orders,
+  trades,
+  currentCandle,
+  balance,
+  previousCandle,
+}: ProcessOrdersParameters): number {
   for (const order of orders.filter((o) => o.type !== "market")) {
-    if (isPriceWithinCandle(getOrderPriceTakingSpreadIntoAccount(order), currentCandle)) {
-      transformOrderIntoAMarketOrder(order);
+    const spreadedOrderPrice = getOrderPriceTakingSpreadIntoAccount(order);
+    if (isPriceWithinCandle(spreadedOrderPrice, currentCandle)) {
+      transformOrderIntoAMarketOrder(order, order.price);
+    } else if (gapHasOvercomePrice(spreadedOrderPrice, currentCandle, previousCandle)) {
+      transformOrderIntoAMarketOrder(order, currentCandle.open);
     }
   }
 
@@ -31,14 +40,21 @@ export default function processOrders({ orders, trades, currentCandle, balance }
 
     if (orderCreatedInCurrentCandle) continue;
 
-    if (shouldProcessStopLoss(slRealPrice, order, currentCandle)) {
-      processStopLossTrade(order, index);
-      continue;
+    if (order.stopLoss) {
+      if (isPriceWithinCandle(slRealPrice, currentCandle)) {
+        processStopLossTrade(order, index, order.stopLoss!);
+      } else if (gapHasOvercomePrice(slRealPrice, currentCandle, previousCandle)) {
+        processStopLossTrade(order, index, currentCandle.open);
+      }
     }
 
-    if (shouldProcessTakeProfit(tpRealPrice, order, currentCandle)) {
-      processTakeProfitTrade(order, index);
-      continue;
+    if (order.takeProfit) {
+      if (
+        isPriceWithinCandle(tpRealPrice, currentCandle) ||
+        gapHasOvercomePrice(tpRealPrice, currentCandle, previousCandle)
+      ) {
+        processTakeProfitTrade(order, index);
+      }
     }
   }
 
@@ -60,7 +76,29 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     return order.price;
   }
 
-  function transformOrderIntoAMarketOrder(order: Order): void {
+  function transformOrderIntoAMarketOrder(order: Order, fillPrice: number): void {
+    const slDistance = order.stopLoss ? Math.abs(order.price - order.stopLoss) : 0;
+    const tpDistance = order.takeProfit ? Math.abs(order.price - order.takeProfit) : 0;
+
+    if (order.type === "buy-stop" || order.type === "sell-stop") {
+      order.price = fillPrice;
+
+      if (tpDistance) {
+        if (order.position === "long") {
+          order.takeProfit = fillPrice + tpDistance;
+        } else {
+          order.takeProfit = fillPrice - tpDistance;
+        }
+      }
+      if (slDistance) {
+        if (order.position === "long") {
+          order.stopLoss = fillPrice - slDistance;
+        } else {
+          order.stopLoss = fillPrice + slDistance;
+        }
+      }
+    }
+
     if (order.type === "buy-stop") {
       order.price += DEFAULT_SPREAD;
       order.stopLoss = order.stopLoss ? order.stopLoss + DEFAULT_SPREAD : order.stopLoss;
@@ -101,8 +139,18 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     return price >= candle.low && price <= candle.high;
   }
 
+  function gapHasOvercomePrice(price: number, currentCandle: Candle, previousCandle: Candle | null): boolean {
+    if (previousCandle) {
+      return (
+        (currentCandle.low > price && previousCandle.high < price) ||
+        (currentCandle.high < price && previousCandle.low > price)
+      );
+    }
+    return false;
+  }
+
   function randomizeTradeResult(order: Order, orderIndex: number): void {
-    const chance = 85;
+    const chance = 75;
     const random = Math.random() * 100;
     const isCandlePositive = currentCandle.close >= currentCandle.low;
     let isProfit = false;
@@ -123,30 +171,8 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     if (isProfit) {
       processTakeProfitTrade(order, orderIndex);
     } else {
-      processStopLossTrade(order, orderIndex);
+      processStopLossTrade(order, orderIndex, order.stopLoss!);
     }
-  }
-
-  function shouldProcessStopLoss(slRealPrice: number, order: Order, currentCandle: Candle): boolean {
-    return (
-      order.stopLoss !== undefined &&
-      order.stopLoss !== null &&
-      !isNaN(order.stopLoss) &&
-      ((slRealPrice >= currentCandle.low && slRealPrice <= currentCandle.high) ||
-        (order.position === "short" && currentCandle.low > slRealPrice) ||
-        (order.position === "long" && currentCandle.high < slRealPrice))
-    );
-  }
-
-  function shouldProcessTakeProfit(tpRealPrice: number, order: Order, currentCandle: Candle): boolean {
-    return (
-      order.takeProfit !== undefined &&
-      order.takeProfit !== null &&
-      !isNaN(order.takeProfit) &&
-      ((tpRealPrice >= currentCandle.low && tpRealPrice <= currentCandle.high) ||
-        (order.position === "long" && currentCandle.low > tpRealPrice) ||
-        (order.position === "short" && currentCandle.high < tpRealPrice))
-    );
   }
 
   function processTakeProfitTrade(order: Order, orderIndex: number): void {
@@ -167,9 +193,9 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     balance = balance + trade.result;
   }
 
-  function processStopLossTrade(order: Order, orderIndex: number): void {
+  function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
     const spreadAdjustment = order.position === "short" ? DEFAULT_SPREAD : -DEFAULT_SPREAD;
-    const endPrice = order.stopLoss! + spreadAdjustment;
+    const endPrice = price + spreadAdjustment;
     const trade = {
       startDate: order.createdAt!,
       endDate: currentCandle.timestamp,

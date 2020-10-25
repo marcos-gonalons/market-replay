@@ -79,6 +79,7 @@ class ScriptsExecutionerService {
         trades,
         currentCandle: data[i],
         balance,
+        previousCandle: i - 1 >= 0 ? data[i - 1] : null,
       });
 
       this.executeScriptCode(script, data, balance, false, orders, trades, i);
