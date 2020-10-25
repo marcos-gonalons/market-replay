@@ -72,15 +72,23 @@ class ScriptsExecutionerService {
     const orders: Order[] = [];
     const trades: Trade[] = [];
     let balance = initialBalance;
+    let lastTradesLength = trades.length;
+
+    console.log("initial balance", initialBalance);
 
     for (let i = 0; i < data.length; i++) {
-      balance = processOrders({
+      processOrders({
         orders,
         trades,
         currentCandle: data[i],
-        balance,
         previousCandle: i - 1 >= 0 ? data[i - 1] : null,
       });
+
+      if (trades.length > lastTradesLength) {
+        lastTradesLength = trades.length;
+        balance += trades[trades.length - 1].result;
+        console.log("trade, new balance is ", balance);
+      }
 
       this.executeScriptCode(script, data, balance, false, orders, trades, i);
 
@@ -95,6 +103,8 @@ class ScriptsExecutionerService {
         });
       }
     }
+
+    console.log("final balance", balance);
 
     if (worker) {
       worker.postMessage({

@@ -7,9 +7,8 @@ export default function processOrders({
   orders,
   trades,
   currentCandle,
-  balance,
   previousCandle,
-}: ProcessOrdersParameters): number {
+}: ProcessOrdersParameters): void {
   for (const order of orders.filter((o) => o.type !== "market")) {
     const spreadedOrderPrice = getOrderPriceTakingSpreadIntoAccount(order);
     if (isPriceWithinCandle(spreadedOrderPrice, currentCandle)) {
@@ -26,7 +25,7 @@ export default function processOrders({
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
 
-    if (!isExecutableHour(order, new Date(order.createdAt!))) {
+    if (!isOrderExecutable(order, new Date(order.createdAt!))) {
       indicesOfMarketOrdersToRemove.push(index);
       continue;
     }
@@ -61,8 +60,6 @@ export default function processOrders({
   for (const i of indicesOfMarketOrdersToRemove) {
     orders.splice(i, 1);
   }
-
-  return balance;
 
   function getOrderPriceTakingSpreadIntoAccount(order: Order): number {
     switch (order.type) {
@@ -128,11 +125,16 @@ export default function processOrders({
     return [slRealPrice, tpRealPrice];
   }
 
-  function isExecutableHour(order: Order, date: Date): boolean {
-    if (order.executeHours) {
-      return order.executeHours.length > 0 && !order.executeHours.includes(date.getHours());
+  function isOrderExecutable(order: Order, date: Date): boolean {
+    let isValidHour = true;
+    let isValidDay = true;
+    if (order.executeHours && order.executeHours.length > 0) {
+      isValidHour = order.executeHours.includes(date.getHours());
     }
-    return true;
+    if (order.executeDays && order.executeDays.length > 0) {
+      isValidDay = order.executeDays.includes(date.getDay());
+    }
+    return isValidDay && isValidHour;
   }
 
   function isPriceWithinCandle(price: number, candle: Candle): boolean {
@@ -190,7 +192,6 @@ export default function processOrders({
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
     if (trade.position === "short") trade.result = -trade.result;
-    balance = balance + trade.result;
   }
 
   function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
@@ -210,6 +211,5 @@ export default function processOrders({
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
     if (trade.position === "short") trade.result = -trade.result;
-    balance = balance + trade.result;
   }
 }

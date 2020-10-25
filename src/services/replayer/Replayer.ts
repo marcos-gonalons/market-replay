@@ -1,11 +1,5 @@
 import { Candle } from "../../context/globalContext/Types";
-import {
-  removeAllOrders,
-  removeAllTrades,
-  setBalance,
-  setOrders,
-  setTrades,
-} from "../../context/tradesContext/Actions";
+import { removeAllOrders, removeAllTrades, setOrders, setTrades } from "../../context/tradesContext/Actions";
 import { TradesContext, State as TradesContextState } from "../../context/tradesContext/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import PainterService from "../painter/Painter";
@@ -131,15 +125,13 @@ class ReplayerService {
     if (this.dataBackup.length > data.length) {
       data.push(this.dataBackup[data.length]);
 
-      const balance = processOrders({
+      processOrders({
         orders,
         trades,
         currentCandle: this.PainterService.getLastCandle(),
-        balance: this.tradesContext.state.balance,
         previousCandle: data.length - 2 >= 0 ? data[data.length - 2] : null,
       });
 
-      this.tradesContext.dispatch(setBalance(balance));
       this.tradesContext.dispatch(setTrades(trades));
       this.tradesContext.dispatch(setOrders(orders));
     } else {

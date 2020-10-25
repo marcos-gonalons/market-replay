@@ -22,7 +22,7 @@ export default (function f({
   const date = new Date(candles[currentDataIndex].timestamp);
 
   if (date.getHours() < 8 || date.getHours() > 21) {
-    orders.filter((o) => o.type === "market").map((mo) => closeOrder(mo.id!));
+    orders.map((mo) => closeOrder(mo.id!));
     return;
   }
 
