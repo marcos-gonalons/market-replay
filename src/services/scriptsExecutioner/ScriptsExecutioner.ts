@@ -198,6 +198,8 @@ class ScriptsExecutionerService {
           if (!order) return;
 
           if (order.type === "market") {
+            let result = (currentCandle!.close - order.price) * order.size;
+            if (order.position === "short") result = -result;
             tradesContext.dispatch(
               addTrade({
                 startDate: order.createdAt!,
@@ -206,7 +208,7 @@ class ScriptsExecutionerService {
                 endPrice: currentCandle!.close,
                 size: order.size,
                 position: order.position,
-                result: (currentCandle!.close - order.price) * order.size,
+                result,
               })
             );
           }
@@ -219,6 +221,9 @@ class ScriptsExecutionerService {
         const order = orders!.find((o) => o.id === id);
         if (!order) return;
 
+        let result = (currentCandle!.close - order.price) * order.size;
+        if (order.position === "short") result = -result;
+
         if (order.type === "market") {
           trades!.push({
             startDate: order.createdAt!,
@@ -227,7 +232,7 @@ class ScriptsExecutionerService {
             endPrice: currentCandle!.close,
             size: order.size,
             position: order.position,
-            result: (currentCandle!.close - order.price) * order.size,
+            result,
           });
         }
 

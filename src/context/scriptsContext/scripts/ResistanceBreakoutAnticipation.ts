@@ -8,6 +8,8 @@ export default (function f({
   createOrder,
   closeOrder,
 }: ScriptFuncParameters) {
+  if (balance < 0) return;
+
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
