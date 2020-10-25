@@ -25,13 +25,6 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     if (order.stopLoss && order.takeProfit && orderCreatedInCurrentCandle) {
       if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
         randomizeTradeResult(order, index);
-        console.log("randomized \n\n\n\n\n");
-        console.log("randomized \n\n\n\n\n");
-        console.log("randomized \n\n\n\n\n");
-        console.log(new Date(currentCandle.timestamp));
-        console.log("randomized \n\n\n\n\n");
-        console.log("randomized \n\n\n\n\n");
-        console.log("randomized \n\n\n\n\n");
         continue;
       }
     }
@@ -40,13 +33,11 @@ export default function processOrders({ orders, trades, currentCandle, balance }
 
     if (shouldProcessStopLoss(slRealPrice, order, currentCandle)) {
       processStopLossTrade(order, index);
-      console.log("loss, balance now is ", balance);
       continue;
     }
 
     if (shouldProcessTakeProfit(tpRealPrice, order, currentCandle)) {
       processTakeProfitTrade(order, index);
-      console.log("profit, balance now is ", balance);
       continue;
     }
   }
