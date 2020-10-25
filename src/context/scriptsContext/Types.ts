@@ -7,6 +7,8 @@ interface Script {
 interface State {
   readonly scripts: Script[];
   readonly indexOfTheScriptBeingEdited: number;
+  readonly progress: number;
+  readonly indexOfTheScriptBeingExecuted: number | null;
 }
 
 const ActionTypes = {
@@ -16,6 +18,8 @@ const ActionTypes = {
   SET_SCRIPT_IS_ACTIVE: "SCRIPTS_CONTEXT_SET_SCRIPT_IS_ACTIVE",
   REMOVE_SCRIPT: "SCRIPTS_CONTEXT_REMOVE_SCRIPT",
   SET_INDEX_OF_THE_SCRIPT_BEING_EDITED: "SCRIPTS_CONTEXT_SET_INDEX_OF_THE_SCRIPT_BEING_EDITED",
+  SET_PROGRESS: "SCRIPTS_CONTEXT_SET_PROGRESS",
+  SET_INDEX_OF_THE_SCRIPT_BEING_EXECUTED: "SCRIPTS_CONTEXT_SET_INDEX_OF_THE_SCRIPT_BEING_EXECUTED",
 };
 
 export { ActionTypes };

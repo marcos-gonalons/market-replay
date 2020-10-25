@@ -41,3 +41,17 @@ export function setIndexOfTheScriptBeingEdited(scriptIndex: number): ReducerActi
     payload: scriptIndex,
   };
 }
+
+export function setProgress(progress: number): ReducerAction {
+  return {
+    type: ActionTypes.SET_PROGRESS,
+    payload: progress,
+  };
+}
+
+export function setIndexOfTheScriptBeingExecuted(index: number | null): ReducerAction {
+  return {
+    type: ActionTypes.SET_INDEX_OF_THE_SCRIPT_BEING_EXECUTED,
+    payload: index,
+  };
+}

@@ -25,6 +25,8 @@ const initialState: State = {
     },
   ].concat(SCRIPTS),
   indexOfTheScriptBeingEdited: 0,
+  indexOfTheScriptBeingExecuted: null,
+  progress: 0,
 };
 
 export const ScriptsContext = createContext<{
@@ -90,6 +92,18 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         indexOfTheScriptBeingEdited: action.payload as State["indexOfTheScriptBeingEdited"],
+      };
+
+    case ActionTypes.SET_PROGRESS:
+      return {
+        ...state,
+        progress: action.payload as number,
+      };
+
+    case ActionTypes.SET_INDEX_OF_THE_SCRIPT_BEING_EXECUTED:
+      return {
+        ...state,
+        indexOfTheScriptBeingExecuted: action.payload as State["indexOfTheScriptBeingExecuted"],
       };
 
     default:

@@ -18,6 +18,8 @@ import {
   modifyScriptName,
   removeScript,
   setIndexOfTheScriptBeingEdited,
+  setIndexOfTheScriptBeingExecuted,
+  setProgress,
   setScriptIsActive,
 } from "../../context/scriptsContext/Actions";
 import { Script } from "../../context/scriptsContext/Types";
@@ -35,7 +37,7 @@ function ScriptsPanel(): JSX.Element {
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
   const {
-    state: { scripts, indexOfTheScriptBeingEdited },
+    state: { scripts, indexOfTheScriptBeingEdited, indexOfTheScriptBeingExecuted, progress },
     dispatch: scriptsContextDispatch,
   } = useContext(ScriptsContext);
   const tradesContext = useContext(TradesContext);
@@ -59,9 +61,14 @@ function ScriptsPanel(): JSX.Element {
 
       const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
 
+      scriptsContextDispatch(setProgress(progress));
+
       if (progress === 100) {
         tradesContext.dispatch(setTrades(trades));
         tradesContext.dispatch(setBalance(balance));
+        scriptsContextDispatch(setProgress(0));
+        scriptsContextDispatch(setIndexOfTheScriptBeingExecuted(null));
+
         painterService.draw();
 
         if (reports) {
@@ -69,7 +76,7 @@ function ScriptsPanel(): JSX.Element {
         }
       }
     });
-  }, [scriptsExecutionerService, painterService, tradesContext, worker, isListenerSetted]);
+  }, [scriptsExecutionerService, painterService, tradesContext, scriptsContextDispatch, worker, isListenerSetted]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;
@@ -105,6 +112,8 @@ function ScriptsPanel(): JSX.Element {
               {renderScriptNames(
                 scripts,
                 indexOfTheScriptBeingEdited,
+                indexOfTheScriptBeingExecuted,
+                progress,
                 scriptsContextDispatch,
                 worker,
                 painterService!.getData()
@@ -140,6 +149,8 @@ function ScriptsPanel(): JSX.Element {
 function renderScriptNames(
   scripts: Script[],
   indexOfTheScriptBeingEdited: number,
+  indexOfTheScriptBeingExecuted: number | null,
+  progress: number,
   dispatch: React.Dispatch<ReducerAction>,
   worker: AppWorker,
   data: Candle[]
@@ -173,6 +184,7 @@ function renderScriptNames(
       )}
       <button
         onClick={() => {
+          dispatch(setIndexOfTheScriptBeingExecuted(index));
           worker.postMessage({
             type: "scripts-executioner",
             payload: { script: s, data, initialBalance: 10000 },
@@ -181,6 +193,7 @@ function renderScriptNames(
       >
         Execute
       </button>
+      {indexOfTheScriptBeingExecuted === index ? <span>Progress: {progress}</span> : ""}
     </div>
   ));
 }
