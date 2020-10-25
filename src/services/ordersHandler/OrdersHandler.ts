@@ -17,8 +17,7 @@ export default function processOrders({ orders, trades, currentCandle, balance }
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
 
-    const d = new Date(order.createdAt!);
-    if (order.executeHours && order.executeHours.length > 0 && !order.executeHours.includes(d.getHours())) {
+    if (!isExecutableHour(order, new Date(order.createdAt!))) {
       indicesOfMarketOrdersToRemove.push(index);
       continue;
     }
@@ -98,6 +97,13 @@ export default function processOrders({ orders, trades, currentCandle, balance }
         order.position === "short" ? order.takeProfit - DEFAULT_SPREAD / 2 : order.takeProfit + DEFAULT_SPREAD / 2;
     }
     return [slRealPrice, tpRealPrice];
+  }
+
+  function isExecutableHour(order: Order, date: Date): boolean {
+    if (order.executeHours) {
+      return order.executeHours.length > 0 && !order.executeHours.includes(date.getHours());
+    }
+    return true;
   }
 
   function isPriceWithinCandle(price: number, candle: Candle): boolean {
