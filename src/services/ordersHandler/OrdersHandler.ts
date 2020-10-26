@@ -1,5 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
+import { getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { DEFAULT_SPREAD } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
@@ -94,18 +95,19 @@ export default function processOrders({
           order.stopLoss = fillPrice + slDistance;
         }
       }
+
+      if (order.type === "buy-stop") {
+        order.price += DEFAULT_SPREAD;
+        order.stopLoss = order.stopLoss ? order.stopLoss + DEFAULT_SPREAD : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit + DEFAULT_SPREAD : order.takeProfit;
+      }
+      if (order.type === "sell-stop") {
+        order.price -= DEFAULT_SPREAD;
+        order.stopLoss = order.stopLoss ? order.stopLoss - DEFAULT_SPREAD : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit - DEFAULT_SPREAD : order.takeProfit;
+      }
     }
 
-    if (order.type === "buy-stop") {
-      order.price += DEFAULT_SPREAD;
-      order.stopLoss = order.stopLoss ? order.stopLoss + DEFAULT_SPREAD : order.stopLoss;
-      order.takeProfit = order.takeProfit ? order.takeProfit + DEFAULT_SPREAD : order.takeProfit;
-    }
-    if (order.type === "sell-stop") {
-      order.price -= DEFAULT_SPREAD;
-      order.stopLoss = order.stopLoss ? order.stopLoss - DEFAULT_SPREAD : order.stopLoss;
-      order.takeProfit = order.takeProfit ? order.takeProfit - DEFAULT_SPREAD : order.takeProfit;
-    }
     order.createdAt = currentCandle.timestamp;
     order.fillDate = currentCandle.timestamp;
     order.type = "market";
@@ -126,15 +128,18 @@ export default function processOrders({
   }
 
   function isOrderExecutable(order: Order, date: Date): boolean {
-    let isValidHour = true;
-    let isValidDay = true;
-    if (order.executeHours && order.executeHours.length > 0) {
-      isValidHour = order.executeHours.includes(date.getHours());
-    }
-    if (order.executeDays && order.executeDays.length > 0) {
-      isValidDay = order.executeDays.includes(date.getDay());
-    }
-    return isValidDay && isValidHour;
+    if (!order.executeTime) return true;
+
+    const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+    const executableHours = order.executeTime.map((t) => t.hour);
+
+    if (!executableHours.includes(hour)) return false;
+
+    const executableWeekdays = order.executeTime.find((t) => t.hour === hour)!.weekdays;
+
+    if (!executableWeekdays.includes(date.getDay())) return false;
+
+    return true;
   }
 
   function isPriceWithinCandle(price: number, candle: Candle): boolean {

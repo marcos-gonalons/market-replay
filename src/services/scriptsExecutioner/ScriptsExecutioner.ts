@@ -13,6 +13,7 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
+import { getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD } from "../painter/Constants";
@@ -313,7 +314,7 @@ class ScriptsExecutionerService {
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     for (const trade of trades) {
       const date = new Date(trade.startDate);
-      const hour = date.getHours().toString();
+      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
       const weekday = weekdays[date.getDay()];
 
       if (!hourlyReport[hour]) {
@@ -322,6 +323,7 @@ class ScriptsExecutionerService {
           positives: 0,
           negatives: 0,
           successPercentage: 0,
+          profits: 0,
         };
       }
       if (!weekdayReport[weekday]) {
@@ -330,10 +332,12 @@ class ScriptsExecutionerService {
           positives: 0,
           negatives: 0,
           successPercentage: 0,
+          profits: 0,
         };
       }
 
       hourlyReport[hour].total++;
+      hourlyReport[hour].profits += trade.result;
       if (trade.result >= 0) {
         hourlyReport[hour].positives++;
       } else {
@@ -341,6 +345,7 @@ class ScriptsExecutionerService {
       }
 
       weekdayReport[weekday].total++;
+      weekdayReport[weekday].profits += trade.result;
       if (trade.result >= 0) {
         weekdayReport[weekday].positives++;
       } else {

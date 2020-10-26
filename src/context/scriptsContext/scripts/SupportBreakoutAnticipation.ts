@@ -88,8 +88,36 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeHours: [8, 10, 13, 16],
-          executeDays: [1, 2, 4],
+          executeTime: [
+            {
+              hour: "8:00",
+              weekdays: [1, 2, 3, 4, 5],
+            },
+            {
+              hour: "9:00",
+              weekdays: [2],
+            },
+            {
+              hour: "11:00",
+              weekdays: [5],
+            },
+            {
+              hour: "12:00",
+              weekdays: [4, 5],
+            },
+            {
+              hour: "13:00",
+              weekdays: [1, 2, 3, 4, 5],
+            },
+            {
+              hour: "15:00",
+              weekdays: [1],
+            },
+            {
+              hour: "16:00",
+              weekdays: [2, 4],
+            },
+          ],
         });
         candles[i].meta = { isBottom: true };
       }

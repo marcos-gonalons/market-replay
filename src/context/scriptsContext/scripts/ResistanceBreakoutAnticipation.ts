@@ -13,7 +13,7 @@ export default (function f({
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
-  const candlesAmountWithoutOtherTops = 15;
+  const candlesAmountWithoutOtherTops = 0;
 
   const riskPercentage = 1;
   const stopLossDistance = 13;
@@ -88,8 +88,32 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeHours: [9, 10, 11, 16, 19],
-          executeDays: [1, 2, 3, 4, 5],
+          executeTime: [
+            {
+              hour: "9:00",
+              weekdays: [1, 2, 3, 4],
+            },
+            {
+              hour: "10:00",
+              weekdays: [2],
+            },
+            {
+              hour: "11:00",
+              weekdays: [2, 3],
+            },
+            {
+              hour: "12:00",
+              weekdays: [1, 2, 5],
+            },
+            {
+              hour: "13:00",
+              weekdays: [2],
+            },
+            {
+              hour: "16:00",
+              weekdays: [1, 4],
+            },
+          ],
         });
         candles[i].meta = { isTop: true };
       }

@@ -30,6 +30,7 @@ import { Candle } from "../../context/globalContext/Types";
 import { AppWorker, MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
 import { setBalance, setTrades } from "../../context/tradesContext/Actions";
+import { getNSigmaWithWeightedAverage } from "../../utils/Utils";
 
 function ScriptsPanel(): JSX.Element {
   const {
@@ -73,6 +74,30 @@ function ScriptsPanel(): JSX.Element {
 
         if (reports) {
           console.log(reports);
+
+          let percentages: number[] = [];
+          let totals: number[] = [];
+          for (const h in reports[0]) {
+            percentages.push(reports[0][h].successPercentage);
+            totals.push(reports[0][h].total);
+          }
+
+          console.log("hour 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+          console.log("hour 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+          console.log("hour 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+          console.log("hour 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+          percentages = [];
+          totals = [];
+          for (const d in reports[1]) {
+            percentages.push(reports[1][d].successPercentage);
+            totals.push(reports[1][d].total);
+          }
+
+          console.log("weekday 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+          console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+          console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+          console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
         }
       }
     });

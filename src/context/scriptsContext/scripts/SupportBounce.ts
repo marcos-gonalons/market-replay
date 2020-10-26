@@ -88,8 +88,6 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeHours: [],
-          executeDays: [],
         });
         candles[i].meta = { isBottom: true };
       }

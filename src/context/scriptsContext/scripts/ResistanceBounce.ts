@@ -88,7 +88,6 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeHours: [],
         });
         candles[i].meta = { isTop: true };
       }

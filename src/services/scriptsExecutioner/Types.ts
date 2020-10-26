@@ -22,5 +22,6 @@ export interface Report {
     positives: number;
     negatives: number;
     successPercentage: number;
+    profits: number;
   };
 }
