@@ -130,15 +130,16 @@ export default function processOrders({
   function isOrderExecutable(order: Order, date: Date): boolean {
     if (!order.executeTime) return true;
 
-    const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
     const executableHours = order.executeTime.map((t) => t.hour);
+    if (!executableHours) return true;
 
+    const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
     if (!executableHours.includes(hour)) return false;
 
     const executableWeekdays = order.executeTime.find((t) => t.hour === hour)!.weekdays;
+    if (!executableWeekdays || executableWeekdays.length === 0) return true;
 
     if (!executableWeekdays.includes(date.getDay())) return false;
-
     return true;
   }
 
@@ -157,7 +158,7 @@ export default function processOrders({
   }
 
   function randomizeTradeResult(order: Order, orderIndex: number): void {
-    const chance = 75;
+    const chance = 50;
     const random = Math.random() * 100;
     const isCandlePositive = currentCandle.close >= currentCandle.low;
     let isProfit = false;

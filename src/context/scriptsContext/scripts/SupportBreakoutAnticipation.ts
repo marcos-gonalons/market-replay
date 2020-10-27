@@ -94,7 +94,15 @@ export default (function f({
               weekdays: [1, 2, 3, 4, 5],
             },
             {
+              hour: "8:30",
+              weekdays: [1, 2, 3, 4, 5],
+            },
+            {
               hour: "9:00",
+              weekdays: [2],
+            },
+            {
+              hour: "9:30",
               weekdays: [2],
             },
             {
@@ -102,7 +110,15 @@ export default (function f({
               weekdays: [5],
             },
             {
+              hour: "11:30",
+              weekdays: [5],
+            },
+            {
               hour: "12:00",
+              weekdays: [4, 5],
+            },
+            {
+              hour: "12:30",
               weekdays: [4, 5],
             },
             {
@@ -110,11 +126,23 @@ export default (function f({
               weekdays: [1, 2, 3, 4, 5],
             },
             {
+              hour: "13:30",
+              weekdays: [1, 2, 3, 4, 5],
+            },
+            {
               hour: "15:00",
               weekdays: [1],
             },
             {
+              hour: "15:30",
+              weekdays: [1],
+            },
+            {
               hour: "16:00",
+              weekdays: [2, 4],
+            },
+            {
+              hour: "16:30",
               weekdays: [2, 4],
             },
           ],

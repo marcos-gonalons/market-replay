@@ -17,7 +17,7 @@ interface Order {
   fillDate?: number;
   executeTime?: {
     hour: string;
-    weekdays: number[];
+    weekdays?: number[];
   }[];
 }
 

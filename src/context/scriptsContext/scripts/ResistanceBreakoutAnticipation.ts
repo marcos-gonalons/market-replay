@@ -28,6 +28,13 @@ export default (function f({
     return;
   }
 
+  const marketOrder = orders.find((o) => o.type === "market");
+  if (marketOrder) {
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < 4) {
+      marketOrder.stopLoss = marketOrder.price;
+    }
+  }
+
   for (let i = currentDataIndex - ignoreLastNCandles; i > currentDataIndex - ignoreLastNCandles - candlesToCheck; i--) {
     if (!candles[i]) break;
 
@@ -94,11 +101,19 @@ export default (function f({
               weekdays: [1, 2, 3, 4],
             },
             {
+              hour: "9:30",
+              weekdays: [1, 2, 3, 4],
+            },
+            {
               hour: "10:00",
               weekdays: [2],
             },
             {
-              hour: "11:00",
+              hour: "10:30",
+              weekdays: [2],
+            },
+            {
+              hour: "11:30",
               weekdays: [2, 3],
             },
             {
@@ -106,11 +121,19 @@ export default (function f({
               weekdays: [1, 2, 5],
             },
             {
-              hour: "13:00",
+              hour: "12:30",
+              weekdays: [1, 2, 5],
+            },
+            {
+              hour: "13:30",
               weekdays: [2],
             },
             {
-              hour: "16:00",
+              hour: "16:30",
+              weekdays: [1, 4],
+            },
+            {
+              hour: "19:30",
               weekdays: [1, 4],
             },
           ],
