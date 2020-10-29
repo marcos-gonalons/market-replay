@@ -88,7 +88,7 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeTime: [
+          executeHours: [
             {
               hour: "8:00",
               weekdays: [1, 2, 3, 4, 5],

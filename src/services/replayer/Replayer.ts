@@ -2,6 +2,7 @@ import { Candle } from "../../context/globalContext/Types";
 import { removeAllOrders, removeAllTrades, setOrders, setTrades } from "../../context/tradesContext/Actions";
 import { TradesContext, State as TradesContextState } from "../../context/tradesContext/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
+import { DEFAULT_SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import ScriptsExecutionerService from "../scriptsExecutioner/ScriptsExecutioner";
 
@@ -130,6 +131,7 @@ class ReplayerService {
         trades,
         currentCandle: this.PainterService.getLastCandle(),
         previousCandle: data.length - 2 >= 0 ? data[data.length - 2] : null,
+        spread: DEFAULT_SPREAD,
       });
 
       this.tradesContext.dispatch(setTrades(trades));

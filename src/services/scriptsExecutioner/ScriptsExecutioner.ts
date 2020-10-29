@@ -13,12 +13,12 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
-import { getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
-import { Report, ScriptFuncParameters } from "./Types";
+import { generateReports } from "../reporter/Reporter";
+import { ScriptFuncParameters } from "./Types";
 
 class ScriptsExecutionerService {
   private PainterService?: PainterService;
@@ -83,6 +83,7 @@ class ScriptsExecutionerService {
         trades,
         currentCandle: data[i],
         previousCandle: i - 1 >= 0 ? data[i - 1] : null,
+        spread: DEFAULT_SPREAD,
       });
 
       if (trades.length > lastTradesLength) {
@@ -114,7 +115,7 @@ class ScriptsExecutionerService {
           balance,
           progress: 100,
           trades,
-          reports: this.generateReports(trades),
+          reports: generateReports(trades),
         },
       });
     }
@@ -133,8 +134,6 @@ class ScriptsExecutionerService {
     const orderId: string = uuidv4();
 
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
-      if (order.type !== "market") return;
-
       const adjustment = DEFAULT_SPREAD;
       if (order.position === "short") {
         order.price -= adjustment;
@@ -147,23 +146,20 @@ class ScriptsExecutionerService {
       }
     }
 
-    if (replayMode) {
-      (function (tradesContext: TradesContext): void {
-        createOrderFunc = (order: Order): string => {
-          order.id = orderId;
-          adjustPricesTakingSpreadIntoConsideration(order);
-          tradesContext.dispatch(addOrder(order));
-          return orderId;
-        };
-      })(this.tradesContext!);
-    } else {
+    (function (tradesContext: TradesContext, replayMode: boolean): void {
       createOrderFunc = (order: Order): string => {
         order.id = orderId;
-        adjustPricesTakingSpreadIntoConsideration(order);
-        orders!.push(order);
+        if (order.type === "market") {
+          adjustPricesTakingSpreadIntoConsideration(order);
+        }
+        if (replayMode) {
+          tradesContext.dispatch(addOrder(order));
+        } else {
+          orders!.push(order);
+        }
         return orderId;
       };
-    }
+    })(this.tradesContext!, replayMode);
 
     return createOrderFunc;
   }
@@ -306,63 +302,6 @@ class ScriptsExecutionerService {
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
     });
     return this;
-  }
-
-  private generateReports(trades: Trade[]): Report[] {
-    const hourlyReport: Report = {};
-    const weekdayReport: Report = {};
-    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    for (const trade of trades) {
-      const date = new Date(trade.startDate);
-      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
-      const weekday = weekdays[date.getDay()];
-
-      if (!hourlyReport[hour]) {
-        hourlyReport[hour] = {
-          total: 0,
-          positives: 0,
-          negatives: 0,
-          successPercentage: 0,
-          profits: 0,
-        };
-      }
-      if (!weekdayReport[weekday]) {
-        weekdayReport[weekday] = {
-          total: 0,
-          positives: 0,
-          negatives: 0,
-          successPercentage: 0,
-          profits: 0,
-        };
-      }
-
-      hourlyReport[hour].total++;
-      hourlyReport[hour].profits += trade.result;
-      if (trade.result >= 0) {
-        hourlyReport[hour].positives++;
-      } else {
-        hourlyReport[hour].negatives++;
-      }
-
-      weekdayReport[weekday].total++;
-      weekdayReport[weekday].profits += trade.result;
-      if (trade.result >= 0) {
-        weekdayReport[weekday].positives++;
-      } else {
-        weekdayReport[weekday].negatives++;
-      }
-    }
-
-    for (const hour in hourlyReport) {
-      hourlyReport[hour].successPercentage = (hourlyReport[hour].positives / hourlyReport[hour].total) * 100;
-    }
-
-    for (const weekday in weekdayReport) {
-      weekdayReport[weekday].successPercentage =
-        (weekdayReport[weekday].positives / weekdayReport[weekday].total) * 100;
-    }
-
-    return [hourlyReport, weekdayReport];
   }
 }
 

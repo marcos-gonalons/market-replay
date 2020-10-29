@@ -1,7 +1,7 @@
 import { Candle } from "../context/globalContext/Types";
 import { Script } from "../context/scriptsContext/Types";
 import { Trade } from "../context/tradesContext/Types";
-import { Report } from "../services/scriptsExecutioner/Types";
+import { Report } from "../services/reporter/Types";
 
 export type WorkerType = "parser" | "scripts-executioner";
 

@@ -98,6 +98,18 @@ function ScriptsPanel(): JSX.Element {
           console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
           console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
           console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+          percentages = [];
+          totals = [];
+          for (const d in reports[2]) {
+            percentages.push(reports[2][d].successPercentage);
+            totals.push(reports[2][d].total);
+          }
+
+          console.log("month 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+          console.log("month 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+          console.log("month 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+          console.log("month 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
         }
       }
     });

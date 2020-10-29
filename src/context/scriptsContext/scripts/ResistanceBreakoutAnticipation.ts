@@ -95,7 +95,7 @@ export default (function f({
           price,
           stopLoss,
           takeProfit,
-          executeTime: [
+          executeHours: [
             {
               hour: "9:00",
               weekdays: [1, 2, 3, 4],
@@ -137,6 +137,7 @@ export default (function f({
               weekdays: [1, 4],
             },
           ],
+          //executeMonths: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
         });
         candles[i].meta = { isTop: true };
       }

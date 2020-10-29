@@ -1,7 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
 import { getMinutesAsHalfAnHour } from "../../utils/Utils";
-import { DEFAULT_SPREAD } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({
@@ -9,6 +8,7 @@ export default function processOrders({
   trades,
   currentCandle,
   previousCandle,
+  spread,
 }: ProcessOrdersParameters): void {
   for (const order of orders.filter((o) => o.type !== "market")) {
     const spreadedOrderPrice = getOrderPriceTakingSpreadIntoAccount(order);
@@ -26,7 +26,7 @@ export default function processOrders({
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
 
-    if (!isOrderExecutable(order, new Date(order.createdAt!))) {
+    if (!isMarketOrderExecutable(order, new Date(order.createdAt!))) {
       indicesOfMarketOrdersToRemove.push(index);
       continue;
     }
@@ -66,10 +66,10 @@ export default function processOrders({
     switch (order.type) {
       case "buy-limit":
       case "sell-stop":
-        return order.price - DEFAULT_SPREAD / 2;
+        return order.price - spread / 2;
       case "buy-stop":
       case "sell-limit":
-        return order.price + DEFAULT_SPREAD / 2;
+        return order.price + spread / 2;
     }
     return order.price;
   }
@@ -97,14 +97,14 @@ export default function processOrders({
       }
 
       if (order.type === "buy-stop") {
-        order.price += DEFAULT_SPREAD;
-        order.stopLoss = order.stopLoss ? order.stopLoss + DEFAULT_SPREAD : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit + DEFAULT_SPREAD : order.takeProfit;
+        order.price += spread;
+        order.stopLoss = order.stopLoss ? order.stopLoss + spread : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit + spread : order.takeProfit;
       }
       if (order.type === "sell-stop") {
-        order.price -= DEFAULT_SPREAD;
-        order.stopLoss = order.stopLoss ? order.stopLoss - DEFAULT_SPREAD : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit - DEFAULT_SPREAD : order.takeProfit;
+        order.price -= spread;
+        order.stopLoss = order.stopLoss ? order.stopLoss - spread : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit - spread : order.takeProfit;
       }
     }
 
@@ -117,29 +117,45 @@ export default function processOrders({
     let slRealPrice = 0;
     let tpRealPrice = 0;
     if (order.stopLoss) {
-      slRealPrice =
-        order.position === "long" ? order.stopLoss - DEFAULT_SPREAD / 2 : order.stopLoss + DEFAULT_SPREAD / 2;
+      slRealPrice = order.position === "long" ? order.stopLoss - spread / 2 : order.stopLoss + spread / 2;
     }
     if (order.takeProfit) {
-      tpRealPrice =
-        order.position === "short" ? order.takeProfit - DEFAULT_SPREAD / 2 : order.takeProfit + DEFAULT_SPREAD / 2;
+      tpRealPrice = order.position === "short" ? order.takeProfit - spread / 2 : order.takeProfit + spread / 2;
     }
     return [slRealPrice, tpRealPrice];
   }
 
-  function isOrderExecutable(order: Order, date: Date): boolean {
-    if (!order.executeTime) return true;
+  function isMarketOrderExecutable(order: Order, date: Date): boolean {
+    if (order.executeHours) {
+      const executableHours = order.executeHours.map((t) => t.hour);
+      if (!executableHours) return true;
 
-    const executableHours = order.executeTime.map((t) => t.hour);
-    if (!executableHours) return true;
+      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+      if (!executableHours.includes(hour)) return false;
 
-    const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
-    if (!executableHours.includes(hour)) return false;
+      const executableWeekdays = order.executeHours.find((t) => t.hour === hour)!.weekdays;
+      if (!executableWeekdays || executableWeekdays.length === 0) return true;
 
-    const executableWeekdays = order.executeTime.find((t) => t.hour === hour)!.weekdays;
-    if (!executableWeekdays || executableWeekdays.length === 0) return true;
+      if (!executableWeekdays.includes(date.getDay())) return false;
+      return true;
+    }
 
-    if (!executableWeekdays.includes(date.getDay())) return false;
+    if (order.executeDays) {
+      const executableDays = order.executeDays.map((d) => d.weekday);
+      if (!executableDays) return true;
+
+      const weekday = date.getDay();
+      if (!executableDays.includes(weekday)) return false;
+
+      const executableHours = order.executeDays.find((d) => d.weekday === weekday)!.hours;
+      if (!executableHours || executableHours.length === 0) return true;
+
+      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+      if (!executableHours.includes(hour)) return false;
+
+      return true;
+    }
+
     return true;
   }
 
@@ -158,7 +174,7 @@ export default function processOrders({
   }
 
   function randomizeTradeResult(order: Order, orderIndex: number): void {
-    const chance = 50;
+    const chance = 0;
     const random = Math.random() * 100;
     const isCandlePositive = currentCandle.close >= currentCandle.low;
     let isProfit = false;
@@ -201,7 +217,7 @@ export default function processOrders({
   }
 
   function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
-    const spreadAdjustment = order.position === "short" ? DEFAULT_SPREAD : -DEFAULT_SPREAD;
+    const spreadAdjustment = order.position === "short" ? spread : -spread;
     const endPrice = price + spreadAdjustment;
     const trade = {
       startDate: order.createdAt!,
