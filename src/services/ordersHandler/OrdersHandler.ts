@@ -31,14 +31,35 @@ export default function processOrders({
       continue;
     }
 
-    if (order.stopLoss && order.takeProfit && orderCreatedInCurrentCandle) {
-      if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
-        randomizeTradeResult(order, index);
-        continue;
+    if (orderCreatedInCurrentCandle) {
+      if (order.stopLoss && order.takeProfit) {
+        if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
+          randomizeTradeResult(order, index);
+          continue;
+        }
       }
-    }
 
-    if (orderCreatedInCurrentCandle) continue;
+      if (!previousCandle) continue;
+
+      if (order.takeProfit && isPriceWithinCandle(tpRealPrice, currentCandle)) {
+        if (
+          (order.position === "long" && order.price > previousCandle.high) ||
+          (order.position === "short" && order.price < previousCandle.low)
+        ) {
+          processTakeProfitTrade(order, index);
+        }
+      }
+
+      if (order.stopLoss && isPriceWithinCandle(slRealPrice, currentCandle)) {
+        if (
+          (order.position === "long" && order.price < previousCandle.low) ||
+          (order.position === "short" && order.price > previousCandle.high)
+        ) {
+          processStopLossTrade(order, index, order.stopLoss);
+        }
+      }
+      continue;
+    }
 
     if (order.stopLoss) {
       if (isPriceWithinCandle(slRealPrice, currentCandle)) {
