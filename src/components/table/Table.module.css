@@ -1,0 +1,17 @@
+.sortable {
+  cursor: pointer;
+}
+
+.table > thead > tr > th {
+  font-weight: bold;
+  white-space: nowrap;
+}
+.table thead tr {
+  background-color: var(--table-secondary-color);
+}
+.table tbody tr:nth-child(odd) {
+  background-color: inherit;
+}
+.table tbody tr:nth-child(even) {
+  background-color: var(--table-secondary-color);
+}

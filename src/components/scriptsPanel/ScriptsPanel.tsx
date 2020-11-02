@@ -22,7 +22,6 @@ import { State as TradesContextState } from "../../context/tradesContext/Types";
 import { ReducerAction } from "../../context/Types";
 import PainterService from "../../services/painter/Painter";
 import { Report } from "../../services/reporter/Types";
-import { getNSigmaWithWeightedAverage } from "../../utils/Utils";
 import { MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
 import HelpModal from "./helpModal/HelpModal";
 import ReportModal from "./reportModal/ReportModal";
@@ -130,7 +129,9 @@ function ScriptsPanel(): JSX.Element {
       </Modal>
       <HelpModal isVisible={isHelpModalVisible} onClose={() => setIsHelpModalVisible(false)} />
       <ReportModal
-        reports={scriptReports}
+        hourlyReport={scriptReports[0]}
+        weekdayReport={scriptReports[1]}
+        monthlyReport={scriptReports[2]}
         isVisible={isReportModalVisible}
         onClose={() => setIsReportModalVisible(false)}
       />
@@ -178,44 +179,6 @@ function onReceiveMsgFromWorker(
     if (reports) {
       setIsReportModalVisible(true);
       setScriptReports(reports);
-
-      console.log(reports);
-
-      let percentages: number[] = [];
-      let totals: number[] = [];
-      for (const h in reports[0]) {
-        percentages.push(reports[0][h].successPercentage);
-        totals.push(reports[0][h].total);
-      }
-
-      console.log("hour 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-      console.log("hour 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-      console.log("hour 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-      console.log("hour 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
-
-      percentages = [];
-      totals = [];
-      for (const d in reports[1]) {
-        percentages.push(reports[1][d].successPercentage);
-        totals.push(reports[1][d].total);
-      }
-
-      console.log("weekday 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-      console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-      console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-      console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
-
-      percentages = [];
-      totals = [];
-      for (const d in reports[2]) {
-        percentages.push(reports[2][d].successPercentage);
-        totals.push(reports[2][d].total);
-      }
-
-      console.log("month 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-      console.log("month 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-      console.log("month 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-      console.log("month 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
     }
   }
 }

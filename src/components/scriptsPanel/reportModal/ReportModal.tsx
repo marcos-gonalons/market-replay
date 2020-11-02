@@ -1,18 +1,210 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal } from "semantic-ui-react";
-import { Report } from "../../../services/reporter/Types";
+import { Report, ReportData } from "../../../services/reporter/Types";
+import { getNSigmaWithWeightedAverage } from "../../../utils/Utils";
+import Table from "../../table/Table";
+import { BodyRow, HeaderRow } from "../../table/Types";
+import styles from "./ReportModal.module.css";
 
 export interface Props {
   readonly isVisible: boolean;
-  readonly reports: Report[];
+  readonly hourlyReport: Report;
+  readonly weekdayReport: Report;
+  readonly monthlyReport: Report;
   readonly onClose: () => void;
 }
 
-export default function ReportModal({ isVisible, onClose }: Props): JSX.Element {
+export type Tab = "hourly-report" | "weekday-report" | "monthly-report";
+
+export default function ReportModal({
+  isVisible,
+  hourlyReport,
+  weekdayReport,
+  monthlyReport,
+  onClose,
+}: Props): JSX.Element {
+  logSigma([hourlyReport, weekdayReport, monthlyReport]);
+  const [activeTab, setActiveTab] = useState<Tab>("hourly-report");
   return (
     <Modal centered={false} open={isVisible} onClose={onClose}>
       <Modal.Header>Reports</Modal.Header>
-      <Modal.Content>Yeah</Modal.Content>
+      <Modal.Content>
+        {renderTabs(activeTab, setActiveTab)}
+        {renderTable(getReportToRender(activeTab, [hourlyReport, weekdayReport, monthlyReport]))}
+      </Modal.Content>
     </Modal>
   );
+}
+
+function renderTabs(activeTab: Tab, setActiveTab: (tab: Tab) => void): JSX.Element {
+  const tabs = [
+    {
+      displayName: "Hourly report",
+      tabName: "hourly-report",
+    },
+    {
+      displayName: "Weekday report",
+      tabName: "weekday-report",
+    },
+    {
+      displayName: "Monthly report",
+      tabName: "monthly-report",
+    },
+  ] as {
+    displayName: string;
+    tabName: Tab;
+  }[];
+  return (
+    <nav>
+      {tabs.map((t) => {
+        let className = styles["tab"];
+        if (t.tabName === activeTab) {
+          className = className + ` ${styles["active-tab"]}`;
+        }
+        return (
+          <button onClick={() => setActiveTab(t.tabName)} className={className}>
+            {t.displayName}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function getReportToRender(activeTab: Tab, reports: Report[]): Report {
+  switch (activeTab) {
+    case "hourly-report":
+      return reports[0];
+    case "weekday-report":
+      return reports[1];
+    case "monthly-report":
+      return reports[2];
+  }
+}
+
+function renderTable(report: Report) {
+  const tableHeader = getTableHeader();
+  const tableBody = getTableBody(report);
+  return <Table header={tableHeader} body={tableBody} />;
+}
+
+function getTableHeader(): HeaderRow {
+  return {
+    cells: [
+      {
+        content: <>Group</>,
+        meta: { columnName: "group", sortable: true },
+      },
+      {
+        content: <>Positives</>,
+        meta: { columnName: "positives", sortable: true },
+      },
+      {
+        content: <>Negatives</>,
+        meta: { columnName: "negatives", sortable: true },
+      },
+      {
+        content: <>Success %</>,
+        meta: { columnName: "successPercentage", sortable: true },
+      },
+      {
+        content: <>Profits</>,
+        meta: { columnName: "profits", sortable: true },
+      },
+      {
+        content: <>Total trades</>,
+        meta: { columnName: "totalTrades", sortable: true },
+      },
+    ],
+  };
+}
+
+function getTableBody(report: Report): BodyRow[] {
+  const body: BodyRow[] = [];
+  const totals: ReportData = {
+    positives: 0,
+    negatives: 0,
+    successPercentage: 0,
+    profits: 0,
+    total: 0,
+  };
+  for (const group in report) {
+    totals.positives += report[group].positives;
+    totals.negatives += report[group].negatives;
+    totals.profits += report[group].profits;
+    totals.total += report[group].total;
+    body.push(getBodyRow(report[group], group));
+  }
+  body.push(getBodyRow(totals, "Totals"));
+  return body;
+}
+
+function getBodyRow(r: ReportData, group: "Totals" | string): BodyRow {
+  return {
+    cells: [
+      {
+        displayContent: <>{group}</>,
+        internalValue: group === "Totals" ? "zzzzzzzz" : group,
+      },
+      {
+        displayContent: <>{r.positives}</>,
+        internalValue: r.positives,
+      },
+      {
+        displayContent: <>{r.negatives}</>,
+        internalValue: r.negatives,
+      },
+      {
+        displayContent: <>{group === "Totals" ? "-" : r.successPercentage.toFixed(2)}</>,
+        internalValue: r.successPercentage,
+      },
+      {
+        displayContent: <>{r.profits.toFixed(2)}</>,
+        internalValue: r.profits,
+      },
+      {
+        displayContent: <>{r.total}</>,
+        internalValue: r.total,
+      },
+    ],
+    className: group === "Totals" ? styles["totals-row"] : "",
+  };
+}
+
+function logSigma(reports: Report[]): void {
+  let percentages: number[] = [];
+  let totals: number[] = [];
+  for (const h in reports[0]) {
+    percentages.push(reports[0][h].successPercentage);
+    totals.push(reports[0][h].total);
+  }
+
+  console.log("hour 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+  console.log("hour 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+  console.log("hour 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+  console.log("hour 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+  percentages = [];
+  totals = [];
+  for (const d in reports[1]) {
+    percentages.push(reports[1][d].successPercentage);
+    totals.push(reports[1][d].total);
+  }
+
+  console.log("weekday 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+  console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+  console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+  console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+  percentages = [];
+  totals = [];
+  for (const d in reports[2]) {
+    percentages.push(reports[2][d].successPercentage);
+    totals.push(reports[2][d].total);
+  }
+
+  console.log("month 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+  console.log("month 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+  console.log("month 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+  console.log("month 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
 }
