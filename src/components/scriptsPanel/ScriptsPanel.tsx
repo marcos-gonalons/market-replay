@@ -15,9 +15,12 @@ import {
   setProgress,
 } from "../../context/scriptsContext/Actions";
 import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
+import { State as ScriptsContextState } from "../../context/scriptsContext/Types";
 import { setBalance, setTrades } from "../../context/tradesContext/Actions";
 import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { State as TradesContextState } from "../../context/tradesContext/Types";
 import { ReducerAction } from "../../context/Types";
+import PainterService from "../../services/painter/Painter";
 import { Report } from "../../services/reporter/Types";
 import { getNSigmaWithWeightedAverage } from "../../utils/Utils";
 import { MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
@@ -31,10 +34,11 @@ function ScriptsPanel(): JSX.Element {
     state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService, painterService, worker },
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
+  const scriptsContext = useContext(ScriptsContext);
   const {
     state: { scripts, indexOfTheScriptBeingEdited },
     dispatch: scriptsContextDispatch,
-  } = useContext(ScriptsContext);
+  } = scriptsContext;
   const tradesContext = useContext(TradesContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
@@ -47,72 +51,25 @@ function ScriptsPanel(): JSX.Element {
 
     setIsListenerSetted(true);
     worker.addEventListener("message", ({ data }: MessageEvent) => {
-      const { error, type, payload } = data as MessageOut & { error: Error };
-
-      if (error) {
-        toast.error(`An error occurred: ${error.message}`);
-        return;
-      }
-
-      if (type !== "scripts-executioner") return;
-
-      const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
-
-      scriptsContextDispatch(setProgress(progress));
-
-      if (progress === 100) {
-        tradesContext.dispatch(setTrades(trades));
-        tradesContext.dispatch(setBalance(balance));
-        scriptsContextDispatch(setProgress(0));
-        scriptsContextDispatch(setIndexOfTheScriptBeingExecuted(null));
-
-        painterService.draw();
-
-        if (reports) {
-          setIsReportModalVisible(true);
-          setScriptReports(reports);
-
-          console.log(reports);
-
-          let percentages: number[] = [];
-          let totals: number[] = [];
-          for (const h in reports[0]) {
-            percentages.push(reports[0][h].successPercentage);
-            totals.push(reports[0][h].total);
-          }
-
-          console.log("hour 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-          console.log("hour 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-          console.log("hour 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-          console.log("hour 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
-
-          percentages = [];
-          totals = [];
-          for (const d in reports[1]) {
-            percentages.push(reports[1][d].successPercentage);
-            totals.push(reports[1][d].total);
-          }
-
-          console.log("weekday 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-          console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-          console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-          console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
-
-          percentages = [];
-          totals = [];
-          for (const d in reports[2]) {
-            percentages.push(reports[2][d].successPercentage);
-            totals.push(reports[2][d].total);
-          }
-
-          console.log("month 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
-          console.log("month 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
-          console.log("month 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
-          console.log("month 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
-        }
-      }
+      onReceiveMsgFromWorker(
+        data,
+        scriptsContext,
+        tradesContext,
+        painterService,
+        setScriptReports,
+        setIsReportModalVisible
+      );
     });
-  }, [scriptsExecutionerService, painterService, tradesContext, scriptsContextDispatch, worker, isListenerSetted]);
+  }, [
+    scriptsExecutionerService,
+    painterService,
+    tradesContext,
+    scriptsContext,
+    worker,
+    isListenerSetted,
+    setScriptReports,
+    setIsReportModalVisible,
+  ]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;
@@ -126,6 +83,7 @@ function ScriptsPanel(): JSX.Element {
   if (!isScriptsPanelVisible) {
     return <></>;
   }
+
   return (
     <>
       <Modal
@@ -151,7 +109,7 @@ function ScriptsPanel(): JSX.Element {
             </aside>
             <section className={styles["script-contents"]}>
               <Editor
-                value={scripts[indexOfTheScriptBeingEdited].contents}
+                value={scripts[indexOfTheScriptBeingEdited] ? scripts[indexOfTheScriptBeingEdited].contents : ""}
                 onValueChange={(c) => {
                   scriptsContextDispatch(
                     modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
@@ -185,6 +143,80 @@ function renderAddScriptButton(dispatch: React.Dispatch<ReducerAction>): JSX.Ele
 
 function renderHelpModalButton(onClick: () => void): JSX.Element {
   return <button onClick={onClick}>Help</button>;
+}
+
+function onReceiveMsgFromWorker(
+  msg: MessageOut & { error: Error },
+  scriptsContext: { state: ScriptsContextState; dispatch: React.Dispatch<ReducerAction> },
+  tradesContext: { state: TradesContextState; dispatch: React.Dispatch<ReducerAction> },
+  painterService: PainterService,
+  setScriptReports: (reports: Report[]) => void,
+  setIsReportModalVisible: (value: boolean) => void
+): void {
+  const { error, type, payload } = msg;
+
+  if (error) {
+    toast.error(`An error occurred: ${error.message}`);
+    return;
+  }
+
+  if (type !== "scripts-executioner") return;
+
+  const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
+
+  scriptsContext.dispatch(setProgress(progress));
+
+  if (progress === 100) {
+    tradesContext.dispatch(setTrades(trades));
+    tradesContext.dispatch(setBalance(balance));
+    scriptsContext.dispatch(setProgress(0));
+    scriptsContext.dispatch(setIndexOfTheScriptBeingExecuted(null));
+
+    painterService.draw();
+
+    if (reports) {
+      setIsReportModalVisible(true);
+      setScriptReports(reports);
+
+      console.log(reports);
+
+      let percentages: number[] = [];
+      let totals: number[] = [];
+      for (const h in reports[0]) {
+        percentages.push(reports[0][h].successPercentage);
+        totals.push(reports[0][h].total);
+      }
+
+      console.log("hour 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+      console.log("hour 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+      console.log("hour 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+      console.log("hour 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+      percentages = [];
+      totals = [];
+      for (const d in reports[1]) {
+        percentages.push(reports[1][d].successPercentage);
+        totals.push(reports[1][d].total);
+      }
+
+      console.log("weekday 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+      console.log("weekday 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+      console.log("weekday 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+      console.log("weekday 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+
+      percentages = [];
+      totals = [];
+      for (const d in reports[2]) {
+        percentages.push(reports[2][d].successPercentage);
+        totals.push(reports[2][d].total);
+      }
+
+      console.log("month 3 sigma", getNSigmaWithWeightedAverage(3, totals, percentages));
+      console.log("month 4 sigma", getNSigmaWithWeightedAverage(4, totals, percentages));
+      console.log("month 5 sigma", getNSigmaWithWeightedAverage(5, totals, percentages));
+      console.log("month 6 sigma", getNSigmaWithWeightedAverage(6, totals, percentages));
+    }
+  }
 }
 
 export default ScriptsPanel;

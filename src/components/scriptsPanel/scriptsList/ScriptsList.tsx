@@ -74,8 +74,9 @@ function renderRemoveScriptButton(
   return (
     <button
       onClick={() => {
-        if (scriptIndex === indexOfTheScriptBeingEdited) {
-          dispatch(setIndexOfTheScriptBeingEdited(0));
+        if (scriptIndex < indexOfTheScriptBeingEdited) {
+          console.log("yes");
+          dispatch(setIndexOfTheScriptBeingEdited(indexOfTheScriptBeingEdited - 1));
         }
         dispatch(removeScript(scriptIndex));
       }}
