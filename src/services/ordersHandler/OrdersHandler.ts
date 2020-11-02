@@ -39,12 +39,11 @@ export default function processOrders({
         }
       }
 
-      if (!previousCandle) continue;
-
+      alert("this is not working properly");
       if (order.takeProfit && isPriceWithinCandle(tpRealPrice, currentCandle)) {
         if (
-          (order.position === "long" && order.price > previousCandle.high) ||
-          (order.position === "short" && order.price < previousCandle.low)
+          (order.position === "long" && currentCandle.close > currentCandle.open) ||
+          (order.position === "short" && currentCandle.close < currentCandle.open)
         ) {
           processTakeProfitTrade(order, index);
         }
@@ -52,8 +51,8 @@ export default function processOrders({
 
       if (order.stopLoss && isPriceWithinCandle(slRealPrice, currentCandle)) {
         if (
-          (order.position === "long" && order.price < previousCandle.low) ||
-          (order.position === "short" && order.price > previousCandle.high)
+          (order.position === "long" && currentCandle.close < currentCandle.open) ||
+          (order.position === "short" && currentCandle.close > currentCandle.open)
         ) {
           processStopLossTrade(order, index, order.stopLoss);
         }
@@ -118,12 +117,12 @@ export default function processOrders({
       }
 
       if (order.type === "buy-stop") {
-        order.price += spread;
+        order.price += spread / 1.2;
         order.stopLoss = order.stopLoss ? order.stopLoss + spread : order.stopLoss;
         order.takeProfit = order.takeProfit ? order.takeProfit + spread : order.takeProfit;
       }
       if (order.type === "sell-stop") {
-        order.price -= spread;
+        order.price -= spread / 1.2;
         order.stopLoss = order.stopLoss ? order.stopLoss - spread : order.stopLoss;
         order.takeProfit = order.takeProfit ? order.takeProfit - spread : order.takeProfit;
       }
@@ -231,6 +230,8 @@ export default function processOrders({
       result: (order.takeProfit! - order.price) * order.size,
     };
 
+    console.log("profit", trade);
+
     trades.push(trade);
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
@@ -249,6 +250,8 @@ export default function processOrders({
       position: order.position,
       result: (endPrice - order.price) * order.size,
     };
+
+    console.log("loss", trade);
 
     trades.push(trade);
     indicesOfMarketOrdersToRemove.push(orderIndex);

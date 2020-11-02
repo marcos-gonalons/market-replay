@@ -101,13 +101,16 @@ export default (function f({
     }
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+
+    const priceAdjustment = 1; // 1/100000;
     const riskPercentage = 1;
-    const stopLossDistance = 15;
-    const takeProfitDistance = 25;
+    const stopLossDistance = 15 * priceAdjustment;
+    const takeProfitDistance = 25 * priceAdjustment;
     const price = bottomCandle.low;
     const stopLoss = price - stopLossDistance;
     const takeProfit = price + takeProfitDistance;
     const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
+    // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
     createOrder({
       type: "buy-stop",
       position: "long",

@@ -10,14 +10,15 @@ export default (function f({
 }: ScriptFuncParameters) {
   if (balance < 0) return;
 
+  const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
   const candlesAmountWithoutOtherBottoms = 15;
 
   const riskPercentage = 1;
-  const stopLossDistance = 12;
-  const takeProfitDistance = 26;
+  const stopLossDistance = 12 * priceAdjustment;
+  const takeProfitDistance = 26 * priceAdjustment;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -73,13 +74,14 @@ export default (function f({
       }
     }
 
-    const price = candles[i].low + 2;
+    const price = candles[i].low + 2 * priceAdjustment;
     if (price < candles[currentDataIndex].low) {
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
       const stopLoss = price + stopLossDistance;
       const takeProfit = price - takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
+      // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
       if (!isThereAMarketOrder) {
         createOrder({
           type: "sell-stop",

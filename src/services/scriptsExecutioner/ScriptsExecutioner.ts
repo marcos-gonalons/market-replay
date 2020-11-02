@@ -89,7 +89,6 @@ class ScriptsExecutionerService {
       if (trades.length > lastTradesLength) {
         lastTradesLength = trades.length;
         balance += trades[trades.length - 1].result;
-        console.log("trade, new balance is ", balance);
       }
 
       this.executeScriptCode(script, data, balance, false, orders, trades, i);

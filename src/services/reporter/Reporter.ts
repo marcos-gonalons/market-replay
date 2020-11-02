@@ -1,6 +1,6 @@
 import { Trade } from "../../context/tradesContext/Types";
 import { getMinutesAsHalfAnHour } from "../../utils/Utils";
-import { Report } from "./Types";
+import { Report, ReportData } from "./Types";
 
 export function generateReports(trades: Trade[]): Report[] {
   const hourlyReport: Report = {};
@@ -28,56 +28,18 @@ export function generateReports(trades: Trade[]): Report[] {
     const month = months[date.getMonth()];
 
     if (!hourlyReport[hour]) {
-      hourlyReport[hour] = {
-        total: 0,
-        positives: 0,
-        negatives: 0,
-        successPercentage: 0,
-        profits: 0,
-      };
+      hourlyReport[hour] = initReport();
     }
     if (!weekdayReport[weekday]) {
-      weekdayReport[weekday] = {
-        total: 0,
-        positives: 0,
-        negatives: 0,
-        successPercentage: 0,
-        profits: 0,
-      };
+      weekdayReport[weekday] = initReport();
     }
     if (!monthlyReport[month]) {
-      monthlyReport[month] = {
-        total: 0,
-        positives: 0,
-        negatives: 0,
-        successPercentage: 0,
-        profits: 0,
-      };
+      monthlyReport[month] = initReport();
     }
 
-    hourlyReport[hour].total++;
-    hourlyReport[hour].profits += trade.result;
-    if (trade.result >= 0) {
-      hourlyReport[hour].positives++;
-    } else {
-      hourlyReport[hour].negatives++;
-    }
-
-    weekdayReport[weekday].total++;
-    weekdayReport[weekday].profits += trade.result;
-    if (trade.result >= 0) {
-      weekdayReport[weekday].positives++;
-    } else {
-      weekdayReport[weekday].negatives++;
-    }
-
-    monthlyReport[month].total++;
-    monthlyReport[month].profits += trade.result;
-    if (trade.result >= 0) {
-      monthlyReport[month].positives++;
-    } else {
-      monthlyReport[month].negatives++;
-    }
+    updateReport(hourlyReport, hour, trade);
+    updateReport(weekdayReport, weekday, trade);
+    updateReport(monthlyReport, month, trade);
   }
 
   for (const hour in hourlyReport) {
@@ -93,4 +55,24 @@ export function generateReports(trades: Trade[]): Report[] {
   }
 
   return [hourlyReport, weekdayReport, monthlyReport];
+}
+
+function initReport(): ReportData {
+  return {
+    total: 0,
+    positives: 0,
+    negatives: 0,
+    successPercentage: 0,
+    profits: 0,
+  };
+}
+
+function updateReport(report: Report, key: string, trade: Trade): void {
+  report[key].total++;
+  report[key].profits += trade.result;
+  if (trade.result >= 0) {
+    report[key].positives++;
+  } else {
+    report[key].negatives++;
+  }
 }
