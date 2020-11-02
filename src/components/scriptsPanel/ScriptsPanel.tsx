@@ -1,36 +1,30 @@
-import React, { useContext, useEffect, useState } from "react";
-import Modal from "react-modal";
-import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
-import { GlobalContext } from "../../context/globalContext/GlobalContext";
-
-import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
-
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-tomorrow.css";
-
-import styles from "./ScriptsPanel.module.css";
-import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
+import React, { useContext, useEffect, useState } from "react";
+import Modal from "react-modal";
+import Editor from "react-simple-code-editor";
+import { toast } from "react-toastify";
+import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
+import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import {
   addScript,
   modifyScriptContents,
-  modifyScriptName,
-  removeScript,
-  setIndexOfTheScriptBeingEdited,
   setIndexOfTheScriptBeingExecuted,
   setProgress,
-  setScriptIsActive,
 } from "../../context/scriptsContext/Actions";
-import { Script } from "../../context/scriptsContext/Types";
-import { ReducerAction } from "../../context/Types";
-import { toast } from "react-toastify";
-import HelpModal from "./helpModal/HelpModal";
-import { Candle } from "../../context/globalContext/Types";
-import { AppWorker, MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
-import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
 import { setBalance, setTrades } from "../../context/tradesContext/Actions";
+import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { ReducerAction } from "../../context/Types";
+import { Report } from "../../services/reporter/Types";
 import { getNSigmaWithWeightedAverage } from "../../utils/Utils";
+import { MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
+import HelpModal from "./helpModal/HelpModal";
+import ReportModal from "./reportModal/ReportModal";
+import ScriptsList from "./scriptsList/ScriptsList";
+import styles from "./ScriptsPanel.module.css";
 
 function ScriptsPanel(): JSX.Element {
   const {
@@ -38,12 +32,14 @@ function ScriptsPanel(): JSX.Element {
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
   const {
-    state: { scripts, indexOfTheScriptBeingEdited, indexOfTheScriptBeingExecuted, progress },
+    state: { scripts, indexOfTheScriptBeingEdited },
     dispatch: scriptsContextDispatch,
   } = useContext(ScriptsContext);
   const tradesContext = useContext(TradesContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
+  const [isReportModalVisible, setIsReportModalVisible] = useState<boolean>(false);
+  const [scriptReports, setScriptReports] = useState<Report[]>([]);
   const [isListenerSetted, setIsListenerSetted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -73,6 +69,9 @@ function ScriptsPanel(): JSX.Element {
         painterService.draw();
 
         if (reports) {
+          setIsReportModalVisible(true);
+          setScriptReports(reports);
+
           console.log(reports);
 
           let percentages: number[] = [];
@@ -146,15 +145,7 @@ function ScriptsPanel(): JSX.Element {
           </button>
           <section className={styles["contents"]}>
             <aside className={styles["script-names"]}>
-              {renderScriptNames(
-                scripts,
-                indexOfTheScriptBeingEdited,
-                indexOfTheScriptBeingExecuted,
-                progress,
-                scriptsContextDispatch,
-                worker,
-                painterService!.getData()
-              )}
+              <ScriptsList />
               {renderAddScriptButton(scriptsContextDispatch)}
               {renderHelpModalButton(() => setIsHelpModalVisible(true))}
             </aside>
@@ -179,60 +170,13 @@ function ScriptsPanel(): JSX.Element {
         </article>
       </Modal>
       <HelpModal isVisible={isHelpModalVisible} onClose={() => setIsHelpModalVisible(false)} />
+      <ReportModal
+        reports={scriptReports}
+        isVisible={isReportModalVisible}
+        onClose={() => setIsReportModalVisible(false)}
+      />
     </>
   );
-}
-
-function renderScriptNames(
-  scripts: Script[],
-  indexOfTheScriptBeingEdited: number,
-  indexOfTheScriptBeingExecuted: number | null,
-  progress: number,
-  dispatch: React.Dispatch<ReducerAction>,
-  worker: AppWorker,
-  data: Candle[]
-): JSX.Element[] {
-  return scripts.map((s, index) => (
-    <div key={index}>
-      <input
-        type="text"
-        value={s.name}
-        onChange={({ target: { value } }) => {
-          dispatch(modifyScriptName({ scriptIndex: index, name: value }));
-        }}
-      />
-      <button onClick={() => dispatch(setScriptIsActive({ scriptIndex: index, isActive: !s.isActive }))}>
-        {s.isActive ? "Deactivate" : "Activate"}
-      </button>
-      <button onClick={() => dispatch(setIndexOfTheScriptBeingEdited(index))}>Edit script</button>
-      {index > 0 ? (
-        <button
-          onClick={() => {
-            if (index === indexOfTheScriptBeingEdited) {
-              dispatch(setIndexOfTheScriptBeingEdited(0));
-            }
-            dispatch(removeScript(index));
-          }}
-        >
-          X
-        </button>
-      ) : (
-        ""
-      )}
-      <button
-        onClick={() => {
-          dispatch(setIndexOfTheScriptBeingExecuted(index));
-          worker.postMessage({
-            type: "scripts-executioner",
-            payload: { script: s, data, initialBalance: 10000 },
-          });
-        }}
-      >
-        Execute
-      </button>
-      {indexOfTheScriptBeingExecuted === index ? <span>Progress: {progress}</span> : ""}
-    </div>
-  ));
 }
 
 function renderAddScriptButton(dispatch: React.Dispatch<ReducerAction>): JSX.Element {
