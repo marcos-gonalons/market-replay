@@ -135,16 +135,18 @@ function getTableBody(report: Report): BodyRow[] {
     totals.total += report[group].total;
     body.push(getBodyRow(report[group], group));
   }
+  totals.successPercentage = (totals.positives / totals.total) * 100;
   body.push(getBodyRow(totals, "Totals"));
   return body;
 }
 
 function getBodyRow(r: ReportData, group: "Totals" | string): BodyRow {
   return {
+    isTotalsRow: group === "Totals",
     cells: [
       {
         displayContent: <>{group}</>,
-        internalValue: group === "Totals" ? "zzzzzzzz" : group,
+        internalValue: group,
       },
       {
         displayContent: <>{r.positives}</>,
@@ -155,7 +157,7 @@ function getBodyRow(r: ReportData, group: "Totals" | string): BodyRow {
         internalValue: r.negatives,
       },
       {
-        displayContent: <>{group === "Totals" ? "-" : r.successPercentage.toFixed(2)}</>,
+        displayContent: <>{r.successPercentage.toFixed(2)}</>,
         internalValue: r.successPercentage,
       },
       {

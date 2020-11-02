@@ -86,6 +86,8 @@ function clientSideOrdering(order: OrderBy, header: Props["header"], body: Props
   });
   if (columnNumber === -1) return;
   body.sort((a, b) => {
+    if (a.isTotalsRow) return 1;
+
     const ifGreater = order.direction === "asc" ? 1 : -1;
     const ifSmaller = ifGreater > 0 ? -1 : 1;
     let returnValue = 0;

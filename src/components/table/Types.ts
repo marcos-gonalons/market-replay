@@ -17,6 +17,7 @@ export type BodyCell = {
 
 export type Row = {
   className?: string;
+  isTotalsRow?: boolean;
 };
 export type HeaderRow = Row & {
   cells: HeaderCell[];
