@@ -1,5 +1,5 @@
-import Modal from "react-modal";
 import React from "react";
+import { Modal } from "semantic-ui-react";
 import { Report } from "../../../services/reporter/Types";
 
 export interface Props {
@@ -10,17 +10,9 @@ export interface Props {
 
 export default function ReportModal({ isVisible, onClose }: Props): JSX.Element {
   return (
-    <Modal
-      ariaHideApp={false}
-      aria-labelledby="simple-modal-title"
-      aria-describedby="simple-modal-description"
-      isOpen={isVisible}
-      onRequestClose={onClose}
-      style={{
-        content: {},
-      }}
-    >
-      Reports
+    <Modal centered={false} open={isVisible} onClose={onClose}>
+      <Modal.Header>Reports</Modal.Header>
+      <Modal.Content>Yeah</Modal.Content>
     </Modal>
   );
 }

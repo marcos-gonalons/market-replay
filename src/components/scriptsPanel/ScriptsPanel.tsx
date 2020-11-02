@@ -3,9 +3,9 @@ import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-tomorrow.css";
 import React, { useContext, useEffect, useState } from "react";
-import Modal from "react-modal";
 import Editor from "react-simple-code-editor";
 import { toast } from "react-toastify";
+import { Modal } from "semantic-ui-react";
 import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import {
@@ -87,45 +87,46 @@ function ScriptsPanel(): JSX.Element {
   return (
     <>
       <Modal
-        ariaHideApp={false}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-        isOpen={true}
-        onRequestClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+        size="fullscreen"
+        centered={false}
+        open={true}
+        onClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
       >
-        <article className={styles["modal-container"]}>
-          <button
-            tabIndex={-1}
-            className={styles["x"]}
-            onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
-          >
-            X
-          </button>
-          <section className={styles["contents"]}>
-            <aside className={styles["script-names"]}>
-              <ScriptsList />
-              {renderAddScriptButton(scriptsContextDispatch)}
-              {renderHelpModalButton(() => setIsHelpModalVisible(true))}
-            </aside>
-            <section className={styles["script-contents"]}>
-              <Editor
-                value={scripts[indexOfTheScriptBeingEdited] ? scripts[indexOfTheScriptBeingEdited].contents : ""}
-                onValueChange={(c) => {
-                  scriptsContextDispatch(
-                    modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
-                  );
-                }}
-                highlight={(code) => highlight(code, languages.js, "js")}
-                padding={10}
-                style={{
-                  fontFamily: '"Fira code", "Fira Mono", monospace',
-                  fontSize: 14,
-                }}
-                preClassName={"language-markup line-numbers"}
-              />
+        <Modal.Content>
+          <article className={styles["modal-container"]}>
+            <button
+              tabIndex={-1}
+              className={styles["x"]}
+              onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+            >
+              X
+            </button>
+            <section className={styles["contents"]}>
+              <aside className={styles["script-names"]}>
+                <ScriptsList />
+                {renderAddScriptButton(scriptsContextDispatch)}
+                {renderHelpModalButton(() => setIsHelpModalVisible(true))}
+              </aside>
+              <section className={styles["script-contents"]}>
+                <Editor
+                  value={scripts[indexOfTheScriptBeingEdited] ? scripts[indexOfTheScriptBeingEdited].contents : ""}
+                  onValueChange={(c) => {
+                    scriptsContextDispatch(
+                      modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
+                    );
+                  }}
+                  highlight={(code) => highlight(code, languages.js, "js")}
+                  padding={10}
+                  style={{
+                    fontFamily: '"Fira code", "Fira Mono", monospace',
+                    fontSize: 14,
+                  }}
+                  preClassName={"language-markup line-numbers"}
+                />
+              </section>
             </section>
-          </section>
-        </article>
+          </article>
+        </Modal.Content>
       </Modal>
       <HelpModal isVisible={isHelpModalVisible} onClose={() => setIsHelpModalVisible(false)} />
       <ReportModal

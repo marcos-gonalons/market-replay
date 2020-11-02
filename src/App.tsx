@@ -1,12 +1,10 @@
 import React from "react";
-
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-import { GlobalContextProvider } from "./context/globalContext/GlobalContext";
-import GlobalContextWrap from "./components/globalContextWrap/GlobalContextWrap";
-
+import "semantic-ui-css/semantic.min.css";
 import "./App.css";
+import GlobalContextWrap from "./components/globalContextWrap/GlobalContextWrap";
+import { GlobalContextProvider } from "./context/globalContext/GlobalContext";
 import { TradesContextProvider } from "./context/tradesContext/TradesContext";
 
 function App(): JSX.Element {

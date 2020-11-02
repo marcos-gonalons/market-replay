@@ -39,7 +39,6 @@ export default function processOrders({
         }
       }
 
-      alert("this is not working properly");
       if (order.takeProfit && isPriceWithinCandle(tpRealPrice, currentCandle)) {
         if (
           (order.position === "long" && currentCandle.close > currentCandle.open) ||

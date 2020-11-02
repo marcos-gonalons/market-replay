@@ -1,4 +1,6 @@
 export function getNSigma(nSigma: number, set: number[]): number {
+  if (!set.length) return 0;
+
   const avg = set.reduce((a, b) => a + b) / set.length;
   const variance = set.map((n) => Math.pow(n - avg, 2)).reduce((a, b) => a + b) / set.length;
   const stdDeviation = Math.sqrt(variance);
@@ -7,6 +9,8 @@ export function getNSigma(nSigma: number, set: number[]): number {
 }
 
 export function getNSigmaWithWeightedAverage(nSigma: number, weights: number[], data: number[]): number {
+  if (!weights.length || !data.length) return 0;
+
   const weightedData: number[] = [];
   for (let i = 0; i < data.length; i++) {
     weightedData.push(weights[i] * data[i]);
