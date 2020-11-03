@@ -34,6 +34,7 @@ export default function processOrders({
     if (orderCreatedInCurrentCandle) {
       if (order.stopLoss && order.takeProfit) {
         if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
+          indicesOfMarketOrdersToRemove.push(index);
           randomizeTradeResult(order, index);
           continue;
         }

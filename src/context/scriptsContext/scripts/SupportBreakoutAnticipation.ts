@@ -14,11 +14,11 @@ export default (function f({
   const candlesToCheck = 1000;
   const ignoreLastNCandles = 15;
   const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
-  const candlesAmountWithoutOtherBottoms = 15;
+  const candlesAmountWithoutOtherBottoms = 0;
 
   const riskPercentage = 1;
   const stopLossDistance = 12 * priceAdjustment;
-  const takeProfitDistance = 26 * priceAdjustment;
+  const takeProfitDistance = 27 * priceAdjustment;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -28,6 +28,15 @@ export default (function f({
     orders.map((mo) => closeOrder(mo.id!));
     return;
   }
+
+  const marketOrder = orders.find((o) => o.type === "market");
+  if (marketOrder) {
+    if (candles[currentDataIndex].low - marketOrder.takeProfit! < 4 * priceAdjustment) {
+      marketOrder.stopLoss = marketOrder.price;
+    }
+  }
+
+  if (marketOrder) return;
 
   for (let i = currentDataIndex - ignoreLastNCandles; i > currentDataIndex - ignoreLastNCandles - candlesToCheck; i--) {
     if (!candles[i]) break;
@@ -67,90 +76,79 @@ export default (function f({
 
     if (isFalsePositive) break;
 
-    let isThereAMarketOrder = false;
-    for (const order of orders) {
-      if (order.type === "market") {
-        isThereAMarketOrder = true;
-      }
-    }
-
     const price = candles[i].low + 2 * priceAdjustment;
     if (price < candles[currentDataIndex].low) {
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+      let highestValue = candles[currentDataIndex].high;
+
+      for (let i = currentDataIndex; i > currentDataIndex - 120; i--) {
+        if (!candles[i]) break;
+
+        if (candles[i].high > highestValue) {
+          highestValue = candles[i].high;
+        }
+      }
+
+      const diff = highestValue - candles[currentDataIndex].high;
+      if (diff < 29) {
+        return;
+      }
 
       const stopLoss = price + stopLossDistance;
       const takeProfit = price - takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
       // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
-      if (!isThereAMarketOrder) {
-        createOrder({
-          type: "sell-stop",
-          position: "short",
-          size,
-          price,
-          stopLoss,
-          takeProfit,
-          executeHours: [
-            {
-              hour: "8:00",
-              weekdays: [1, 2, 3, 4, 5],
-            },
-            {
-              hour: "8:30",
-              weekdays: [1, 2, 3, 4, 5],
-            },
-            {
-              hour: "9:00",
-              weekdays: [2],
-            },
-            {
-              hour: "9:30",
-              weekdays: [2],
-            },
-            {
-              hour: "11:00",
-              weekdays: [5],
-            },
-            {
-              hour: "11:30",
-              weekdays: [5],
-            },
-            {
-              hour: "12:00",
-              weekdays: [4, 5],
-            },
-            {
-              hour: "12:30",
-              weekdays: [4, 5],
-            },
-            {
-              hour: "13:00",
-              weekdays: [1, 2, 3, 4, 5],
-            },
-            {
-              hour: "13:30",
-              weekdays: [1, 2, 3, 4, 5],
-            },
-            {
-              hour: "15:00",
-              weekdays: [1],
-            },
-            {
-              hour: "15:30",
-              weekdays: [1],
-            },
-            {
-              hour: "16:00",
-              weekdays: [2, 4],
-            },
-            {
-              hour: "16:30",
-              weekdays: [2, 4],
-            },
-          ],
-        });
-        candles[i].meta = { isBottom: true };
-      }
+      createOrder({
+        type: "sell-stop",
+        position: "short",
+        size,
+        price,
+        stopLoss,
+        takeProfit,
+        executeHours: [
+          {
+            hour: "8:30",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "9:00",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "12:00",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "12:30",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "13:00",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "14:30",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "15:30",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "16:00",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "16:30",
+            weekdays: [1, 2, 4, 5],
+          },
+          {
+            hour: "18:00",
+            weekdays: [1, 2, 4, 5],
+          },
+        ],
+      });
+      candles[i].meta = { isBottom: true };
     }
   }
 

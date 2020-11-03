@@ -17,8 +17,8 @@ export default (function f({
   const candlesAmountWithoutOtherTops = 0;
 
   const riskPercentage = 1;
-  const stopLossDistance = 13 * priceAdjustment;
-  const takeProfitDistance = 26 * priceAdjustment;
+  const stopLossDistance = 12 * priceAdjustment;
+  const takeProfitDistance = 27 * priceAdjustment;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -79,6 +79,20 @@ export default (function f({
     const price = candles[i].high - 2 * priceAdjustment;
     if (price > candles[currentDataIndex].high) {
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+      let lowestValue = candles[currentDataIndex].low;
+
+      for (let i = currentDataIndex; i > currentDataIndex - 120; i--) {
+        if (!candles[i]) break;
+
+        if (candles[i].low < lowestValue) {
+          lowestValue = candles[i].low;
+        }
+      }
+
+      const diff = candles[currentDataIndex].low - lowestValue;
+      if (diff < 10) {
+        return;
+      }
 
       const stopLoss = price - stopLossDistance;
       const takeProfit = price + takeProfitDistance;
@@ -94,46 +108,33 @@ export default (function f({
         executeHours: [
           {
             hour: "9:00",
-            weekdays: [1, 2, 3, 4],
+            weekdays: [1, 2, 3, 5],
           },
           {
             hour: "9:30",
-            weekdays: [1, 2, 3, 4],
+            weekdays: [1, 2, 3, 5],
           },
           {
             hour: "10:00",
-            weekdays: [2],
-          },
-          {
-            hour: "10:30",
-            weekdays: [2],
+            weekdays: [1, 2, 3, 5],
           },
           {
             hour: "11:30",
-            weekdays: [2, 3],
+            weekdays: [1, 2, 3, 5],
           },
           {
             hour: "12:00",
-            weekdays: [1, 2, 5],
+            weekdays: [1, 2, 3, 5],
           },
           {
             hour: "12:30",
-            weekdays: [1, 2, 5],
+            weekdays: [1, 2, 3, 5],
           },
           {
-            hour: "13:30",
-            weekdays: [2],
-          },
-          {
-            hour: "16:30",
-            weekdays: [1, 4],
-          },
-          {
-            hour: "19:30",
-            weekdays: [1, 4],
+            hour: "20:30",
+            weekdays: [1, 2, 3, 5],
           },
         ],
-        //executeMonths: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       });
       candles[i].meta = { isTop: true };
     }

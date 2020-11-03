@@ -3,6 +3,7 @@ export interface Report {
 }
 
 export interface ReportData {
+  groupValue: number;
   total: number;
   positives: number;
   negatives: number;

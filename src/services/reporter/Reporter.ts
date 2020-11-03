@@ -29,9 +29,11 @@ export function generateReports(trades: Trade[]): Report[] {
 
     if (!hourlyReport[hour]) {
       hourlyReport[hour] = initReport();
+      // todo ("create date from hour, add groupValue the valueOf");
     }
     if (!weekdayReport[weekday]) {
       weekdayReport[weekday] = initReport();
+      // todo ("create date from weekday, add groupValue the valueOf");
     }
     if (!monthlyReport[month]) {
       monthlyReport[month] = initReport();
@@ -59,6 +61,7 @@ export function generateReports(trades: Trade[]): Report[] {
 
 function initReport(): ReportData {
   return {
+    groupValue: 0,
     total: 0,
     positives: 0,
     negatives: 0,

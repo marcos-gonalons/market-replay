@@ -122,6 +122,7 @@ function getTableHeader(): HeaderRow {
 function getTableBody(report: Report): BodyRow[] {
   const body: BodyRow[] = [];
   const totals: ReportData = {
+    groupValue: 0,
     positives: 0,
     negatives: 0,
     successPercentage: 0,
