@@ -146,6 +146,10 @@ export default function processOrders({
   }
 
   function isMarketOrderExecutable(order: Order, date: Date): boolean {
+    if (order.executeMonths) {
+      if (!order.executeMonths.includes(date.getMonth())) return false;
+    }
+
     if (order.executeHours) {
       const executableHours = order.executeHours.map((t) => t.hour);
       if (!executableHours) return true;

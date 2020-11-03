@@ -23,6 +23,7 @@ interface Order {
     weekday: number;
     hours: string[];
   }[];
+  executeMonths?: number[];
 }
 
 interface Trade {
