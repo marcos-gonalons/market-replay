@@ -16,7 +16,7 @@ export default (function f({
   const candlesAmountWithLowerPriceToBeConsideredTop = 15;
   const candlesAmountWithoutOtherTops = 0;
 
-  const riskPercentage = 1;
+  const riskPercentage = 1.5;
   const stopLossDistance = 12 * priceAdjustment;
   const takeProfitDistance = 27 * priceAdjustment;
 
@@ -96,7 +96,7 @@ export default (function f({
 
       const stopLoss = price - stopLossDistance;
       const takeProfit = price + takeProfitDistance;
-      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance) || 1;
+      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
       // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
       createOrder({
         type: "buy-stop",
