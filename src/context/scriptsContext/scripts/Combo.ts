@@ -10,29 +10,29 @@ export default (function f({
 }: ScriptFuncParameters) {
   if (balance < 0) return;
 
+  const priceAdjustment = 1; // 1/100000;
+  const candlesToCheck = 1000;
+  const ignoreLastNCandles = 15;
+  const riskPercentage = 1.5;
+  const stopLossDistance = 12 * priceAdjustment;
+  const takeProfitDistance = 27 * priceAdjustment;
+  const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
+
+  if (candles.length === 0 || currentDataIndex === 0) return;
+  const date = new Date(candles[currentDataIndex].timestamp);
+
+  if (date.getHours() < 8 || date.getHours() > 21) {
+    orders.map((mo) => closeOrder(mo.id!));
+    return;
+  }
+
   function resistance() {
-    const priceAdjustment = 1; // 1/100000;
-    const candlesToCheck = 1000;
-    const ignoreLastNCandles = 15;
     const candlesAmountWithLowerPriceToBeConsideredTop = 15;
     const candlesAmountWithoutOtherTops = 0;
 
-    const riskPercentage = 1.5;
-    const stopLossDistance = 12 * priceAdjustment;
-    const takeProfitDistance = 27 * priceAdjustment;
-
-    if (candles.length === 0 || currentDataIndex === 0) return;
-
-    const date = new Date(candles[currentDataIndex].timestamp);
-
-    if (date.getHours() < 8 || date.getHours() > 21) {
-      orders.map((mo) => closeOrder(mo.id!));
-      return;
-    }
-
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < 5 * priceAdjustment) {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
         marketOrder.stopLoss = marketOrder.price;
       }
     }
@@ -150,28 +150,12 @@ export default (function f({
   }
 
   function support() {
-    const priceAdjustment = 1; // 1/100000;
-    const candlesToCheck = 1000;
-    const ignoreLastNCandles = 15;
     const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
     const candlesAmountWithoutOtherBottoms = 0;
 
-    const riskPercentage = 1.5;
-    const stopLossDistance = 12 * priceAdjustment;
-    const takeProfitDistance = 27 * priceAdjustment;
-
-    if (candles.length === 0 || currentDataIndex === 0) return;
-
-    const date = new Date(candles[currentDataIndex].timestamp);
-
-    if (date.getHours() < 8 || date.getHours() > 21) {
-      orders.map((mo) => closeOrder(mo.id!));
-      return;
-    }
-
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "short") {
-      if (candles[currentDataIndex].low - marketOrder.takeProfit! < 5 * priceAdjustment) {
+      if (candles[currentDataIndex].low - marketOrder.takeProfit! < tpDistanceShortForBreakEvenSL) {
         marketOrder.stopLoss = marketOrder.price;
       }
     }
@@ -292,7 +276,7 @@ export default (function f({
               weekdays: [1, 2, 4, 5],
             },
           ],
-          executeMonths: [0, 2, 3, 5, 6, 7, 8, 9, 10, 11],
+          executeMonths: [0, 2, 3, 5, 7, 8, 9, 10, 11],
         });
         candles[i].meta = { isBottom: true };
       }
