@@ -31,7 +31,7 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < 4 * priceAdjustment) {
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < 5 * priceAdjustment) {
       marketOrder.stopLoss = marketOrder.price;
     }
   }
