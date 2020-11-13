@@ -30,7 +30,7 @@ export default (function f({
   }
 
   const marketOrder = orders.find((o) => o.type === "market");
-  if (marketOrder) {
+  if (marketOrder && marketOrder.position === "long") {
     if (marketOrder.takeProfit! - candles[currentDataIndex].high < 4 * priceAdjustment) {
       marketOrder.stopLoss = marketOrder.price;
     }
@@ -78,10 +78,10 @@ export default (function f({
 
     const price = candles[i].high - 2 * priceAdjustment;
     if (price > candles[currentDataIndex].high) {
-      orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+      orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
       let lowestValue = candles[currentDataIndex].low;
 
-      for (let i = currentDataIndex; i > currentDataIndex - 120; i--) {
+      for (let i = currentDataIndex; i > currentDataIndex - 180; i--) {
         if (!candles[i]) break;
 
         if (candles[i].low < lowestValue) {

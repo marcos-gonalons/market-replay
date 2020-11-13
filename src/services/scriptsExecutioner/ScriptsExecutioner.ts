@@ -1,6 +1,5 @@
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
-
 import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
 import {
@@ -12,7 +11,7 @@ import {
   setOrders,
   setTrades,
 } from "../../context/tradesContext/Actions";
-import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
+import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD } from "../painter/Constants";
@@ -75,8 +74,6 @@ class ScriptsExecutionerService {
     let balance = initialBalance;
     let lastTradesLength = trades.length;
 
-    console.log("initial balance", initialBalance);
-
     for (let i = 0; i < data.length; i++) {
       processOrders({
         orders,
@@ -104,8 +101,6 @@ class ScriptsExecutionerService {
         });
       }
     }
-
-    console.log("final balance", balance);
 
     if (worker) {
       worker.postMessage({

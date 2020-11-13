@@ -234,8 +234,6 @@ export default function processOrders({
       result: (order.takeProfit! - order.price) * order.size,
     };
 
-    console.log("profit", trade);
-
     trades.push(trade);
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
@@ -254,8 +252,6 @@ export default function processOrders({
       position: order.position,
       result: (endPrice - order.price) * order.size,
     };
-
-    console.log("loss", trade);
 
     trades.push(trade);
     indicesOfMarketOrdersToRemove.push(orderIndex);
