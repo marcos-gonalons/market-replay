@@ -116,15 +116,16 @@ export default function processOrders({
         }
       }
 
+      const adjust = spread / 1.2;
       if (order.type === "buy-stop") {
-        order.price += spread / 1.2;
-        order.stopLoss = order.stopLoss ? order.stopLoss + spread : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit + spread : order.takeProfit;
+        order.price += adjust;
+        order.stopLoss = order.stopLoss ? order.stopLoss + adjust : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit + adjust : order.takeProfit;
       }
       if (order.type === "sell-stop") {
-        order.price -= spread / 1.2;
-        order.stopLoss = order.stopLoss ? order.stopLoss - spread : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit - spread : order.takeProfit;
+        order.price -= adjust;
+        order.stopLoss = order.stopLoss ? order.stopLoss - adjust : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit - adjust : order.takeProfit;
       }
     }
 

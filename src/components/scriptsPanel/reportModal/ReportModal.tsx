@@ -175,6 +175,7 @@ function getBodyRow(r: ReportData, group: "Totals" | string): BodyRow {
 }
 
 function logSigma(reports: Report[]): void {
+  return;
   let percentages: number[] = [];
   let totals: number[] = [];
   for (const h in reports[0]) {

@@ -74,6 +74,8 @@ class ScriptsExecutionerService {
     let balance = initialBalance;
     let lastTradesLength = trades.length;
 
+    debugger;
+
     for (let i = 0; i < data.length; i++) {
       processOrders({
         orders,

@@ -94,6 +94,8 @@ export default (function f({
         return;
       }
 
+      orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+
       const stopLoss = price - stopLossDistance;
       const takeProfit = price + takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
