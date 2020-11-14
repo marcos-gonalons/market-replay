@@ -48,10 +48,6 @@ export default (function f({
         weekdays: [1, 2, 4, 5],
       },
       {
-        hour: "12:30",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
         hour: "13:00",
         weekdays: [1, 2, 4, 5],
       },
@@ -64,20 +60,12 @@ export default (function f({
         weekdays: [1, 2, 4, 5],
       },
       {
-        hour: "16:00",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "16:30",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
         hour: "18:00",
         weekdays: [1, 2, 4, 5],
       },
     ],
     [],
-    [0, 2, 3, 5, 7, 8, 9, 10, 11],
+    [2, 3, 5, 8, 11],
     date
   );
 
