@@ -15,15 +15,6 @@ interface Order {
   stopLoss?: number;
   takeProfit?: number;
   fillDate?: number;
-  executeHours?: {
-    hour: string;
-    weekdays?: number[];
-  }[];
-  executeDays?: {
-    weekday: number;
-    hours: string[];
-  }[];
-  executeMonths?: number[];
 }
 
 interface Trade {

@@ -1,12 +1,16 @@
 import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
+import { Order, OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
   candles,
   orders,
   balance,
   currentDataIndex,
+  spreadAdjustment,
   createOrder,
   closeOrder,
+  persistedVars,
+  isWithinTime,
 }: ScriptFuncParameters) {
   if (balance < 0) return;
 
@@ -26,7 +30,74 @@ export default (function f({
 
   if (date.getHours() < 8 || date.getHours() > 21) {
     orders.map((mo) => closeOrder(mo.id!));
-    return;
+    persistedVars.pendingOrder = null;
+  }
+
+  const isValidTime = isWithinTime(
+    [
+      {
+        hour: "8:30",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "9:00",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "12:00",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "12:30",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "13:00",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "14:30",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "15:30",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "16:00",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "16:30",
+        weekdays: [1, 2, 4, 5],
+      },
+      {
+        hour: "18:00",
+        weekdays: [1, 2, 4, 5],
+      },
+    ],
+    [],
+    [0, 2, 3, 5, 7, 8, 9, 10, 11],
+    date
+  );
+
+  if (!isValidTime) {
+    const order = orders.find((o) => o.type !== "market" && o.position === "short");
+    if (order) {
+      persistedVars.pendingOrder = { ...order };
+      closeOrder(order.id!);
+      return;
+    }
+  } else {
+    if (persistedVars.pendingOrder) {
+      const order = persistedVars.pendingOrder as Order;
+      if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
+        createOrder(order);
+      }
+      persistedVars.pendingOrder = null;
+      return;
+    }
+    persistedVars.pendingOrder = null;
   }
 
   const marketOrder = orders.find((o) => o.type === "market");
@@ -77,7 +148,7 @@ export default (function f({
     if (isFalsePositive) break;
 
     const price = candles[i].low + 2 * priceAdjustment;
-    if (price < candles[currentDataIndex].low) {
+    if (price < candles[currentDataIndex].low - spreadAdjustment) {
       orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
       let highestValue = candles[currentDataIndex].high;
 
@@ -95,61 +166,25 @@ export default (function f({
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+
       const stopLoss = price + stopLossDistance;
       const takeProfit = price - takeProfitDistance;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
       // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
-      createOrder({
-        type: "sell-stop",
-        position: "short",
+
+      const o = {
+        type: "sell-stop" as OrderType,
+        position: "short" as Position,
         size,
         price,
         stopLoss,
         takeProfit,
-        executeHours: [
-          {
-            hour: "8:30",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "9:00",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "12:00",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "12:30",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "13:00",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "14:30",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "15:30",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "16:00",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "16:30",
-            weekdays: [1, 2, 4, 5],
-          },
-          {
-            hour: "18:00",
-            weekdays: [1, 2, 4, 5],
-          },
-        ],
-        executeMonths: [0, 2, 3, 5, 6, 7, 8, 9, 10, 11],
-      });
+      };
+      if (!isValidTime) {
+        persistedVars.pendingOrder = o;
+      } else {
+        createOrder(o);
+      }
       candles[i].meta = { isBottom: true };
     }
   }
@@ -164,8 +199,11 @@ function f({
   orders,
   balance,
   currentDataIndex,
+  spreadAdjustment,
   createOrder,
-  closeOrder
+  closeOrder,
+  persistedVars,
+  isWithinTime
 }) {
 `.trim(),
     ``

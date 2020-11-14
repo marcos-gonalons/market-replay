@@ -12,9 +12,10 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
+import { getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
-import { DEFAULT_SPREAD } from "../painter/Constants";
+import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
 import { ScriptFuncParameters } from "./Types";
@@ -237,6 +238,57 @@ class ScriptsExecutionerService {
     return closeOrderFunc;
   }
 
+  private getIsWitinTimeFunc(): ScriptFuncParameters["isWithinTime"] {
+    return (
+      executeHours: {
+        hour: string;
+        weekdays?: number[];
+      }[],
+      executeDays: {
+        weekday: number;
+        hours: string[];
+      }[],
+      executeMonths: number[],
+      date: Date
+    ): boolean => {
+      if (executeMonths) {
+        if (!executeMonths.includes(date.getMonth())) return false;
+      }
+
+      if (executeHours) {
+        const executableHours = executeHours.map((t) => t.hour);
+        if (!executableHours) return true;
+
+        const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+        if (!executableHours.includes(hour)) return false;
+
+        const executableWeekdays = executeHours.find((t) => t.hour === hour)!.weekdays;
+        if (!executableWeekdays || executableWeekdays.length === 0) return true;
+
+        if (!executableWeekdays.includes(date.getDay())) return false;
+        return true;
+      }
+
+      if (executeDays) {
+        const executableDays = executeDays.map((d) => d.weekday);
+        if (!executableDays) return true;
+
+        const weekday = date.getDay();
+        if (!executableDays.includes(weekday)) return false;
+
+        const executableHours = executeDays.find((d) => d.weekday === weekday)!.hours;
+        if (!executableHours || executableHours.length === 0) return true;
+
+        const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+        if (!executableHours.includes(hour)) return false;
+
+        return true;
+      }
+
+      return true;
+    };
+  }
+
   private executeScriptCode(
     script: Script,
     candles: Candle[],
@@ -255,9 +307,11 @@ class ScriptsExecutionerService {
       persistedVars,
       balance,
       currentDataIndex,
+      spreadAdjustment,
       createOrder,
       removeAllOrders,
       closeOrder,
+      isWithinTime,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -268,9 +322,11 @@ class ScriptsExecutionerService {
       void persistedVars;
       void balance;
       void currentDataIndex;
+      void spreadAdjustment;
       void createOrder;
       void removeAllOrders;
       void closeOrder;
+      void isWithinTime;
 
       // TODO: Function to close an order
       // TODO: Function to modify an order
@@ -291,9 +347,11 @@ class ScriptsExecutionerService {
       persistedVars: this.persistedVars,
       balance,
       currentDataIndex,
+      spreadAdjustment: DEFAULT_SPREAD / SPREAD_ADJUSTMENT,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
+      isWithinTime: this.getIsWitinTimeFunc(),
     });
     return this;
   }

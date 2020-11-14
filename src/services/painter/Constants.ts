@@ -18,6 +18,7 @@ export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * (365 / 12);
 export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;
 
 export const DEFAULT_SPREAD = 2; // 0.000025; // 0.00001;
+export const SPREAD_ADJUSTMENT = 1.2;
 
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",

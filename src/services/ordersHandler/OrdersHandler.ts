@@ -1,6 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
-import { getMinutesAsHalfAnHour } from "../../utils/Utils";
+import { SPREAD_ADJUSTMENT } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({
@@ -25,11 +25,6 @@ export default function processOrders({
 
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
-
-    if (!isMarketOrderExecutable(order, new Date(order.createdAt!))) {
-      indicesOfMarketOrdersToRemove.push(index);
-      continue;
-    }
 
     if (orderCreatedInCurrentCandle) {
       if (order.stopLoss && order.takeProfit) {
@@ -116,7 +111,7 @@ export default function processOrders({
         }
       }
 
-      const adjust = spread / 1.2;
+      const adjust = spread / SPREAD_ADJUSTMENT;
       if (order.type === "buy-stop") {
         order.price += adjust;
         order.stopLoss = order.stopLoss ? order.stopLoss + adjust : order.stopLoss;
@@ -144,44 +139,6 @@ export default function processOrders({
       tpRealPrice = order.position === "short" ? order.takeProfit - spread / 2 : order.takeProfit + spread / 2;
     }
     return [slRealPrice, tpRealPrice];
-  }
-
-  function isMarketOrderExecutable(order: Order, date: Date): boolean {
-    if (order.executeMonths) {
-      if (!order.executeMonths.includes(date.getMonth())) return false;
-    }
-
-    if (order.executeHours) {
-      const executableHours = order.executeHours.map((t) => t.hour);
-      if (!executableHours) return true;
-
-      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
-      if (!executableHours.includes(hour)) return false;
-
-      const executableWeekdays = order.executeHours.find((t) => t.hour === hour)!.weekdays;
-      if (!executableWeekdays || executableWeekdays.length === 0) return true;
-
-      if (!executableWeekdays.includes(date.getDay())) return false;
-      return true;
-    }
-
-    if (order.executeDays) {
-      const executableDays = order.executeDays.map((d) => d.weekday);
-      if (!executableDays) return true;
-
-      const weekday = date.getDay();
-      if (!executableDays.includes(weekday)) return false;
-
-      const executableHours = order.executeDays.find((d) => d.weekday === weekday)!.hours;
-      if (!executableHours || executableHours.length === 0) return true;
-
-      const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
-      if (!executableHours.includes(hour)) return false;
-
-      return true;
-    }
-
-    return true;
   }
 
   function isPriceWithinCandle(price: number, candle: Candle): boolean {
