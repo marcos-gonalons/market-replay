@@ -25,9 +25,15 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
   const date = new Date(candles[currentDataIndex].timestamp);
 
-  if (date.getHours() < 8 || date.getHours() > 21) {
-    orders.map((mo) => closeOrder(mo.id!));
-    persistedVars.pendingOrder = null;
+  if (date.getHours() < 8 || date.getHours() >= 21) {
+    if (date.getHours() === 21 && date.getMinutes() === 58) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
+    if (date.getHours() !== 21) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
   }
 
   function resistance() {
