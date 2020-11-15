@@ -74,6 +74,9 @@ export default (function f({
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
         if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
+          if (order.position === "short") {
+            order.type = "sell-limit";
+          }
           createOrder(order);
         }
         persistedVars.pendingOrder = null;
@@ -227,6 +230,9 @@ export default (function f({
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
         if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
+          if (order.position === "long") {
+            order.type = "buy-limit";
+          }
           createOrder(order);
         }
         persistedVars.pendingOrder = null;
