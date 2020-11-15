@@ -38,10 +38,6 @@ export default (function f({
           weekdays: [1, 2, 3, 5],
         },
         {
-          hour: "9:30",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
           hour: "10:00",
           weekdays: [1, 2, 3, 5],
         },
@@ -77,13 +73,14 @@ export default (function f({
     } else {
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
-          createOrder(order);
+        if (order.position === "long") {
+          if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
+            createOrder(order);
+          }
+          persistedVars.pendingOrder = null;
         }
-        persistedVars.pendingOrder = null;
         return;
       }
-      persistedVars.pendingOrder = null;
     }
 
     const candlesAmountWithLowerPriceToBeConsideredTop = 15;
@@ -230,13 +227,14 @@ export default (function f({
     } else {
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
-          createOrder(order);
+        if (order.position === "short") {
+          if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
+            createOrder(order);
+          }
+          persistedVars.pendingOrder = null;
         }
-        persistedVars.pendingOrder = null;
         return;
       }
-      persistedVars.pendingOrder = null;
     }
 
     const candlesAmountWithLowerPriceToBeConsideredBottom = 15;

@@ -56,13 +56,13 @@ function renderTabs(activeTab: Tab, setActiveTab: (tab: Tab) => void): JSX.Eleme
   }[];
   return (
     <nav>
-      {tabs.map((t) => {
+      {tabs.map((t, index) => {
         let className = styles["tab"];
         if (t.tabName === activeTab) {
           className = className + ` ${styles["active-tab"]}`;
         }
         return (
-          <button onClick={() => setActiveTab(t.tabName)} className={className}>
+          <button key={index} onClick={() => setActiveTab(t.tabName)} className={className}>
             {t.displayName}
           </button>
         );

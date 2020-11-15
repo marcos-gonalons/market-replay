@@ -40,10 +40,6 @@ export default (function f({
         weekdays: [1, 2, 3, 5],
       },
       {
-        hour: "9:30",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
         hour: "10:00",
         weekdays: [1, 2, 3, 5],
       },
