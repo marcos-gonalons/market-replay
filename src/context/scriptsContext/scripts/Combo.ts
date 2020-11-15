@@ -73,14 +73,13 @@ export default (function f({
     } else {
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        if (order.position === "long") {
-          if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
-            createOrder(order);
-          }
-          persistedVars.pendingOrder = null;
+        if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
+          createOrder(order);
         }
+        persistedVars.pendingOrder = null;
         return;
       }
+      persistedVars.pendingOrder = null;
     }
 
     const candlesAmountWithLowerPriceToBeConsideredTop = 15;
@@ -227,14 +226,13 @@ export default (function f({
     } else {
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        if (order.position === "short") {
-          if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
-            createOrder(order);
-          }
-          persistedVars.pendingOrder = null;
+        if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
+          createOrder(order);
         }
+        persistedVars.pendingOrder = null;
         return;
       }
+      persistedVars.pendingOrder = null;
     }
 
     const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
