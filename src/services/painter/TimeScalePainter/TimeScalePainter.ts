@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Candle } from "../../../context/globalContext/Types";
+import { prependZero } from "../../../utils/Utils";
 import {
   DEFAULT_FONT,
   MAX_DATES_IN_DATE_SCALE_PER_1000_PX,
@@ -198,10 +199,6 @@ function getTextForDateInPointerPosition(dataTemporality: number, date: Date): s
   }
 
   return text;
-}
-
-function prependZero(el: number | string): number | string {
-  return el.toString().length === 1 ? `0${el}` : el;
 }
 
 function getMonthAsString(d: Date): string {

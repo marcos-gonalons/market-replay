@@ -30,8 +30,10 @@ export function drawFinishedTrades({
 
     const x = getDateX(trade.startDate);
     if (x > 0) {
-      ctx.fillStyle = colors.background;
-      ctx.fillRect(x, y, 15, 15);
+      ctx.fillStyle = trade.result >= 0 ? colors.positive : colors.negative;
+      ctx.beginPath();
+      ctx.arc(x + candleWidth / 2, y, 10, 0, 2 * Math.PI);
+      ctx.fill();
     }
   }
 
@@ -41,8 +43,10 @@ export function drawFinishedTrades({
 
     const x = getDateX(trade.endDate);
     if (x > 0) {
-      ctx.fillStyle = colors.background;
-      ctx.fillRect(x, y, 15, 15);
+      ctx.fillStyle = trade.result >= 0 ? colors.positive : colors.negative;
+      ctx.beginPath();
+      ctx.arc(x + candleWidth / 2, y, 10, 0, 2 * Math.PI);
+      ctx.fill();
     }
   }
 

@@ -15,6 +15,8 @@ const initialState: State = {
   isReplayActive: false,
   isTradingPanelVisible: false,
   isScriptsPanelVisible: false,
+  // eslint-disable-next-line
+  worker: new (require("worker-loader!../../worker/Worker.worker").default)(),
 };
 
 export const GlobalContext = createContext<{

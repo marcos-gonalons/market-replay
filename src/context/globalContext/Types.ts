@@ -1,6 +1,7 @@
 import PainterService from "../../services/painter/Painter";
 import ReplayerService from "../../services/replayer/Replayer";
 import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
+import { AppWorker } from "../../worker/Types";
 
 interface Candle {
   timestamp: number;
@@ -9,8 +10,7 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
-  highlightHigh?: boolean;
-  highlightLow?: boolean;
+  meta?: { [key: string]: unknown };
 }
 
 interface State {
@@ -23,6 +23,7 @@ interface State {
   readonly isReplayActive: boolean;
   readonly isTradingPanelVisible: boolean;
   readonly isScriptsPanelVisible: boolean;
+  readonly worker: AppWorker;
 }
 
 const ActionTypes = {

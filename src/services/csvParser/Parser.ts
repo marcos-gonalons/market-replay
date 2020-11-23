@@ -26,12 +26,16 @@ export function parse(csvContents: string): Candle[] {
       close: parseFloat(close ?? 0),
       volume: parseFloat(volume ?? 0),
     });
+
+    // TODO: Same as the scripts executioner, return from time to time the progress %
   }
 
   return data;
 }
 
 export function getDateObject(dateString: string): Date {
+  // return new Date(parseInt(dateString) * 1000);
+
   const splits = dateString.split(" ");
   const [day, month, year] = splits[0].split(".");
   splits[0] = `${month}.${day}.${year}`;

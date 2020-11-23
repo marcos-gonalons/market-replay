@@ -17,6 +17,9 @@ export const SECONDS_IN_A_WEEK = SECONDS_IN_A_DAY * 7;
 export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * (365 / 12);
 export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;
 
+export const DEFAULT_SPREAD = 2; // 0.000025; // 0.00001;
+export const SPREAD_ADJUSTMENT = 1.2;
+
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",
   text: "rgb(255,255,255)",
@@ -59,10 +62,8 @@ export const DEFAULT_COLORS: Colors = {
     sellText: "rgb(156,3,0)",
   },
   trades: {
-    background: "rgb(252,219,3)",
-    openText: "rgb(0,0,0)",
-    tpText: "rgb(0,212,95)",
-    slText: "rgb(212,0,56)",
+    positive: "rgba(65,242,77,.8)",
+    negative: "rgba(242,77,65,.8)",
   },
   volume: {
     positive: "rgba(0,201,10,.25)",

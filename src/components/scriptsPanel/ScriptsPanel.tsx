@@ -1,40 +1,74 @@
-import React, { useContext, useEffect, useState } from "react";
-import Modal from "react-modal";
-import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
-import { GlobalContext } from "../../context/globalContext/GlobalContext";
-
-import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
-
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-tomorrow.css";
-
-import styles from "./ScriptsPanel.module.css";
-import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
+import React, { useContext, useEffect, useState } from "react";
+import Editor from "react-simple-code-editor";
+import { toast } from "react-toastify";
+import { Modal } from "semantic-ui-react";
+import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
+import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import {
   addScript,
   modifyScriptContents,
-  modifyScriptName,
-  removeScript,
-  setIndexOfTheScriptBeingEdited,
-  setScriptIsActive,
+  setIndexOfTheScriptBeingExecuted,
+  setProgress,
 } from "../../context/scriptsContext/Actions";
-import { Script } from "../../context/scriptsContext/Types";
+import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
+import { State as ScriptsContextState } from "../../context/scriptsContext/Types";
+import { setBalance, setTrades } from "../../context/tradesContext/Actions";
+import { TradesContext } from "../../context/tradesContext/TradesContext";
+import { State as TradesContextState } from "../../context/tradesContext/Types";
 import { ReducerAction } from "../../context/Types";
-import ScriptsExecutionerService from "../../services/scriptsExecutioner/ScriptsExecutioner";
+import PainterService from "../../services/painter/Painter";
+import { Report } from "../../services/reporter/Types";
+import { MessageOut, ScriptExecutionerWorkerMessageOut } from "../../worker/Types";
+import HelpModal from "./helpModal/HelpModal";
+import ReportModal from "./reportModal/ReportModal";
+import ScriptsList from "./scriptsList/ScriptsList";
+import styles from "./ScriptsPanel.module.css";
 
 function ScriptsPanel(): JSX.Element {
   const {
-    state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService },
+    state: { isScriptsPanelVisible, replayerService, scriptsExecutionerService, painterService, worker },
     dispatch: globalContextDispatch,
   } = useContext(GlobalContext);
+  const scriptsContext = useContext(ScriptsContext);
   const {
     state: { scripts, indexOfTheScriptBeingEdited },
     dispatch: scriptsContextDispatch,
-  } = useContext(ScriptsContext);
+  } = scriptsContext;
+  const tradesContext = useContext(TradesContext);
 
   const [isHelpModalVisible, setIsHelpModalVisible] = useState<boolean>(false);
+  const [isReportModalVisible, setIsReportModalVisible] = useState<boolean>(false);
+  const [scriptReports, setScriptReports] = useState<Report[]>([]);
+  const [isListenerSetted, setIsListenerSetted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!scriptsExecutionerService || !painterService || isListenerSetted) return;
+
+    setIsListenerSetted(true);
+    worker.addEventListener("message", ({ data }: MessageEvent) => {
+      onReceiveMsgFromWorker(
+        data,
+        scriptsContext,
+        tradesContext,
+        painterService,
+        setScriptReports,
+        setIsReportModalVisible
+      );
+    });
+  }, [
+    scriptsExecutionerService,
+    painterService,
+    tradesContext,
+    scriptsContext,
+    worker,
+    isListenerSetted,
+    setScriptReports,
+    setIsReportModalVisible,
+  ]);
 
   useEffect(() => {
     if (!scriptsExecutionerService) return;
@@ -48,95 +82,61 @@ function ScriptsPanel(): JSX.Element {
   if (!isScriptsPanelVisible) {
     return <></>;
   }
+
   return (
     <>
       <Modal
-        ariaHideApp={false}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-        isOpen={true}
-        onRequestClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+        size="fullscreen"
+        centered={false}
+        open={true}
+        onClose={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
       >
-        <article className={styles["modal-container"]}>
-          <button
-            tabIndex={-1}
-            className={styles["x"]}
-            onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
-          >
-            X
-          </button>
-          <section className={styles["contents"]}>
-            <aside className={styles["script-names"]}>
-              {renderScriptNames(
-                scripts,
-                indexOfTheScriptBeingEdited,
-                scriptsContextDispatch,
-                scriptsExecutionerService!
-              )}
-              {renderAddScriptButton(scriptsContextDispatch)}
-              {renderHelpModalButton(() => setIsHelpModalVisible(true))}
-            </aside>
-            <section className={styles["script-contents"]}>
-              <Editor
-                value={scripts[indexOfTheScriptBeingEdited].contents}
-                onValueChange={(c) => {
-                  scriptsContextDispatch(
-                    modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
-                  );
-                }}
-                highlight={(code) => highlight(code, languages.js, "js")}
-                padding={10}
-                style={{
-                  fontFamily: '"Fira code", "Fira Mono", monospace',
-                  fontSize: 14,
-                }}
-                preClassName={"language-markup line-numbers"}
-              />
+        <Modal.Content>
+          <article className={styles["modal-container"]}>
+            <button
+              tabIndex={-1}
+              className={styles["x"]}
+              onClick={() => globalContextDispatch(setIsScriptsPanelVisible(false))}
+            >
+              X
+            </button>
+            <section className={styles["contents"]}>
+              <aside className={styles["script-names"]}>
+                <ScriptsList />
+                {renderAddScriptButton(scriptsContextDispatch)}
+                {renderHelpModalButton(() => setIsHelpModalVisible(true))}
+              </aside>
+              <section className={styles["script-contents"]}>
+                <Editor
+                  value={scripts[indexOfTheScriptBeingEdited] ? scripts[indexOfTheScriptBeingEdited].contents : ""}
+                  onValueChange={(c) => {
+                    scriptsContextDispatch(
+                      modifyScriptContents({ scriptIndex: indexOfTheScriptBeingEdited, contents: c })
+                    );
+                  }}
+                  highlight={(code) => highlight(code, languages.js, "js")}
+                  padding={10}
+                  style={{
+                    fontFamily: '"Fira code", "Fira Mono", monospace',
+                    fontSize: 14,
+                  }}
+                  preClassName={"language-markup line-numbers"}
+                />
+              </section>
             </section>
-          </section>
-        </article>
+          </article>
+        </Modal.Content>
       </Modal>
-      {renderHelpModal(isHelpModalVisible, () => setIsHelpModalVisible(false))}
+      <HelpModal isVisible={isHelpModalVisible} onClose={() => setIsHelpModalVisible(false)} />
+      <ReportModal
+        hourlyReport={scriptReports[0]}
+        weekdayReport={scriptReports[1]}
+        monthlyReport={scriptReports[2]}
+        isVisible={isReportModalVisible}
+        onClose={() => setIsReportModalVisible(false)}
+      />
     </>
   );
-}
-
-function renderScriptNames(
-  scripts: Script[],
-  indexOfTheScriptBeingEdited: number,
-  dispatch: React.Dispatch<ReducerAction>,
-  scriptsExecutionerService: ScriptsExecutionerService
-): JSX.Element[] {
-  return scripts.map((s, index) => (
-    <div key={index}>
-      <input
-        type="text"
-        value={s.name}
-        onChange={({ target: { value } }) => {
-          dispatch(modifyScriptName({ scriptIndex: index, name: value }));
-        }}
-      />
-      <button onClick={() => dispatch(setScriptIsActive({ scriptIndex: index, isActive: !s.isActive }))}>
-        {s.isActive ? "Deactivate" : "Activate"}
-      </button>
-      <button onClick={() => dispatch(setIndexOfTheScriptBeingEdited(index))}>Edit script</button>
-      {index > 0 ? (
-        <button
-          onClick={() => {
-            if (index === indexOfTheScriptBeingEdited) {
-              dispatch(setIndexOfTheScriptBeingEdited(0));
-            }
-            dispatch(removeScript(index));
-          }}
-        >
-          X
-        </button>
-      ) : (
-        ""
-      )}
-      <button onClick={() => scriptsExecutionerService.executeWithFullData(s)}>Execute</button>
-    </div>
-  ));
 }
 
 function renderAddScriptButton(dispatch: React.Dispatch<ReducerAction>): JSX.Element {
@@ -147,41 +147,40 @@ function renderHelpModalButton(onClick: () => void): JSX.Element {
   return <button onClick={onClick}>Help</button>;
 }
 
-function renderHelpModal(isVisible: boolean, onClose: () => void): JSX.Element {
-  return (
-    <Modal
-      ariaHideApp={false}
-      aria-labelledby="simple-modal-title"
-      aria-describedby="simple-modal-description"
-      isOpen={isVisible}
-      onRequestClose={onClose}
-      style={{
-        content: {},
-      }}
-    >
-      /** * Variables that are accessible * ----------------------------- * - candles * Array containing all the candles
-      * Every item of the array is an object with this properties: * timestamp, open, high, low, close, volume * * -
-      currentCandle * The candle where the replay is at * * * Functions that can be called *
-      ---------------------------- * - createOrder * Allows to create market/limit orders. Returns the index of the
-      order created. * * Example for a market order
-      {`createOrder({
- *     type: "market",
- *     position: "long",
- *     size: 50,
- *     stopLoss: 12345
- *   })'`}
-      * * * Example for a limit order *{" "}
-      {`createOrder({
- *     type: "limit",
- *     position: "short",
- *     size: 100,
- *     price: 1234.56,
- *     stopLoss: 1244.77,
- *     takeProfit: 1200.02
- *   })`}
-      * * */
-    </Modal>
-  );
+function onReceiveMsgFromWorker(
+  msg: MessageOut & { error: Error },
+  scriptsContext: { state: ScriptsContextState; dispatch: React.Dispatch<ReducerAction> },
+  tradesContext: { state: TradesContextState; dispatch: React.Dispatch<ReducerAction> },
+  painterService: PainterService,
+  setScriptReports: (reports: Report[]) => void,
+  setIsReportModalVisible: (value: boolean) => void
+): void {
+  const { error, type, payload } = msg;
+
+  if (error) {
+    toast.error(`An error occurred: ${error.message}`);
+    return;
+  }
+
+  if (type !== "scripts-executioner") return;
+
+  const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
+
+  scriptsContext.dispatch(setProgress(progress));
+
+  if (progress === 100) {
+    tradesContext.dispatch(setTrades(trades));
+    tradesContext.dispatch(setBalance(balance));
+    scriptsContext.dispatch(setProgress(0));
+    scriptsContext.dispatch(setIndexOfTheScriptBeingExecuted(null));
+
+    painterService.draw();
+
+    if (reports) {
+      setIsReportModalVisible(true);
+      setScriptReports(reports);
+    }
+  }
 }
 
 export default ScriptsPanel;

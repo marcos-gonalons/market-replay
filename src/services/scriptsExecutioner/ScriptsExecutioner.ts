@@ -1,30 +1,44 @@
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
 import { Candle } from "../../context/globalContext/Types";
 import { Script } from "../../context/scriptsContext/Types";
-import { addOrder, removeAllOrders, setBalance, setOrders, setTrades } from "../../context/tradesContext/Actions";
-import { Order, TradesContext, State as TradesContextState, Trade } from "../../context/tradesContext/Types";
+import {
+  addOrder,
+  addTrade,
+  removeAllOrders,
+  removeOrder,
+  setBalance,
+  setOrders,
+  setTrades,
+} from "../../context/tradesContext/Actions";
+import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
+import { getMinutesAsHalfAnHour } from "../../utils/Utils";
+import { AppWorker } from "../../worker/Types";
+import processOrders from "../ordersHandler/OrdersHandler";
+import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
 import PainterService from "../painter/Painter";
+import { generateReports } from "../reporter/Reporter";
 import { ScriptFuncParameters } from "./Types";
 
 class ScriptsExecutionerService {
-  private PainterService: PainterService;
+  private PainterService?: PainterService;
+  private tradesContext?: TradesContext;
 
-  private tradesContext: TradesContext;
   private scripts: Script[] = [];
   private persistedVars: { [key: string]: unknown } = {};
 
-  private orders: Order[] = [];
-  private trades: Trade[] = [];
-  private balance: number = 0;
-
-  public constructor(painterService: PainterService, tradesContext: TradesContext) {
+  public setPainterService(painterService: PainterService): ScriptsExecutionerService {
     this.PainterService = painterService;
+    return this;
+  }
+
+  public setTradesContext(tradesContext: TradesContext): ScriptsExecutionerService {
     this.tradesContext = tradesContext;
+    return this;
   }
 
   public updateTradesContextState(state: TradesContextState): ScriptsExecutionerService {
-    this.tradesContext.state = state;
-    this.balance = this.tradesContext.state.balance;
+    this.tradesContext!.state = state;
     return this;
   }
 
@@ -34,126 +48,255 @@ class ScriptsExecutionerService {
   }
 
   public executeAllScriptsOnReplayTick(): ScriptsExecutionerService {
+    const data = this.PainterService!.getData();
     for (const script of this.scripts) {
       if (!script.isActive) continue;
-      this.executeScriptCode(script, this.PainterService.getData(), this.tradesContext.state.balance, true);
+      this.executeScriptCode(
+        script,
+        data,
+        this.tradesContext!.state.balance,
+        true,
+        this.tradesContext!.state.orders,
+        this.tradesContext!.state.trades,
+        data.length - 1
+      );
     }
     return this;
   }
 
-  public executeWithFullData(script: Script): ScriptsExecutionerService {
-    const data = this.PainterService.getData();
+  public executeWithFullData(
+    script: Script,
+    data: Candle[],
+    initialBalance: number,
+    worker?: AppWorker
+  ): ScriptsExecutionerService {
+    const orders: Order[] = [];
+    const trades: Trade[] = [];
+    let balance = initialBalance;
+    let lastTradesLength = trades.length;
 
     for (let i = 0; i < data.length; i++) {
-      const limitOrders = this.orders.filter((o) => o.type === "limit");
-      const marketOrders = this.orders.filter((o) => o.type === "market");
-      const currentCandle = data[i];
+      processOrders({
+        orders,
+        trades,
+        currentCandle: data[i],
+        previousCandle: i - 1 >= 0 ? data[i - 1] : null,
+        spread: DEFAULT_SPREAD,
+      });
 
-      for (const order of limitOrders) {
-        if (order.price >= currentCandle.low && order.price <= currentCandle.high) {
-          order.createdAt = currentCandle.timestamp;
-          order.fillDate = currentCandle.timestamp;
-          order.type = "market";
-        }
+      if (trades.length > lastTradesLength) {
+        lastTradesLength = trades.length;
+        balance += trades[trades.length - 1].result;
       }
 
-      const indicesOfMarketOrdersToRemove: number[] = [];
-      for (const [index, order] of marketOrders.entries()) {
-        if (!order.stopLoss && !order.takeProfit) continue;
-        let trade: Trade;
+      this.executeScriptCode(script, data, balance, false, orders, trades, i);
 
-        if (order.stopLoss && order.stopLoss >= currentCandle.low && order.stopLoss <= currentCandle.high) {
-          trade = {
-            startDate: order.createdAt!,
-            endDate: data[data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.stopLoss,
-            size: order.size,
-            position: order.position,
-          };
-          this.trades.push(trade);
-          indicesOfMarketOrdersToRemove.push(index);
-
-          let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-          if (trade.position === "short") tradeResult = -tradeResult;
-          this.balance = this.balance + tradeResult;
-          continue;
-        }
-
-        if (order.takeProfit && order.takeProfit >= currentCandle.low && order.takeProfit <= currentCandle.high) {
-          trade = {
-            startDate: order.createdAt!,
-            endDate: data[data.length - 1].timestamp,
-            startPrice: order.price,
-            endPrice: order.takeProfit,
-            size: order.size,
-            position: order.position,
-          };
-          this.trades.push(trade);
-          indicesOfMarketOrdersToRemove.push(index);
-
-          let tradeResult = (trade.endPrice - trade.startPrice) * trade.size;
-          if (trade.position === "short") tradeResult = -tradeResult;
-          this.balance = this.balance + tradeResult;
-          continue;
-        }
+      if (worker && i % Math.round(data.length / 100) === 0) {
+        worker.postMessage({
+          type: "scripts-executioner",
+          payload: {
+            balance,
+            progress: (i * 100) / data.length,
+            trades,
+          },
+        });
       }
-
-      for (const i of indicesOfMarketOrdersToRemove) {
-        this.orders.splice(i, 1);
-      }
-
-      this.executeScriptCode(script, data.slice(0, i), this.balance, false);
     }
 
-    this.tradesContext.dispatch(setTrades(this.trades));
-    this.tradesContext.dispatch(setBalance(this.balance));
-    this.tradesContext.dispatch(setOrders(this.orders));
+    if (worker) {
+      worker.postMessage({
+        type: "scripts-executioner",
+        payload: {
+          balance,
+          progress: 100,
+          trades,
+          reports: generateReports(trades),
+        },
+      });
+    }
+
+    if (this.tradesContext) {
+      this.tradesContext.dispatch(setTrades(trades));
+      this.tradesContext.dispatch(setBalance(balance));
+      this.tradesContext.dispatch(setOrders(orders));
+    }
 
     return this;
   }
 
-  private getCreateOrderFunc(replayMode: boolean): ScriptFuncParameters["createOrder"] {
+  private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["createOrder"] {
     let createOrderFunc: ScriptFuncParameters["createOrder"];
+    const orderId: string = uuidv4();
 
-    if (replayMode) {
-      (function (tradesContext: TradesContext): void {
-        createOrderFunc = (order: Order): void => tradesContext.dispatch(addOrder(order));
-      })(this.tradesContext);
-    } else {
-      (function (service: ScriptsExecutionerService): void {
-        createOrderFunc = (order: Order): void => {
-          service.orders.push(order);
-        };
-      })(this);
+    function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
+      const adjustment = DEFAULT_SPREAD;
+      if (order.position === "short") {
+        order.price -= adjustment;
+        order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;
+        order.takeProfit = order.takeProfit ? (order.takeProfit -= adjustment) : order.takeProfit;
+      } else {
+        order.price += adjustment;
+        order.stopLoss = order.stopLoss ? (order.stopLoss += adjustment) : order.stopLoss;
+        order.takeProfit = order.takeProfit ? (order.takeProfit += adjustment) : order.takeProfit;
+      }
     }
+
+    (function (tradesContext: TradesContext, replayMode: boolean): void {
+      createOrderFunc = (order: Order): string => {
+        order.id = orderId;
+        if (order.type === "market") {
+          adjustPricesTakingSpreadIntoConsideration(order);
+        }
+        if (replayMode) {
+          tradesContext.dispatch(addOrder(order));
+        } else {
+          orders!.push(order);
+        }
+        return orderId;
+      };
+    })(this.tradesContext!, replayMode);
 
     return createOrderFunc;
   }
 
-  private getRemoveAllOrdersFunc(replayMode: boolean): ScriptFuncParameters["removeAllOrders"] {
+  private getRemoveAllOrdersFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["removeAllOrders"] {
     let removeAllOrdersFunc: ScriptFuncParameters["removeAllOrders"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
         removeAllOrdersFunc = (): void => tradesContext.dispatch(removeAllOrders());
-      })(this.tradesContext);
+      })(this.tradesContext!);
     } else {
-      (function (service: ScriptsExecutionerService): void {
-        removeAllOrdersFunc = (): void => {
-          service.orders = [];
-        };
-      })(this);
+      removeAllOrdersFunc = (): void => {
+        orders!.splice(0, orders!.length);
+      };
     }
 
     return removeAllOrdersFunc;
+  }
+
+  private getCloseOrderFunc(
+    replayMode: boolean,
+    orders?: Order[],
+    trades?: Trade[],
+    currentCandle?: Candle
+  ): ScriptFuncParameters["closeOrder"] {
+    let closeOrderFunc: ScriptFuncParameters["closeOrder"];
+
+    if (replayMode) {
+      (function (tradesContext: TradesContext): void {
+        closeOrderFunc = (id: string): void => {
+          const order = tradesContext.state.orders.find((o) => o.id === id);
+          if (!order) return;
+
+          if (order.type === "market") {
+            let result = (currentCandle!.close - order.price) * order.size;
+            if (order.position === "short") result = -result;
+            tradesContext.dispatch(
+              addTrade({
+                startDate: order.createdAt!,
+                endDate: currentCandle!.timestamp,
+                startPrice: order.price,
+                endPrice: currentCandle!.close,
+                size: order.size,
+                position: order.position,
+                result,
+              })
+            );
+          }
+
+          tradesContext.dispatch(removeOrder(id));
+        };
+      })(this.tradesContext!);
+    } else {
+      closeOrderFunc = (id: string): void => {
+        const order = orders!.find((o) => o.id === id);
+        if (!order) return;
+
+        let result = (currentCandle!.close - order.price) * order.size;
+        if (order.position === "short") result = -result;
+
+        if (order.type === "market") {
+          trades!.push({
+            startDate: order.createdAt!,
+            endDate: currentCandle!.timestamp,
+            startPrice: order.price,
+            endPrice: currentCandle!.close,
+            size: order.size,
+            position: order.position,
+            result,
+          });
+        }
+
+        orders!.splice(
+          orders!.findIndex((o) => id === o.id),
+          1
+        );
+      };
+    }
+
+    return closeOrderFunc;
+  }
+
+  private getIsWitinTimeFunc(): ScriptFuncParameters["isWithinTime"] {
+    return (
+      executeHours: {
+        hour: string;
+        weekdays?: number[];
+      }[],
+      executeDays: {
+        weekday: number;
+        hours: string[];
+      }[],
+      executeMonths: number[],
+      date: Date
+    ): boolean => {
+      if (executeMonths) {
+        if (!executeMonths.includes(date.getMonth())) return false;
+      }
+
+      if (executeHours) {
+        const executableHours = executeHours.map((t) => t.hour);
+        if (!executableHours) return true;
+
+        const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+        if (!executableHours.includes(hour)) return false;
+
+        const executableWeekdays = executeHours.find((t) => t.hour === hour)!.weekdays;
+        if (!executableWeekdays || executableWeekdays.length === 0) return true;
+
+        if (!executableWeekdays.includes(date.getDay())) return false;
+        return true;
+      }
+
+      if (executeDays) {
+        const executableDays = executeDays.map((d) => d.weekday);
+        if (!executableDays) return true;
+
+        const weekday = date.getDay();
+        if (!executableDays.includes(weekday)) return false;
+
+        const executableHours = executeDays.find((d) => d.weekday === weekday)!.hours;
+        if (!executableHours || executableHours.length === 0) return true;
+
+        const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
+        if (!executableHours.includes(hour)) return false;
+
+        return true;
+      }
+
+      return true;
+    };
   }
 
   private executeScriptCode(
     script: Script,
     candles: Candle[],
     balance: number,
-    replayMode: boolean
+    replayMode: boolean,
+    orders: Order[],
+    trades: Trade[],
+    currentDataIndex: number
   ): ScriptsExecutionerService {
     (function ({
       canvas,
@@ -163,8 +306,12 @@ class ScriptsExecutionerService {
       orders,
       persistedVars,
       balance,
+      currentDataIndex,
+      spreadAdjustment,
       createOrder,
       removeAllOrders,
+      closeOrder,
+      isWithinTime,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -174,8 +321,12 @@ class ScriptsExecutionerService {
       void orders;
       void persistedVars;
       void balance;
+      void currentDataIndex;
+      void spreadAdjustment;
       void createOrder;
       void removeAllOrders;
+      void closeOrder;
+      void isWithinTime;
 
       // TODO: Function to close an order
       // TODO: Function to modify an order
@@ -188,15 +339,19 @@ class ScriptsExecutionerService {
         console.error(err);
       }
     })({
-      canvas: this.PainterService.getCanvas(),
-      ctx: this.PainterService.getContext(),
+      canvas: this.PainterService?.getCanvas(),
+      ctx: this.PainterService?.getContext(),
       candles,
-      drawings: this.PainterService.getExternalDrawings(),
-      orders: this.tradesContext.state.orders,
+      drawings: this.PainterService?.getExternalDrawings(),
+      orders,
       persistedVars: this.persistedVars,
       balance,
-      createOrder: this.getCreateOrderFunc(replayMode),
-      removeAllOrders: this.getRemoveAllOrdersFunc(replayMode),
+      currentDataIndex,
+      spreadAdjustment: DEFAULT_SPREAD / SPREAD_ADJUSTMENT,
+      createOrder: this.getCreateOrderFunc(replayMode, orders),
+      removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
+      closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
+      isWithinTime: this.getIsWitinTimeFunc(),
     });
     return this;
   }
