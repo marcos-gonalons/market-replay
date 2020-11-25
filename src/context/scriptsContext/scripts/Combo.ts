@@ -16,7 +16,7 @@ export default (function f({
 
   const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
-  const ignoreLastNCandles = 15;
+  const ignoreLastNCandles = 18;
   const riskPercentage = 1.5;
   const stopLossDistance = 12 * priceAdjustment;
   const takeProfitDistance = 27 * priceAdjustment;
@@ -91,7 +91,7 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
-    const candlesAmountWithLowerPriceToBeConsideredTop = 15;
+    const candlesAmountWithLowerPriceToBeConsideredTop = 18;
     const candlesAmountWithoutOtherTops = 0;
 
     const marketOrder = orders.find((o) => o.type === "market");
@@ -111,7 +111,7 @@ export default (function f({
       if (!candles[i]) break;
 
       let isFalsePositive = false;
-      for (let j = i + 1; j < currentDataIndex; j++) {
+      for (let j = i + 1; j < currentDataIndex - 1; j++) {
         if (candles[j].high >= candles[i].high) {
           isFalsePositive = true;
           break;
@@ -148,9 +148,9 @@ export default (function f({
       const price = candles[i].high - 2 * priceAdjustment;
       if (price > candles[currentDataIndex].high + spreadAdjustment) {
         orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
-        let lowestValue = candles[currentDataIndex].low;
+        let lowestValue = candles[currentDataIndex - 1].low;
 
-        for (let i = currentDataIndex; i > currentDataIndex - 180; i--) {
+        for (let i = currentDataIndex - 1; i > currentDataIndex - 180; i--) {
           if (!candles[i]) break;
 
           if (candles[i].low < lowestValue) {
@@ -158,7 +158,7 @@ export default (function f({
           }
         }
 
-        const diff = candles[currentDataIndex].low - lowestValue;
+        const diff = candles[currentDataIndex - 1].low - lowestValue;
         if (diff < 10) {
           return;
         }
@@ -267,7 +267,7 @@ export default (function f({
       if (!candles[i]) break;
 
       let isFalsePositive = false;
-      for (let j = i + 1; j < currentDataIndex; j++) {
+      for (let j = i + 1; j < currentDataIndex - 1; j++) {
         if (candles[j].low <= candles[i].low) {
           isFalsePositive = true;
           break;
@@ -304,9 +304,9 @@ export default (function f({
       const price = candles[i].low + 2 * priceAdjustment;
       if (price < candles[currentDataIndex].low - spreadAdjustment) {
         orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
-        let highestValue = candles[currentDataIndex].high;
+        let highestValue = candles[currentDataIndex - 1].high;
 
-        for (let i = currentDataIndex; i > currentDataIndex - 120; i--) {
+        for (let i = currentDataIndex - 1; i > currentDataIndex - 120; i--) {
           if (!candles[i]) break;
 
           if (candles[i].high > highestValue) {
@@ -314,7 +314,7 @@ export default (function f({
           }
         }
 
-        const diff = highestValue - candles[currentDataIndex].high;
+        const diff = highestValue - candles[currentDataIndex - 1].high;
         if (diff < 29) {
           return;
         }
