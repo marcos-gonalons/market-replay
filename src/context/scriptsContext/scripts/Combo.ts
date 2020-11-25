@@ -247,7 +247,7 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
-    const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
+    const candlesAmountWithLowerPriceToBeConsideredBottom = 18;
     const candlesAmountWithoutOtherBottoms = 0;
 
     const marketOrder = orders.find((o) => o.type === "market");
