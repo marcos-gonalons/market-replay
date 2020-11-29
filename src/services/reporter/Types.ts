@@ -1,3 +1,5 @@
+import { Trade } from "../../context/tradesContext/Types";
+
 export interface Report {
   [key: string]: ReportData;
 }
@@ -9,4 +11,5 @@ export interface ReportData {
   negatives: number;
   successPercentage: number;
   profits: number;
+  trades: Trade[];
 }

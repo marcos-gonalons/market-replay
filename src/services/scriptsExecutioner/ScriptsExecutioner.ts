@@ -328,7 +328,6 @@ class ScriptsExecutionerService {
       void closeOrder;
       void isWithinTime;
 
-      // TODO: Function to close an order
       // TODO: Function to modify an order
 
       try {

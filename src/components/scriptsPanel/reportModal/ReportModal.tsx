@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Modal } from "semantic-ui-react";
+import { GlobalContext } from "../../../context/globalContext/GlobalContext";
+import { Trade } from "../../../context/tradesContext/Types";
+import PainterService from "../../../services/painter/Painter";
 import { Report, ReportData } from "../../../services/reporter/Types";
 import { getNSigmaWithWeightedAverage } from "../../../utils/Utils";
 import Table from "../../table/Table";
@@ -25,12 +28,24 @@ export default function ReportModal({
 }: Props): JSX.Element {
   logSigma([hourlyReport, weekdayReport, monthlyReport]);
   const [activeTab, setActiveTab] = useState<Tab>("hourly-report");
+  const [areTradesVisible, setAreTradesVisible] = useState<boolean>(false);
+  const {
+    state: { painterService },
+  } = useContext(GlobalContext);
   return (
     <Modal centered={false} open={isVisible} onClose={onClose}>
       <Modal.Header>Reports</Modal.Header>
       <Modal.Content>
         {renderTabs(activeTab, setActiveTab)}
         {renderTable(getReportToRender(activeTab, [hourlyReport, weekdayReport, monthlyReport]))}
+        <button
+          onClick={() => {
+            setAreTradesVisible(!areTradesVisible);
+          }}
+        >
+          {areTradesVisible ? "Hide trades" : "Show trades"}
+        </button>
+        {renderTradesList(weekdayReport, painterService as PainterService)}
       </Modal.Content>
     </Modal>
   );
@@ -128,6 +143,7 @@ function getTableBody(report: Report): BodyRow[] {
     successPercentage: 0,
     profits: 0,
     total: 0,
+    trades: [],
   };
   for (const group in report) {
     totals.positives += report[group].positives;
@@ -172,6 +188,32 @@ function getBodyRow(r: ReportData, group: "Totals" | string): BodyRow {
     ],
     className: group === "Totals" ? styles["totals-row"] : "",
   };
+}
+
+function renderTradesList(report: Report, painterService: PainterService): JSX.Element {
+  let trades: Trade[] = [];
+  for (const group in report) {
+    trades = trades.concat(report[group].trades);
+  }
+  trades.sort((a, b) => {
+    return a.startDate.valueOf() > b.startDate.valueOf() ? 1 : -1;
+  });
+  return (
+    <div>
+      {trades.map((t) => {
+        const d = new Date(t.startDate);
+        return (
+          <div
+            onClick={() => {
+              painterService.setOffsetByDate(d);
+            }}
+          >
+            <span>{`${t.size} ${t.position} -> ${t.result} -> ${d.toLocaleString()}`}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function logSigma(reports: Report[]): void {
