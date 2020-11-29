@@ -16,7 +16,6 @@ export default (function f({
 
   const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
-  const ignoreLastNCandles = 18;
   const riskPercentage = 1.5;
   const stopLossDistance = 12 * priceAdjustment;
   const takeProfitDistance = 27 * priceAdjustment;
@@ -91,6 +90,7 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
+    const ignoreLastNCandles = 18;
     const candlesAmountWithLowerPriceToBeConsideredTop = 18;
     const candlesAmountWithoutOtherTops = 0;
 
@@ -247,7 +247,8 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
-    const candlesAmountWithLowerPriceToBeConsideredBottom = 18;
+    const ignoreLastNCandles = 14;
+    const candlesAmountWithLowerPriceToBeConsideredBottom = 14;
     const candlesAmountWithoutOtherBottoms = 0;
 
     const marketOrder = orders.find((o) => o.type === "market");

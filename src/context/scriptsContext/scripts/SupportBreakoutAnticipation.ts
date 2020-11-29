@@ -16,8 +16,8 @@ export default (function f({
 
   const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
-  const ignoreLastNCandles = 15;
-  const candlesAmountWithLowerPriceToBeConsideredBottom = 15;
+  const ignoreLastNCandles = 14;
+  const candlesAmountWithLowerPriceToBeConsideredBottom = 14;
   const candlesAmountWithoutOtherBottoms = 0;
 
   const riskPercentage = 1.5;
@@ -28,11 +28,16 @@ export default (function f({
 
   const date = new Date(candles[currentDataIndex].timestamp);
 
-  if (date.getHours() < 8 || date.getHours() > 21) {
-    orders.map((mo) => closeOrder(mo.id!));
-    persistedVars.pendingOrder = null;
+  if (date.getHours() < 8 || date.getHours() >= 21) {
+    if (date.getHours() === 21 && date.getMinutes() === 58) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
+    if (date.getHours() !== 21) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
   }
-
   const isValidTime = isWithinTime(
     [
       {

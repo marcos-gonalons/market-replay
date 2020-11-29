@@ -45,7 +45,7 @@ export default function ReportModal({
         >
           {areTradesVisible ? "Hide trades" : "Show trades"}
         </button>
-        {renderTradesList(weekdayReport, painterService as PainterService)}
+        {areTradesVisible ? renderTradesList(weekdayReport, painterService as PainterService) : ""}
       </Modal.Content>
     </Modal>
   );
@@ -204,6 +204,7 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
         const d = new Date(t.startDate);
         return (
           <div
+            key={t.startDate}
             onClick={() => {
               painterService.setOffsetByDate(d);
             }}
