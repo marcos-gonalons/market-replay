@@ -11,8 +11,11 @@ export default (function f({
   closeOrder,
   persistedVars,
   isWithinTime,
+  params,
 }: ScriptFuncParameters) {
   if (balance < 0) return;
+
+  void params;
 
   const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
@@ -70,6 +73,9 @@ export default (function f({
     [0, 2, 3, 4, 5, 7, 8, 9],
     date
   );
+  //const isValidTime = isWithinTime([], params!.validDays!, [], date);
+  //const isValidTime = isWithinTime([], [], params!.validMonths!, date);
+  //const isValidTime = isWithinTime(params!.validHours!, [], [], date);
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -193,7 +199,8 @@ function f({
   createOrder,
   closeOrder,
   persistedVars,
-  isWithinTime
+  isWithinTime,
+  params
 }) {
 `.trim(),
     ``

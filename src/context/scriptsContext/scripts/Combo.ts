@@ -1,6 +1,22 @@
 import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
+/**
+ *
+ * Improvement
+ *
+ * Save separately pendingOrder for longs/shorts
+ *
+ *
+ * pendingBuyOrder
+ * pendingSellOrder
+ *
+ *
+ * And see if it improves the profits
+ *
+ *
+ */
+
 export default (function f({
   candles,
   orders,
@@ -11,8 +27,10 @@ export default (function f({
   closeOrder,
   persistedVars,
   isWithinTime,
+  params,
 }: ScriptFuncParameters) {
   if (balance < 0) return;
+  void params;
 
   const priceAdjustment = 1; // 1/100000;
   const candlesToCheck = 1000;
@@ -36,6 +54,21 @@ export default (function f({
   }
 
   function resistance() {
+    const validMonths = [0, 2, 3, 4, 5, 7, 8, 9];
+    const validWeekdays = [1, 2, 3, 5];
+
+    if (
+      !isWithinTime([], [], validMonths, date) ||
+      !isWithinTime(
+        [],
+        validWeekdays.map((weekday) => ({ hours: [], weekday })),
+        [],
+        date
+      )
+    ) {
+      return;
+    }
+
     const isValidTime = isWithinTime(
       [
         {
@@ -64,9 +97,10 @@ export default (function f({
         },
       ],
       [],
-      [0, 2, 3, 4, 5, 7, 8, 9],
+      validMonths,
       date
     );
+    //const isValidTime = isWithinTime([], [], params!.validMonths!, date);
 
     if (!isValidTime) {
       const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -189,6 +223,19 @@ export default (function f({
   }
 
   function support() {
+    const validMonths = [2, 3, 5, 8, 11];
+    const validWeekdays = [1, 2, 4, 5];
+    if (
+      !isWithinTime([], [], validMonths, date) ||
+      !isWithinTime(
+        [],
+        validWeekdays.map((weekday) => ({ hours: [], weekday })),
+        [],
+        date
+      )
+    ) {
+      return;
+    }
     const isValidTime = isWithinTime(
       [
         {
@@ -224,6 +271,7 @@ export default (function f({
       [2, 3, 5, 8, 11],
       date
     );
+    // const isValidTime = isWithinTime([], [], params!.validMonths!, date);
 
     if (!isValidTime) {
       const order = orders.find((o) => o.type !== "market" && o.position === "short");
@@ -361,7 +409,8 @@ function f({
   createOrder,
   closeOrder,
   persistedVars,
-  isWithinTime
+  isWithinTime,
+  params
 }) {
 `.trim(),
     ``

@@ -8,6 +8,7 @@ export interface ScriptFuncParameters {
   balance: number;
   currentDataIndex: number;
   spreadAdjustment: number;
+  params?: ScriptParams;
   createOrder: (order: Order) => string;
   removeAllOrders: () => void;
   closeOrder: (orderId: string) => void;
@@ -27,4 +28,16 @@ export interface ScriptFuncParameters {
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;
   drawings?: (() => void)[];
+}
+
+export interface ScriptParams {
+  validHours?: {
+    hour: string;
+    weekdays: number[];
+  }[];
+  validDays?: {
+    weekday: number;
+    hours: string[];
+  }[];
+  validMonths?: number[];
 }
