@@ -83,10 +83,11 @@ export default function processOrders({
   function getOrderPriceTakingSpreadIntoAccount(order: Order): number {
     switch (order.type) {
       case "buy-limit":
+      case "sell-limit":
+        return order.price;
       case "sell-stop":
         return order.price - spread / 2;
       case "buy-stop":
-      case "sell-limit":
         return order.price + spread / 2;
     }
     return order.price;
