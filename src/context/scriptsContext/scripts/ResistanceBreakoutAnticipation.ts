@@ -18,14 +18,12 @@ export default (function f({
   void params;
 
   const priceAdjustment = 1; // 1/100000;
-  const candlesToCheck = 1000;
-  const ignoreLastNCandles = 18;
   const candlesAmountWithLowerPriceToBeConsideredTop = 18;
-  const candlesAmountWithoutOtherTops = 0;
 
   const riskPercentage = 1.5;
   const stopLossDistance = 12 * priceAdjustment;
   const takeProfitDistance = 27 * priceAdjustment;
+  const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -98,90 +96,80 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < 5 * priceAdjustment) {
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
       marketOrder.stopLoss = marketOrder.price;
     }
   }
 
   if (marketOrder) return;
 
-  for (let i = currentDataIndex - ignoreLastNCandles; i > currentDataIndex - ignoreLastNCandles - candlesToCheck; i--) {
-    if (!candles[i]) break;
+  const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredTop;
+  if (horizontalLevelCandleIndex < 0 || currentDataIndex < candlesAmountWithLowerPriceToBeConsideredTop * 2) {
+    return;
+  }
 
-    let isFalsePositive = false;
-    for (let j = i + 1; j < currentDataIndex; j++) {
-      if (candles[j].high >= candles[i].high) {
-        isFalsePositive = true;
-        break;
+  let isFalsePositive = false;
+  for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex - 1; j++) {
+    if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
+      isFalsePositive = true;
+      break;
+    }
+  }
+
+  if (isFalsePositive) return;
+
+  isFalsePositive = false;
+  for (
+    let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredTop;
+    j < horizontalLevelCandleIndex;
+    j++
+  ) {
+    if (!candles[j]) continue;
+    if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
+      isFalsePositive = true;
+      break;
+    }
+  }
+
+  if (isFalsePositive) return;
+
+  const price = candles[horizontalLevelCandleIndex].high - 2 * priceAdjustment;
+  if (price > candles[currentDataIndex].high + spreadAdjustment) {
+    orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
+    let lowestValue = candles[currentDataIndex].low;
+
+    for (let i = currentDataIndex; i > currentDataIndex - 180; i--) {
+      if (!candles[i]) break;
+
+      if (candles[i].low < lowestValue) {
+        lowestValue = candles[i].low;
       }
     }
 
-    if (isFalsePositive) break;
-
-    isFalsePositive = false;
-    for (let j = i - candlesAmountWithLowerPriceToBeConsideredTop; j < i; j++) {
-      if (!candles[j]) continue;
-      if (candles[j].high >= candles[i].high) {
-        isFalsePositive = true;
-        break;
-      }
+    const diff = candles[currentDataIndex].low - lowestValue;
+    if (diff < 10) {
+      return;
     }
 
-    if (isFalsePositive) break;
+    orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    for (
-      let j = i - candlesAmountWithoutOtherTops - candlesAmountWithLowerPriceToBeConsideredTop;
-      j < i - candlesAmountWithLowerPriceToBeConsideredTop;
-      j++
-    ) {
-      if (!candles[j]) continue;
-      if (candles[j].meta?.isTop) {
-        isFalsePositive = true;
-        break;
-      }
-    }
+    const stopLoss = price - stopLossDistance;
+    const takeProfit = price + takeProfitDistance;
+    const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
+    // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
 
-    if (isFalsePositive) break;
-
-    const price = candles[i].high - 2 * priceAdjustment;
-    if (price > candles[currentDataIndex].high + spreadAdjustment) {
-      orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
-      let lowestValue = candles[currentDataIndex].low;
-
-      for (let i = currentDataIndex; i > currentDataIndex - 180; i--) {
-        if (!candles[i]) break;
-
-        if (candles[i].low < lowestValue) {
-          lowestValue = candles[i].low;
-        }
-      }
-
-      const diff = candles[currentDataIndex].low - lowestValue;
-      if (diff < 10) {
-        return;
-      }
-
-      orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
-
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
-      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
-      // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
-
-      const o = {
-        type: "buy-stop" as OrderType,
-        position: "long" as Position,
-        size,
-        price,
-        stopLoss,
-        takeProfit,
-      };
-      if (!isValidTime) {
-        persistedVars.pendingOrder = o;
-      } else {
-        createOrder(o);
-      }
-      candles[i].meta = { isTop: true };
+    const o = {
+      type: "buy-stop" as OrderType,
+      position: "long" as Position,
+      size,
+      price,
+      stopLoss,
+      takeProfit,
+    };
+    if (!isValidTime) {
+      persistedVars.pendingOrder = o;
+    } else {
+      createOrder(o);
     }
   }
 
