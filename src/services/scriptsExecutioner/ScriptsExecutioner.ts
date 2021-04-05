@@ -18,7 +18,7 @@ import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
-import PARAMS_ARRAY from "./ParamsArray";
+import getParamsArray from "./ParamsArray";
 import { ScriptFuncParameters, ScriptParams } from "./Types";
 
 class ScriptsExecutionerService {
@@ -71,11 +71,13 @@ class ScriptsExecutionerService {
     initialBalance: number,
     worker?: AppWorker
   ): ScriptsExecutionerService {
-    let best: ScriptParams = PARAMS_ARRAY[0];
+    const paramsArray = getParamsArray();
+
+    let best: ScriptParams = paramsArray[0];
     best.profits = -9999999;
 
     let j = 0;
-    for (const params of PARAMS_ARRAY) {
+    for (const params of paramsArray) {
       const orders: Order[] = [];
       const trades: Trade[] = [];
       let balance = initialBalance;
@@ -101,7 +103,7 @@ class ScriptsExecutionerService {
             type: "scripts-executioner",
             payload: {
               balance,
-              progress: (j * 100) / (data.length * PARAMS_ARRAY.length),
+              progress: (j * 100) / (data.length * paramsArray.length),
               trades,
             },
           });
@@ -131,7 +133,7 @@ class ScriptsExecutionerService {
     }
 
     console.log("Best", best);
-    void j;
+    console.log("Best", JSON.stringify(best));
     return this;
   }
 

@@ -1,33 +1,42 @@
 import { ScriptParams } from "./Types";
 
-const PARAMS_ARRAY: ScriptParams[] = [
-  {
-    riskPercentage: 1.5,
-    stopLossDistance: 13,
-    takeProfitDistance: 25,
-    tpDistanceShortForBreakEvenSL: 5,
-    trendCandles: 180,
-    trendDiff: 5,
-    candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 18,
-  },
-  {
-    riskPercentage: 1.5,
-    stopLossDistance: 13,
-    takeProfitDistance: 25,
-    tpDistanceShortForBreakEvenSL: 5,
-    trendCandles: 180,
-    trendDiff: 5,
-    candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 15,
-  },
-  {
-    riskPercentage: 1.5,
-    stopLossDistance: 13,
-    takeProfitDistance: 25,
-    tpDistanceShortForBreakEvenSL: 5,
-    trendCandles: 120,
-    trendDiff: 10,
-    candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 15,
-  },
-];
+export default function getParamsArray(): ScriptParams[] {
+  const arr: ScriptParams[] = [];
 
-export default PARAMS_ARRAY;
+  const riskPercentage = 1.5;
+  const tpDistanceShortForBreakEvenSL = 1;
+
+  for (const trendCandles of [180]) {
+    for (let trendDiff = 0; trendDiff < 1; trendDiff++) {
+      for (let c = 10; c < 20; c++) {
+        for (let takeProfitDistance = 12; takeProfitDistance < 30; takeProfitDistance++) {
+          for (let stopLossDistance = 4; stopLossDistance < 15; stopLossDistance++) {
+            arr.push({
+              riskPercentage,
+              stopLossDistance,
+              takeProfitDistance,
+              tpDistanceShortForBreakEvenSL,
+              trendCandles,
+              trendDiff,
+              candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: c,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return arr;
+
+  return [
+    {
+      riskPercentage: 1.5,
+      stopLossDistance: 13,
+      takeProfitDistance: 25,
+      tpDistanceShortForBreakEvenSL: 5,
+      trendCandles: 180,
+      trendDiff: 5,
+      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 15,
+    },
+  ];
+}

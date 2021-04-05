@@ -24,7 +24,7 @@ export default (function f({
     const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
     const trendCandles = 180;
     const trendDiff = 5;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 18;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
 
     return {
       riskPercentage,
