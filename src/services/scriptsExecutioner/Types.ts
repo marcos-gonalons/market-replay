@@ -40,4 +40,11 @@ export interface ScriptParams {
     hours: string[];
   }[];
   validMonths?: number[];
+  riskPercentage: number;
+  stopLossDistance: number;
+  takeProfitDistance: number;
+  tpDistanceShortForBreakEvenSL: number;
+  trendCandles: number;
+  trendDiff: number;
+  candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
 }

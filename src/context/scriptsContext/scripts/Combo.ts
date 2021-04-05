@@ -1,4 +1,4 @@
-import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
+import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
@@ -13,15 +13,34 @@ export default (function f({
   isWithinTime,
   params,
 }: ScriptFuncParameters) {
+  function getParams(params: ScriptParams | null): ScriptParams {
+    if (params) {
+      return params;
+    }
+
+    const riskPercentage = 1.5;
+    const stopLossDistance = 13 * priceAdjustment;
+    const takeProfitDistance = 25 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
+    const trendCandles = 180;
+    const trendDiff = 5;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 18;
+
+    return {
+      riskPercentage,
+      stopLossDistance,
+      takeProfitDistance,
+      tpDistanceShortForBreakEvenSL,
+      trendCandles,
+      trendDiff,
+      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+    };
+  }
+
   if (balance < 0) return;
-  void params;
 
   const priceAdjustment = 1; // 1/100000;
-  const riskPercentage = 1.5;
-  void riskPercentage;
-  const stopLossDistance = 13 * priceAdjustment;
-  const takeProfitDistance = 25 * priceAdjustment;
-  const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
+  const scriptParams = getParams(params || null);
 
   if (candles.length === 0 || currentDataIndex === 0) return;
   const date = new Date(candles[currentDataIndex].timestamp);
@@ -77,19 +96,21 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
-    const candlesAmountWithLowerPriceToBeConsideredTop = 18;
-
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForBreakEvenSL) {
         marketOrder.stopLoss = marketOrder.price;
       }
     }
 
     if (marketOrder) return;
 
-    const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredTop;
-    if (horizontalLevelCandleIndex < 0 || currentDataIndex < candlesAmountWithLowerPriceToBeConsideredTop * 2) {
+    const horizontalLevelCandleIndex =
+      currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    if (
+      horizontalLevelCandleIndex < 0 ||
+      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+    ) {
       return;
     }
 
@@ -105,7 +126,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredTop;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -123,7 +144,7 @@ export default (function f({
       orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
       let lowestValue = candles[currentDataIndex - 1].low;
 
-      for (let i = currentDataIndex - 1; i > currentDataIndex - 180; i--) {
+      for (let i = currentDataIndex - 1; i > currentDataIndex - scriptParams.trendCandles; i--) {
         if (!candles[i]) break;
 
         if (candles[i].low < lowestValue) {
@@ -132,14 +153,14 @@ export default (function f({
       }
 
       const diff = candles[currentDataIndex - 1].low - lowestValue;
-      if (diff < 5) {
+      if (diff < scriptParams.trendDiff) {
         return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
+      const stopLoss = price - scriptParams.stopLossDistance;
+      const takeProfit = price + scriptParams.takeProfitDistance;
       const size = 1; //Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
       // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
 

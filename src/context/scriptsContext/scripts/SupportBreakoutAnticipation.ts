@@ -1,4 +1,4 @@
-import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
+import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
@@ -11,15 +11,36 @@ export default (function f({
   closeOrder,
   persistedVars,
   isWithinTime,
+  params,
 }: ScriptFuncParameters) {
+  function getParams(params: ScriptParams | null): ScriptParams {
+    if (params) {
+      return params;
+    }
+
+    const riskPercentage = 1.5;
+    const stopLossDistance = 12 * priceAdjustment;
+    const takeProfitDistance = 27 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
+    const trendCandles = 120;
+    const trendDiff = 29;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
+
+    return {
+      riskPercentage,
+      stopLossDistance,
+      takeProfitDistance,
+      tpDistanceShortForBreakEvenSL,
+      trendCandles,
+      trendDiff,
+      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+    };
+  }
+
   if (balance < 0) return;
 
   const priceAdjustment = 1; // 1/100000;
-  const candlesAmountWithLowerPriceToBeConsideredBottom = 14;
-
-  const riskPercentage = 1.5;
-  const stopLossDistance = 12 * priceAdjustment;
-  const takeProfitDistance = 27 * priceAdjustment;
+  const scriptParams = getParams(params || null);
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
@@ -99,8 +120,12 @@ export default (function f({
 
   if (marketOrder) return;
 
-  const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredBottom;
-  if (horizontalLevelCandleIndex < 0 || currentDataIndex < candlesAmountWithLowerPriceToBeConsideredBottom * 2) {
+  const horizontalLevelCandleIndex =
+    currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+  if (
+    horizontalLevelCandleIndex < 0 ||
+    currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+  ) {
     return;
   }
 
@@ -116,7 +141,7 @@ export default (function f({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredBottom;
+    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     j < horizontalLevelCandleIndex;
     j++
   ) {
@@ -149,9 +174,9 @@ export default (function f({
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price + stopLossDistance;
-    const takeProfit = price - takeProfitDistance;
-    const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
+    const stopLoss = price + scriptParams.stopLossDistance;
+    const takeProfit = price - scriptParams.takeProfitDistance;
+    const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
     // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
 
     const o = {
@@ -183,7 +208,8 @@ function f({
   createOrder,
   closeOrder,
   persistedVars,
-  isWithinTime
+  isWithinTime,
+  params
 }) {
 `.trim(),
     ``
