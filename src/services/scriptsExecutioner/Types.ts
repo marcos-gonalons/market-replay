@@ -47,4 +47,6 @@ export interface ScriptParams {
   trendCandles: number;
   trendDiff: number;
   candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
+
+  profits?: number;
 }

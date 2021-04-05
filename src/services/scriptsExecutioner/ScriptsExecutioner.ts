@@ -18,6 +18,7 @@ import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
+import PARAMS_ARRAY from "./ParamsArray";
 import { ScriptFuncParameters, ScriptParams } from "./Types";
 
 class ScriptsExecutionerService {
@@ -64,13 +65,17 @@ class ScriptsExecutionerService {
     return this;
   }
 
-  /* public executeWithFullData2(
+  public executeWithFullData2(
     script: Script,
     data: Candle[],
     initialBalance: number,
     worker?: AppWorker
   ): ScriptsExecutionerService {
-    for (const [j, element] of elements.entries()) {
+    let best: ScriptParams = PARAMS_ARRAY[0];
+    best.profits = -9999999;
+
+    let j = 0;
+    for (const params of PARAMS_ARRAY) {
       const orders: Order[] = [];
       const trades: Trade[] = [];
       let balance = initialBalance;
@@ -89,29 +94,46 @@ class ScriptsExecutionerService {
           lastTradesLength = trades.length;
           balance += trades[trades.length - 1].result;
         }
-        this.executeScriptCode(script, data, balance, false, orders, trades, i, {
-          // validHours: [{ hour: element, weekdays: [] }],
-          // validDays: [{ weekday: element, hours: [] }],
-          validMonths: [element],
-        });
+        this.executeScriptCode(script, data, balance, false, orders, trades, i, params);
 
         if (worker && i % Math.round(data.length / 100) === 0) {
           worker.postMessage({
             type: "scripts-executioner",
             payload: {
               balance,
-              // progress: (i / data.length) * ((j + 1) / elements.length) * 100,
-              progress: (i * 100) / data.length, // instead of data.length, it should be the sum of all iterations
+              progress: (j * 100) / (data.length * PARAMS_ARRAY.length),
               trades,
             },
           });
         }
+
+        j++;
       }
-      console.log(generateReports(trades));
+
+      const reports = generateReports(trades);
+      let profits = 0;
+      let totalTrades = 0;
+      for (const k in reports[0]) {
+        profits += reports[0][k].profits;
+        totalTrades += reports[0][k].total;
+      }
+      console.log("Params: ", params);
+      console.log("Profits: " + profits);
+      console.log("Total trades: " + totalTrades);
+      console.log(reports);
+      console.log("-".repeat(200));
+      console.log("-".repeat(200));
+
+      if (profits > best.profits!) {
+        best = params;
+        best.profits = profits;
+      }
     }
 
+    console.log("Best", best);
+    void j;
     return this;
-  }*/
+  }
 
   public executeWithFullData(
     script: Script,
