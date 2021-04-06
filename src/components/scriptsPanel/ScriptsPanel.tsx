@@ -105,6 +105,13 @@ function ScriptsPanel(): JSX.Element {
                 <ScriptsList />
                 {renderAddScriptButton(scriptsContextDispatch)}
                 {renderHelpModalButton(() => setIsHelpModalVisible(true))}
+                <button
+                  onClick={() => {
+                    setIsReportModalVisible(true);
+                  }}
+                >
+                  Show reports
+                </button>
               </aside>
               <section className={styles["script-contents"]}>
                 <Editor

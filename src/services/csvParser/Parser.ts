@@ -34,7 +34,7 @@ export function parse(csvContents: string): Candle[] {
 }
 
 export function getDateObject(dateString: string): Date {
-  // return new Date(parseInt(dateString) * 1000);
+  // return new Date((parseInt(dateString) - 3600) * 1000);
 
   const splits = dateString.split(" ");
   const [day, month, year] = splits[0].split(".");

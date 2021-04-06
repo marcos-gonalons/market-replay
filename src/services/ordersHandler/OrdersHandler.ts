@@ -58,8 +58,10 @@ export default function processOrders({
     if (order.stopLoss) {
       if (isPriceWithinCandle(slRealPrice, currentCandle)) {
         processStopLossTrade(order, index, order.stopLoss!);
+        continue;
       } else if (gapHasOvercomePrice(slRealPrice, currentCandle, previousCandle)) {
         processStopLossTrade(order, index, currentCandle.open);
+        continue;
       }
     }
 
@@ -69,6 +71,7 @@ export default function processOrders({
         gapHasOvercomePrice(tpRealPrice, currentCandle, previousCandle)
       ) {
         processTakeProfitTrade(order, index);
+        continue;
       }
     }
   }
