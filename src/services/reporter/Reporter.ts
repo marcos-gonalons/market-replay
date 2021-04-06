@@ -67,6 +67,7 @@ function initReport(): ReportData {
     negatives: 0,
     successPercentage: 0,
     profits: 0,
+    trades: [],
   };
 }
 
@@ -78,4 +79,5 @@ function updateReport(report: Report, key: string, trade: Trade): void {
   } else {
     report[key].negatives++;
   }
+  report[key].trades.push(trade);
 }

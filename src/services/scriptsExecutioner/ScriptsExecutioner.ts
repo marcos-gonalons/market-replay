@@ -18,7 +18,8 @@ import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
-import { ScriptFuncParameters } from "./Types";
+import getParamsArray from "./ParamsArray";
+import { ScriptFuncParameters, ScriptParams } from "./Types";
 
 class ScriptsExecutionerService {
   private PainterService?: PainterService;
@@ -61,6 +62,78 @@ class ScriptsExecutionerService {
         data.length - 1
       );
     }
+    return this;
+  }
+
+  public executeWithFullData2(
+    script: Script,
+    data: Candle[],
+    initialBalance: number,
+    worker?: AppWorker
+  ): ScriptsExecutionerService {
+    const paramsArray = getParamsArray();
+
+    let best: ScriptParams = paramsArray[0];
+    best.profits = -9999999;
+
+    let j = 0;
+    for (const params of paramsArray) {
+      const orders: Order[] = [];
+      const trades: Trade[] = [];
+      let balance = initialBalance;
+      let lastTradesLength = trades.length;
+
+      for (let i = 0; i < data.length; i++) {
+        processOrders({
+          orders,
+          trades,
+          currentCandle: data[i],
+          previousCandle: i - 1 >= 0 ? data[i - 1] : null,
+          spread: DEFAULT_SPREAD,
+        });
+
+        if (trades.length > lastTradesLength) {
+          lastTradesLength = trades.length;
+          balance += trades[trades.length - 1].result;
+        }
+        this.executeScriptCode(script, data, balance, false, orders, trades, i, params);
+
+        if (worker && i % Math.round(data.length / 100) === 0) {
+          worker.postMessage({
+            type: "scripts-executioner",
+            payload: {
+              balance,
+              progress: (j * 100) / (data.length * paramsArray.length),
+              trades,
+            },
+          });
+        }
+
+        j++;
+      }
+
+      const reports = generateReports(trades);
+      let profits = 0;
+      let totalTrades = 0;
+      for (const k in reports[0]) {
+        profits += reports[0][k].profits;
+        totalTrades += reports[0][k].total;
+      }
+      console.log("Params: ", params);
+      console.log("Profits: " + profits);
+      console.log("Total trades: " + totalTrades);
+      console.log(reports);
+      console.log("-".repeat(200));
+      console.log("-".repeat(200));
+
+      if (profits > best.profits!) {
+        best = params;
+        best.profits = profits;
+      }
+    }
+
+    console.log("Best", best);
+    console.log("Best", JSON.stringify(best));
     return this;
   }
 
@@ -251,11 +324,11 @@ class ScriptsExecutionerService {
       executeMonths: number[],
       date: Date
     ): boolean => {
-      if (executeMonths) {
+      if (executeMonths && executeMonths.length > 0) {
         if (!executeMonths.includes(date.getMonth())) return false;
       }
 
-      if (executeHours) {
+      if (executeHours && executeHours.length > 0) {
         const executableHours = executeHours.map((t) => t.hour);
         if (!executableHours) return true;
 
@@ -269,7 +342,7 @@ class ScriptsExecutionerService {
         return true;
       }
 
-      if (executeDays) {
+      if (executeDays && executeDays.length > 0) {
         const executableDays = executeDays.map((d) => d.weekday);
         if (!executableDays) return true;
 
@@ -296,7 +369,8 @@ class ScriptsExecutionerService {
     replayMode: boolean,
     orders: Order[],
     trades: Trade[],
-    currentDataIndex: number
+    currentDataIndex: number,
+    params?: ScriptParams
   ): ScriptsExecutionerService {
     (function ({
       canvas,
@@ -312,6 +386,7 @@ class ScriptsExecutionerService {
       removeAllOrders,
       closeOrder,
       isWithinTime,
+      params,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -327,8 +402,8 @@ class ScriptsExecutionerService {
       void removeAllOrders;
       void closeOrder;
       void isWithinTime;
+      void params;
 
-      // TODO: Function to close an order
       // TODO: Function to modify an order
 
       try {
@@ -348,6 +423,7 @@ class ScriptsExecutionerService {
       balance,
       currentDataIndex,
       spreadAdjustment: DEFAULT_SPREAD / SPREAD_ADJUSTMENT,
+      params,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),

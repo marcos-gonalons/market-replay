@@ -98,7 +98,7 @@ function renderExecuteScriptButton(
         dispatch(setIndexOfTheScriptBeingExecuted(scriptIndex));
         worker.postMessage({
           type: "scripts-executioner",
-          payload: { script, data, initialBalance: 10000 },
+          payload: { script, data, initialBalance: 5000 },
         });
       }}
     >
