@@ -1,4 +1,4 @@
-import React, { useReducer, createContext, Dispatch } from "react";
+import React, { createContext, Dispatch, useReducer } from "react";
 import { ReducerAction } from "../Types";
 import SCRIPTS from "./Scripts";
 import { ActionTypes, State } from "./Types";
@@ -27,6 +27,7 @@ const initialState: State = {
   indexOfTheScriptBeingEdited: 0,
   indexOfTheScriptBeingExecuted: null,
   progress: 0,
+  best: null,
 };
 
 export const ScriptsContext = createContext<{
@@ -98,6 +99,12 @@ const reducer = (state: State, action: ReducerAction): State => {
       return {
         ...state,
         progress: action.payload as number,
+      };
+
+    case ActionTypes.SET_BEST:
+      return {
+        ...state,
+        best: action.payload as State["best"],
       };
 
     case ActionTypes.SET_INDEX_OF_THE_SCRIPT_BEING_EXECUTED:

@@ -15,7 +15,7 @@ import { AppWorker } from "../../../worker/Types";
 
 export default function ScriptsList(): JSX.Element {
   const {
-    state: { scripts, indexOfTheScriptBeingEdited, indexOfTheScriptBeingExecuted, progress },
+    state: { scripts, indexOfTheScriptBeingEdited, indexOfTheScriptBeingExecuted, progress, best },
     dispatch,
   } = useContext(ScriptsContext);
   const {
@@ -29,7 +29,15 @@ export default function ScriptsList(): JSX.Element {
       {renderEditScriptButton(index, dispatch)}
       {index > 0 ? renderRemoveScriptButton(index, indexOfTheScriptBeingEdited, dispatch) : ""}
       {renderExecuteScriptButton(index, s, painterService!.getData(), dispatch, worker)}
-      {indexOfTheScriptBeingExecuted === index ? <span>Progress: {progress}</span> : ""}
+      {indexOfTheScriptBeingExecuted === index ? (
+        <>
+          <span>Progress: {progress}</span>
+          <br />
+          <textarea value={JSON.stringify(best)} />
+        </>
+      ) : (
+        ""
+      )}
     </div>
   ));
 

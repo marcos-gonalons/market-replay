@@ -49,4 +49,5 @@ export interface ScriptParams {
   candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
 
   profits?: number;
+  totalTrades?: number;
 }

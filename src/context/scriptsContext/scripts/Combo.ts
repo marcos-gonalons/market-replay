@@ -19,11 +19,11 @@ export default (function f({
     }
 
     const riskPercentage = 1.5;
-    const stopLossDistance = 13 * priceAdjustment;
-    const takeProfitDistance = 25 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
-    const trendCandles = 180;
-    const trendDiff = 5;
+    const stopLossDistance = 14 * priceAdjustment;
+    const takeProfitDistance = 29 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const trendCandles = 120;
+    const trendDiff = 7;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
 
     return {
@@ -57,8 +57,8 @@ export default (function f({
   }
 
   function resistance() {
-    const validMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const validWeekdays = [1, 2, 3, 4, 5];
+    const validMonths = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+    const validWeekdays = [1, 2, 3, 4];
 
     if (
       !isWithinTime([], [], validMonths, date) ||
@@ -72,7 +72,181 @@ export default (function f({
       return;
     }
 
-    const isValidTime = isWithinTime([], [], validMonths, date);
+    const isValidTime = isWithinTime(
+      [
+        {
+          hour: "0:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "0:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "1:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "1:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "2:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "2:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "3:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "3:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "4:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "4:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "5:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "5:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "6:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "6:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "7:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "7:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "8:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "8:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "9:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "9:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "10:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "10:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "11:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "11:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "12:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "12:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "13:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "13:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "14:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "14:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "15:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "15:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "16:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "17:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "17:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "18:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "18:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "19:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "19:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "20:30",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "21:00",
+          weekdays: [1, 2, 3, 4],
+        },
+        {
+          hour: "21:30",
+          weekdays: [1, 2, 3, 4],
+        },
+      ],
+      [],
+      validMonths,
+      date
+    );
 
     if (!isValidTime) {
       const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -161,8 +335,8 @@ export default (function f({
 
       const stopLoss = price - scriptParams.stopLossDistance;
       const takeProfit = price + scriptParams.takeProfitDistance;
-      const size = 1; //Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
-      // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
+      const size = 1; // Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
+      // const size = (Math.floor((balance * (scriptParams.riskPercentage / 100) / scriptParams.stopLossDistance) / 100000) * 100000) / 10;
 
       const o = {
         type: "buy-stop" as OrderType,

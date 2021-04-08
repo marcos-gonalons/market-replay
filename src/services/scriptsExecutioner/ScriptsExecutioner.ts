@@ -129,6 +129,19 @@ class ScriptsExecutionerService {
       if (profits > best.profits!) {
         best = params;
         best.profits = profits;
+        best.totalTrades = totalTrades;
+
+        if (worker) {
+          worker.postMessage({
+            type: "scripts-executioner",
+            payload: {
+              balance,
+              progress: (j * 100) / (data.length * paramsArray.length),
+              trades,
+              best,
+            },
+          });
+        }
       }
     }
 

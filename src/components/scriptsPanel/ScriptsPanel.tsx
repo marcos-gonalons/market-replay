@@ -11,6 +11,7 @@ import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import {
   addScript,
   modifyScriptContents,
+  setBest,
   setIndexOfTheScriptBeingExecuted,
   setProgress,
 } from "../../context/scriptsContext/Actions";
@@ -171,9 +172,13 @@ function onReceiveMsgFromWorker(
 
   if (type !== "scripts-executioner") return;
 
-  const { balance, progress, trades, reports } = payload as ScriptExecutionerWorkerMessageOut;
+  const { balance, progress, trades, reports, best } = payload as ScriptExecutionerWorkerMessageOut;
 
   scriptsContext.dispatch(setProgress(progress));
+
+  if (best) {
+    scriptsContext.dispatch(setBest(best));
+  }
 
   if (progress === 100) {
     tradesContext.dispatch(setTrades(trades));

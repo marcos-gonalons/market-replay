@@ -177,7 +177,7 @@ export default (function f({
     const stopLoss = price - scriptParams.stopLossDistance;
     const takeProfit = price + scriptParams.takeProfitDistance;
     const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
-    // const size = (Math.floor((balance * (riskPercentage / 100) / stopLossDistance) / 100000) * 100000) / 10;
+    // const size = (Math.floor((balance * (scriptParams.riskPercentage / 100) / scriptParams.stopLossDistance) / 100000) * 100000) / 10;
 
     const o = {
       type: "buy-stop" as OrderType,
