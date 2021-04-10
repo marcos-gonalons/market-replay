@@ -4,6 +4,7 @@ import { Order, OrderType, Position } from "../../tradesContext/Types";
 export default (function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,
@@ -13,6 +14,8 @@ export default (function f({
   isWithinTime,
   params,
 }: ScriptFuncParameters) {
+  void trades;
+
   function getParams(params: ScriptParams | null): ScriptParams {
     if (params) {
       return params;
@@ -365,6 +368,7 @@ export default (function f({
 function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,

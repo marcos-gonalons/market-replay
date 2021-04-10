@@ -6,20 +6,33 @@ export default function getParamsArray(): ScriptParams[] {
   const riskPercentage = 1.5;
   const tpDistanceShortForBreakEvenSL = 1;
 
-  for (const trendCandles of [60, 90, 120, 150, 180, 210, 240, 270, 300]) {
-    for (let trendDiff = 5; trendDiff < 30; trendDiff++) {
-      for (let c = 15; c < 16; c++) {
-        for (let takeProfitDistance = 29; takeProfitDistance < 30; takeProfitDistance++) {
-          for (let stopLossDistance = 14; stopLossDistance < 15; stopLossDistance++) {
-            arr.push({
-              riskPercentage,
-              stopLossDistance,
-              takeProfitDistance,
-              tpDistanceShortForBreakEvenSL,
-              trendCandles,
-              trendDiff,
-              candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: c,
-            });
+  /**
+   * 
+   * todo: add price offset (currently it's 2)
+   * 
+   */
+
+  for (let tpD = 1; tpD < 6; tpD++) {
+    for (const trendCandles of [90, 120, 150, 180, 210]) {
+      for (const trendDiff of [5, 10, 15, 20, 25, 30, 35]) {
+        for (let c = 11; c < 24; c++) {
+          for (let takeProfitDistance = 27; takeProfitDistance < 28; takeProfitDistance++) {
+            for (let stopLossDistance = 12; stopLossDistance < 13; stopLossDistance++) {
+              arr.push({
+                riskPercentage,
+                stopLossDistance,
+                takeProfitDistance,
+                tpDistanceShortForBreakEvenSL: tpD,
+                trendCandles,
+                trendDiff,
+                candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: c,
+                extraTrade: {
+                  stopLossDistance,
+                  takeProfitDistance,
+                  tpDistanceShortForBreakEvenSL
+                }
+              });
+            }
           }
         }
       }
@@ -27,16 +40,4 @@ export default function getParamsArray(): ScriptParams[] {
   }
 
   return arr;
-
-  return [
-    {
-      riskPercentage: 1.5,
-      stopLossDistance: 13,
-      takeProfitDistance: 25,
-      tpDistanceShortForBreakEvenSL: 5,
-      trendCandles: 180,
-      trendDiff: 5,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 15,
-    },
-  ];
 }

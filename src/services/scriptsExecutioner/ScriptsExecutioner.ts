@@ -391,6 +391,7 @@ class ScriptsExecutionerService {
       candles,
       drawings,
       orders,
+      trades,
       persistedVars,
       balance,
       currentDataIndex,
@@ -416,6 +417,7 @@ class ScriptsExecutionerService {
       void closeOrder;
       void isWithinTime;
       void params;
+      void trades;
 
       // TODO: Function to modify an order
 
@@ -432,6 +434,7 @@ class ScriptsExecutionerService {
       candles,
       drawings: this.PainterService?.getExternalDrawings(),
       orders,
+      trades,
       persistedVars: this.persistedVars,
       balance,
       currentDataIndex,

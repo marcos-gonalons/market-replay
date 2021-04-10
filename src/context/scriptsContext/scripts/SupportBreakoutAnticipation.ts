@@ -4,6 +4,7 @@ import { Order, OrderType, Position } from "../../tradesContext/Types";
 export default (function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,
@@ -13,6 +14,8 @@ export default (function f({
   isWithinTime,
   params,
 }: ScriptFuncParameters) {
+  void trades;
+
   function getParams(params: ScriptParams | null): ScriptParams {
     if (params) {
       return params;
@@ -113,7 +116,7 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "short") {
-    if (candles[currentDataIndex].low - marketOrder.takeProfit! < 5 * priceAdjustment) {
+    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForBreakEvenSL * priceAdjustment) {
       marketOrder.stopLoss = marketOrder.price;
     }
   }
@@ -159,7 +162,7 @@ export default (function f({
     orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
 
-    for (let i = currentDataIndex; i > currentDataIndex - 120; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
       if (!candles[i]) break;
 
       if (candles[i].high > highestValue) {
@@ -168,7 +171,7 @@ export default (function f({
     }
 
     const diff = highestValue - candles[currentDataIndex].high;
-    if (diff < 29) {
+    if (diff < scriptParams.trendDiff) {
       return;
     }
 
@@ -202,6 +205,7 @@ export default (function f({
 function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,

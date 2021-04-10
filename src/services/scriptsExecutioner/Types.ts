@@ -1,9 +1,10 @@
 import { Candle } from "../../context/globalContext/Types";
-import { Order } from "../../context/tradesContext/Types";
+import { Order, Trade } from "../../context/tradesContext/Types";
 
 export interface ScriptFuncParameters {
   candles: Candle[];
   orders: Order[];
+  trades: Trade[];
   persistedVars: { [key: string]: unknown };
   balance: number;
   currentDataIndex: number;
@@ -50,4 +51,10 @@ export interface ScriptParams {
 
   profits?: number;
   totalTrades?: number;
+
+  extraTrade?: {
+    stopLossDistance: number;
+    takeProfitDistance: number;
+    tpDistanceShortForBreakEvenSL: number;
+  }
 }

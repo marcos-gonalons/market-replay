@@ -4,6 +4,7 @@ import { Order, OrderType, Position } from "../../tradesContext/Types";
 export default (function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,
@@ -13,6 +14,8 @@ export default (function f({
   isWithinTime,
   params,
 }: ScriptFuncParameters) {
+  void isWithinTime;
+
   function getParams(params: ScriptParams | null): ScriptParams {
     if (params) {
       return params;
@@ -21,12 +24,41 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 12 * priceAdjustment;
     const takeProfitDistance = 27 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
-    const trendCandles = 180;
-    const trendDiff = 10;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 18;
+    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const trendCandles = 90;
+    const trendDiff = 20;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 21;
+    const extraTrade = {
+      stopLossDistance, takeProfitDistance, tpDistanceShortForBreakEvenSL
+    }
+    const validHours: ScriptParams["validHours"] = [
+      { hour: "9:00", weekdays: [] },
+      { hour: "9:30", weekdays: [] },
+      { hour: "10:00", weekdays: [] },
+      { hour: "11:00", weekdays: [] },
+      { hour: "11:30", weekdays: [] },
+      { hour: "12:00", weekdays: [] },
+      { hour: "12:30", weekdays: [] },
+      { hour: "13:00", weekdays: [] },
+      { hour: "13:30", weekdays: [] },
+      { hour: "14:00", weekdays: [] },
+      { hour: "14:30", weekdays: [] },
+      { hour: "16:00", weekdays: [] },
+      { hour: "16:30", weekdays: [] },
+      { hour: "17:00", weekdays: [] },
+      { hour: "17:30", weekdays: [] },
+      { hour: "18:30", weekdays: [] },
+      { hour: "20:00", weekdays: [] },
+      { hour: "20:30", weekdays: [] },
+      { hour: "21:30", weekdays: [] },
+  ];
+    const validMonths: ScriptParams["validMonths"] = [0,1,2,3,4,8];
+    const validDays: ScriptParams["validDays"] = [];
 
     return {
+      validHours,
+      validDays,
+      validMonths,
       riskPercentage,
       stopLossDistance,
       takeProfitDistance,
@@ -34,6 +66,7 @@ export default (function f({
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+      extraTrade
     };
   }
 
@@ -42,9 +75,10 @@ export default (function f({
   const priceAdjustment = 1; // 1/100000;
   const scriptParams = getParams(params || null);
 
-  if (candles.length === 0 || currentDataIndex === 0) return;
+  if (candles.length <= 1 || currentDataIndex === 0) return;
 
   const date = new Date(candles[currentDataIndex].timestamp);
+  const previousDate = new Date(candles[currentDataIndex-1].timestamp);
 
   if (date.getHours() < 8 || date.getHours() >= 21) {
     if (date.getHours() === 21 && date.getMinutes() === 58) {
@@ -57,40 +91,12 @@ export default (function f({
     }
   }
 
-  const isValidTime = isWithinTime(
-    [
-      {
-        hour: "9:00",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
-        hour: "10:00",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
-        hour: "11:30",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
-        hour: "12:00",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
-        hour: "12:30",
-        weekdays: [1, 2, 3, 5],
-      },
-      {
-        hour: "20:30",
-        weekdays: [1, 2, 3, 5],
-      },
-    ],
-    [],
-    [0, 2, 3, 4, 5, 7, 8, 9],
+ const isValidTime = isWithinTime(
+    scriptParams.validHours!,
+    scriptParams.validDays!,
+    scriptParams.validMonths!,
     date
   );
-  //const isValidTime = isWithinTime([], params!.validDays!, [], date);
-  //const isValidTime = isWithinTime([], [], params!.validMonths!, date);
-  //const isValidTime = isWithinTime(params!.validHours!, [], [], date);
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -119,6 +125,41 @@ export default (function f({
   }
 
   if (marketOrder) return;
+
+  const lastTrade = trades[trades.length-1];
+  if (
+    trades.length > <number>persistedVars.lastAmountOfTrades &&
+    !persistedVars.extraTrade && lastTrade.result < 0
+  ) {
+    const price = lastTrade.endPrice;
+
+    const stopLoss = price + scriptParams.extraTrade!.stopLossDistance;
+    const takeProfit = price - scriptParams.extraTrade!.takeProfitDistance;
+    const size = 1; //Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.extraTrade!.stopLossDistance + 1) || 1;
+    
+    const o: Order = {
+      type: "market" as OrderType,
+      position: "short" as Position,
+      size,
+      price,
+      stopLoss,
+      takeProfit,
+    };
+
+    o.createdAt = lastTrade.endDate;
+    o.fillDate = lastTrade.endDate;
+
+    // createOrder(o);
+
+    persistedVars.extraTrade = true;
+    return;
+  }
+
+  persistedVars.lastAmountOfTrades = trades.length;
+
+  if (date.getDate() !== previousDate.getDate()) {
+    persistedVars.extraTrade = false;
+  }
 
   const horizontalLevelCandleIndex =
     currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
@@ -159,7 +200,7 @@ export default (function f({
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
-    for (let i = currentDataIndex; i > currentDataIndex - 180; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
       if (!candles[i]) break;
 
       if (candles[i].low < lowestValue) {
@@ -168,7 +209,7 @@ export default (function f({
     }
 
     const diff = candles[currentDataIndex].low - lowestValue;
-    if (diff < 10) {
+    if (diff < scriptParams.trendDiff) {
       return;
     }
 
@@ -202,6 +243,7 @@ export default (function f({
 function f({
   candles,
   orders,
+  trades,
   balance,
   currentDataIndex,
   spreadAdjustment,
