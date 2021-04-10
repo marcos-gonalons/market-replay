@@ -247,6 +247,7 @@ function f({
   )
   .replace(
     ` // end script
+
 }`.trim(),
     ``
   ));

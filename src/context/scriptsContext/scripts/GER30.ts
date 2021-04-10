@@ -1,4 +1,4 @@
-import { ScriptFuncParameters } from "../../../services/scriptsExecutioner/Types";
+import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
 /**
@@ -32,12 +32,6 @@ export default (function f({
   if (balance < 0) return;
   void params;
 
-  const priceAdjustment = 1; // 1/100000;
-  const riskPercentage = 1.5;
-  const stopLossDistance = 12 * priceAdjustment;
-  const takeProfitDistance = 27 * priceAdjustment;
-  const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
-
   if (candles.length === 0 || currentDataIndex === 0) return;
   const date = new Date(candles[currentDataIndex].timestamp);
 
@@ -53,8 +47,18 @@ export default (function f({
   }
 
   function resistance() {
-    const validMonths = [0, 2, 3, 4, 5, 7, 8, 9];
-    const validWeekdays = [1, 2, 3, 5];
+    const priceAdjustment = 1; // 1/100000;
+    const riskPercentage = 1.5;
+    const stopLossDistance = 12 * priceAdjustment;
+    const takeProfitDistance = 27 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const trendCandles = 90;
+    const trendDiff = 20;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 21;
+    const priceOffset = 2;
+
+    const validMonths: ScriptParams["validMonths"] = [0,1,2,3,4,8];
+    const validWeekdays = [1, 2, 3, 4, 5];
 
     if (
       !isWithinTime([], [], validMonths, date) ||
@@ -70,30 +74,25 @@ export default (function f({
 
     const isValidTime = isWithinTime(
       [
-        {
-          hour: "9:00",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
-          hour: "10:00",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
-          hour: "11:30",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
-          hour: "12:00",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
-          hour: "12:30",
-          weekdays: [1, 2, 3, 5],
-        },
-        {
-          hour: "20:30",
-          weekdays: [1, 2, 3, 5],
-        },
+        { hour: "9:00", weekdays: [] },
+        { hour: "9:30", weekdays: [] },
+        { hour: "10:00", weekdays: [] },
+        { hour: "11:00", weekdays: [] },
+        { hour: "11:30", weekdays: [] },
+        { hour: "12:00", weekdays: [] },
+        { hour: "12:30", weekdays: [] },
+        { hour: "13:00", weekdays: [] },
+        { hour: "13:30", weekdays: [] },
+        { hour: "14:00", weekdays: [] },
+        { hour: "14:30", weekdays: [] },
+        { hour: "16:00", weekdays: [] },
+        { hour: "16:30", weekdays: [] },
+        { hour: "17:00", weekdays: [] },
+        { hour: "17:30", weekdays: [] },
+        { hour: "18:30", weekdays: [] },
+        { hour: "20:00", weekdays: [] },
+        { hour: "20:30", weekdays: [] },
+        { hour: "21:30", weekdays: [] },
       ],
       [],
       validMonths,
@@ -123,8 +122,6 @@ export default (function f({
       persistedVars.pendingOrder = null;
     }
 
-    const candlesAmountWithLowerPriceToBeConsideredTop = 18;
-
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
       if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
@@ -134,8 +131,8 @@ export default (function f({
 
     if (marketOrder) return;
 
-    const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredTop;
-    if (horizontalLevelCandleIndex < 0 || currentDataIndex < candlesAmountWithLowerPriceToBeConsideredTop * 2) {
+    const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    if (horizontalLevelCandleIndex < 0 || currentDataIndex < candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2) {
       return;
     }
 
@@ -151,7 +148,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredTop;
+      let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -164,12 +161,12 @@ export default (function f({
 
     if (isFalsePositive) return;
 
-    const price = candles[horizontalLevelCandleIndex].high - 2 * priceAdjustment;
+    const price = candles[horizontalLevelCandleIndex].high - priceOffset * priceAdjustment;
     if (price > candles[currentDataIndex].close + spreadAdjustment) {
       orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
       let lowestValue = candles[currentDataIndex - 1].low;
 
-      for (let i = currentDataIndex - 1; i > currentDataIndex - 180; i--) {
+      for (let i = currentDataIndex - 1; i > currentDataIndex - trendCandles; i--) {
         if (!candles[i]) break;
 
         if (candles[i].low < lowestValue) {
@@ -178,7 +175,7 @@ export default (function f({
       }
 
       const diff = candles[currentDataIndex - 1].low - lowestValue;
-      if (diff < 10) {
+      if (diff < trendDiff) {
         return;
       }
 
@@ -207,6 +204,13 @@ export default (function f({
   }
 
   function support() {
+
+    const priceAdjustment = 1; // 1/100000;
+    const riskPercentage = 1.5;
+    const stopLossDistance = 12 * priceAdjustment;
+    const takeProfitDistance = 27 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
+
     const validMonths = [2, 3, 5, 8, 11];
     const validWeekdays = [1, 2, 4, 5];
     if (
