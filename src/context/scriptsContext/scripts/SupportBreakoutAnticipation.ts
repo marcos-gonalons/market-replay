@@ -28,39 +28,8 @@ export default (function f({
     const trendCandles = 120;
     const trendDiff = 29;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
-
-    return {
-      riskPercentage,
-      stopLossDistance,
-      takeProfitDistance,
-      tpDistanceShortForBreakEvenSL,
-      trendCandles,
-      trendDiff,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-    };
-  }
-
-  if (balance < 0) return;
-
-  const priceAdjustment = 1; // 1/100000;
-  const scriptParams = getParams(params || null);
-
-  if (candles.length === 0 || currentDataIndex === 0) return;
-
-  const date = new Date(candles[currentDataIndex].timestamp);
-
-  if (date.getHours() < 8 || date.getHours() >= 21) {
-    if (date.getHours() === 21 && date.getMinutes() === 58) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-    if (date.getHours() !== 21) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-  }
-  const isValidTime = isWithinTime(
-    [
+    const priceOffset = 2;
+    const validHours: ScriptParams["validHours"] = [
       {
         hour: "8:30",
         weekdays: [1, 2, 4, 5],
@@ -89,9 +58,49 @@ export default (function f({
         hour: "18:00",
         weekdays: [1, 2, 4, 5],
       },
-    ],
-    [],
-    [2, 3, 5, 8, 11],
+    ];
+    const validMonths: ScriptParams["validMonths"] = [2, 3, 5, 8, 11];
+    const validDays: ScriptParams["validDays"] = [];
+
+    return {
+      validHours,
+      validDays,
+      validMonths,
+      riskPercentage,
+      stopLossDistance,
+      takeProfitDistance,
+      tpDistanceShortForBreakEvenSL,
+      trendCandles,
+      trendDiff,
+      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+      priceOffset,
+    };
+  }
+
+  if (balance < 0) return;
+
+  const priceAdjustment = 1; // 1/100000;
+  const scriptParams = getParams(params || null);
+
+  if (candles.length === 0 || currentDataIndex === 0) return;
+
+  const date = new Date(candles[currentDataIndex].timestamp);
+
+  if (date.getHours() < 8 || date.getHours() >= 21) {
+    if (date.getHours() === 21 && date.getMinutes() === 58) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
+    if (date.getHours() !== 21) {
+      orders.map((mo) => closeOrder(mo.id!));
+      persistedVars.pendingOrder = null;
+    }
+  }
+
+  const isValidTime = isWithinTime(
+    scriptParams.validHours!,
+    scriptParams.validDays!,
+    scriptParams.validMonths!,
     date
   );
 
@@ -157,7 +166,7 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].low + 2 * priceAdjustment;
+  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset * priceAdjustment;
   if (price < candles[currentDataIndex].low - spreadAdjustment) {
     orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;

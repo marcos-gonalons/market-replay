@@ -31,6 +31,7 @@ export default (function f({
     const extraTrade = {
       stopLossDistance, takeProfitDistance, tpDistanceShortForBreakEvenSL
     }
+    const priceOffset = 2;
     const validHours: ScriptParams["validHours"] = [
       { hour: "9:00", weekdays: [] },
       { hour: "9:30", weekdays: [] },
@@ -66,7 +67,8 @@ export default (function f({
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-      extraTrade
+      extraTrade,
+      priceOffset
     };
   }
 
@@ -195,7 +197,7 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].high - 2 * priceAdjustment;
+  const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset * priceAdjustment;
   if (price > candles[currentDataIndex].high + spreadAdjustment) {
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
