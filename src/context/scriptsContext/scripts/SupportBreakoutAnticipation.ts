@@ -163,7 +163,7 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset * priceAdjustment;
   if (price < candles[currentDataIndex].low - spreadAdjustment) {
-    orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
+    orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {

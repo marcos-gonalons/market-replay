@@ -14,7 +14,7 @@ export default (function f({
   isWithinTime,
   params,
 }: ScriptFuncParameters) {
-  void isWithinTime;
+  void trades;
 
   function getParams(params: ScriptParams | null): ScriptParams {
     if (params) {
@@ -28,9 +28,6 @@ export default (function f({
     const trendCandles = 90;
     const trendDiff = 5;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 21;
-    const extraTrade = {
-      stopLossDistance, takeProfitDistance, tpDistanceShortForBreakEvenSL
-    }
     const priceOffset = 1;
     const validHours: ScriptParams["validHours"] = [
       { hour: "9:00", weekdays: [] },
@@ -65,7 +62,6 @@ export default (function f({
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-      extraTrade,
       priceOffset
     };
   }
@@ -78,7 +74,6 @@ export default (function f({
   if (candles.length <= 1 || currentDataIndex === 0) return;
 
   const date = new Date(candles[currentDataIndex].timestamp);
-  const previousDate = new Date(candles[currentDataIndex-1].timestamp);
 
   if (date.getHours() < 8 || date.getHours() >= 21) {
     if (date.getHours() === 21 && date.getMinutes() === 58) {
@@ -126,41 +121,6 @@ export default (function f({
 
   if (marketOrder) return;
 
-  const lastTrade = trades[trades.length-1];
-  if (
-    trades.length > <number>persistedVars.lastAmountOfTrades &&
-    !persistedVars.extraTrade && lastTrade.result < 0
-  ) {
-    const price = lastTrade.endPrice;
-
-    const stopLoss = price + scriptParams.extraTrade!.stopLossDistance;
-    const takeProfit = price - scriptParams.extraTrade!.takeProfitDistance;
-    const size = 1; //Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.extraTrade!.stopLossDistance + 1) || 1;
-    
-    const o: Order = {
-      type: "market" as OrderType,
-      position: "short" as Position,
-      size,
-      price,
-      stopLoss,
-      takeProfit,
-    };
-
-    o.createdAt = lastTrade.endDate;
-    o.fillDate = lastTrade.endDate;
-
-    // createOrder(o);
-
-    persistedVars.extraTrade = true;
-    return;
-  }
-
-  persistedVars.lastAmountOfTrades = trades.length;
-
-  if (date.getDate() !== previousDate.getDate()) {
-    persistedVars.extraTrade = false;
-  }
-
   const horizontalLevelCandleIndex =
     currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
   if (
@@ -197,7 +157,7 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset * priceAdjustment;
   if (price > candles[currentDataIndex].high + spreadAdjustment) {
-    orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
+    orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
