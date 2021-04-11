@@ -22,45 +22,40 @@ export default (function f({
     }
 
     const riskPercentage = 1.5;
-    const stopLossDistance = 12 * priceAdjustment;
-    const takeProfitDistance = 27 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 5 * priceAdjustment;
-    const trendCandles = 120;
-    const trendDiff = 29;
+    const stopLossDistance = 15 * priceAdjustment;
+    const takeProfitDistance = 34 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const trendCandles = 90;
+    const trendDiff = 30;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
     const priceOffset = 2;
     const validHours: ScriptParams["validHours"] = [
-      {
-        hour: "8:30",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "9:00",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "12:00",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "13:00",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "14:30",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "15:30",
-        weekdays: [1, 2, 4, 5],
-      },
-      {
-        hour: "18:00",
-        weekdays: [1, 2, 4, 5],
-      },
+      { hour: "8:00", weekdays: [1,2,4,5] },
+      { hour: "8:30", weekdays: [1,2,4,5] },
+      { hour: "9:00", weekdays: [1,2,4,5] },
+      { hour: "10:00", weekdays: [1,2,4,5] },
+      { hour: "10:30", weekdays: [1,2,4,5] },
+      { hour: "11:00", weekdays: [1,2,4,5] },
+      { hour: "11:30", weekdays: [1,2,4,5] },
+      { hour: "12:00", weekdays: [1,2,4,5] },
+      { hour: "12:30", weekdays: [1,2,4,5] },
+      { hour: "13:00", weekdays: [1,2,4,5] },
+      { hour: "14:00", weekdays: [1,2,4,5] },
+      { hour: "14:30", weekdays: [1,2,4,5] },
+      { hour: "15:00", weekdays: [1,2,4,5] },
+      { hour: "15:30", weekdays: [1,2,4,5] },
+      { hour: "16:00", weekdays: [1,2,4,5] },
+      { hour: "16:30", weekdays: [1,2,4,5] },
+      { hour: "17:00", weekdays: [1,2,4,5] },
+      { hour: "18:00", weekdays: [1,2,4,5] },
     ];
-    const validMonths: ScriptParams["validMonths"] = [2, 3, 5, 8, 11];
-    const validDays: ScriptParams["validDays"] = [];
+    const validMonths: ScriptParams["validMonths"] = [0,2,3,4,5,7,8,9,11];
+    const validDays: ScriptParams["validDays"] = [
+      { weekday: 1, hours: [] },
+      { weekday: 2, hours: [] },
+      { weekday: 4, hours: [] },
+      { weekday: 5, hours: [] },
+    ];
 
     return {
       validHours,
