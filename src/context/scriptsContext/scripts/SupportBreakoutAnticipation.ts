@@ -30,26 +30,26 @@ export default (function f({
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
     const priceOffset = 2;
     const validHours: ScriptParams["validHours"] = [
-      { hour: "8:00", weekdays: [1,2,4,5] },
-      { hour: "8:30", weekdays: [1,2,4,5] },
-      { hour: "9:00", weekdays: [1,2,4,5] },
-      { hour: "10:00", weekdays: [1,2,4,5] },
-      { hour: "10:30", weekdays: [1,2,4,5] },
-      { hour: "11:00", weekdays: [1,2,4,5] },
-      { hour: "11:30", weekdays: [1,2,4,5] },
-      { hour: "12:00", weekdays: [1,2,4,5] },
-      { hour: "12:30", weekdays: [1,2,4,5] },
-      { hour: "13:00", weekdays: [1,2,4,5] },
-      { hour: "14:00", weekdays: [1,2,4,5] },
-      { hour: "14:30", weekdays: [1,2,4,5] },
-      { hour: "15:00", weekdays: [1,2,4,5] },
-      { hour: "15:30", weekdays: [1,2,4,5] },
-      { hour: "16:00", weekdays: [1,2,4,5] },
-      { hour: "16:30", weekdays: [1,2,4,5] },
-      { hour: "17:00", weekdays: [1,2,4,5] },
-      { hour: "18:00", weekdays: [1,2,4,5] },
+      { hour: "8:00", weekdays: [1, 2, 4, 5] },
+      { hour: "8:30", weekdays: [1, 2, 4, 5] },
+      { hour: "9:00", weekdays: [1, 2, 4, 5] },
+      { hour: "10:00", weekdays: [1, 2, 4, 5] },
+      { hour: "10:30", weekdays: [1, 2, 4, 5] },
+      { hour: "11:00", weekdays: [1, 2, 4, 5] },
+      { hour: "11:30", weekdays: [1, 2, 4, 5] },
+      { hour: "12:00", weekdays: [1, 2, 4, 5] },
+      { hour: "12:30", weekdays: [1, 2, 4, 5] },
+      { hour: "13:00", weekdays: [1, 2, 4, 5] },
+      { hour: "14:00", weekdays: [1, 2, 4, 5] },
+      { hour: "14:30", weekdays: [1, 2, 4, 5] },
+      { hour: "15:00", weekdays: [1, 2, 4, 5] },
+      { hour: "15:30", weekdays: [1, 2, 4, 5] },
+      { hour: "16:00", weekdays: [1, 2, 4, 5] },
+      { hour: "16:30", weekdays: [1, 2, 4, 5] },
+      { hour: "17:00", weekdays: [1, 2, 4, 5] },
+      { hour: "18:00", weekdays: [1, 2, 4, 5] },
     ];
-    const validMonths: ScriptParams["validMonths"] = [0,2,3,4,5,7,8,9,11];
+    const validMonths: ScriptParams["validMonths"] = [0, 2, 3, 4, 5, 7, 8, 9, 11];
     const validDays: ScriptParams["validDays"] = [
       { weekday: 1, hours: [] },
       { weekday: 2, hours: [] },
@@ -92,12 +92,7 @@ export default (function f({
     }
   }
 
-  const isValidTime = isWithinTime(
-    scriptParams.validHours!,
-    scriptParams.validDays!,
-    scriptParams.validMonths!,
-    date
-  );
+  const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "short");
@@ -120,7 +115,10 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "short") {
-    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForBreakEvenSL * priceAdjustment) {
+    if (
+      candles[currentDataIndex].low - marketOrder.takeProfit! <
+      scriptParams.tpDistanceShortForBreakEvenSL * priceAdjustment
+    ) {
       marketOrder.stopLoss = marketOrder.price;
     }
   }
@@ -162,7 +160,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset * priceAdjustment;
-  if (price < candles[currentDataIndex].low - spreadAdjustment) {
+  if (price < candles[currentDataIndex].close - spreadAdjustment) {
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
 

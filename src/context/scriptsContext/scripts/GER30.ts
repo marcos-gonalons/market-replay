@@ -132,7 +132,7 @@ export default (function f({
     if (isFalsePositive) return;
 
     const price = candles[horizontalLevelCandleIndex].high - priceOffset * priceAdjustment;
-    if (price > candles[currentDataIndex].high + spreadAdjustment) {
+    if (price > candles[currentDataIndex].close + spreadAdjustment) {
       orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
       let lowestValue = candles[currentDataIndex].low;
 
@@ -279,7 +279,7 @@ export default (function f({
     if (isFalsePositive) return;
 
     const price = candles[horizontalLevelCandleIndex].low + priceOffset * priceAdjustment;
-    if (price < candles[currentDataIndex].low - spreadAdjustment) {
+    if (price < candles[currentDataIndex].close - spreadAdjustment) {
       orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
       let highestValue = candles[currentDataIndex].high;
 

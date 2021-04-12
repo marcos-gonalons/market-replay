@@ -48,7 +48,7 @@ export default (function f({
       { hour: "20:30", weekdays: [] },
       { hour: "21:00", weekdays: [] },
     ];
-    const validMonths: ScriptParams["validMonths"] = [0,1,2,3,4,5];
+    const validMonths: ScriptParams["validMonths"] = [0, 1, 2, 3, 4, 5];
     const validDays: ScriptParams["validDays"] = [];
 
     return {
@@ -62,7 +62,7 @@ export default (function f({
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-      priceOffset
+      priceOffset,
     };
   }
 
@@ -86,12 +86,7 @@ export default (function f({
     }
   }
 
- const isValidTime = isWithinTime(
-    scriptParams.validHours!,
-    scriptParams.validDays!,
-    scriptParams.validMonths!,
-    date
-  );
+  const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -156,7 +151,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset * priceAdjustment;
-  if (price > candles[currentDataIndex].high + spreadAdjustment) {
+  if (price > candles[currentDataIndex].close + spreadAdjustment) {
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
