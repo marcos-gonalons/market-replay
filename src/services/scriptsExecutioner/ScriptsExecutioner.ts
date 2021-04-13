@@ -324,7 +324,7 @@ class ScriptsExecutionerService {
     return closeOrderFunc;
   }
 
-  private getIsWitinTimeFunc(): ScriptFuncParameters["isWithinTime"] {
+  private getIsWithinTimeFunc(): ScriptFuncParameters["isWithinTime"] {
     return (
       executeHours: {
         hour: string;
@@ -443,7 +443,7 @@ class ScriptsExecutionerService {
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
-      isWithinTime: this.getIsWitinTimeFunc(),
+      isWithinTime: this.getIsWithinTimeFunc(),
     });
     return this;
   }
