@@ -104,7 +104,7 @@ export default (function f({
   } else {
     if (persistedVars.pendingOrder) {
       const order = persistedVars.pendingOrder as Order;
-      if (order.price < candles[currentDataIndex].low - spreadAdjustment) {
+      if (order.price < candles[currentDataIndex].low) {
         createOrder(order);
       }
       persistedVars.pendingOrder = null;
