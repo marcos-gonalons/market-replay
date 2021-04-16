@@ -71,6 +71,7 @@ export default (function f({
     if (!isValidTime) {
       const order = orders.find((o) => o.type !== "market" && o.position === "long");
       if (order) {
+        console.log("RESISTANCE", "RESISTANCE", "Saved pending order", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
@@ -80,7 +81,10 @@ export default (function f({
         const order = persistedVars.pendingOrder as Order;
         if (order.position === "long") {
           if (order.price > candles[currentDataIndex].high) {
+            console.log("RESISTANCE", "Creating pending order", date, order);
             createOrder(order);
+          } else {
+            console.log("RESISTANCE", "Can't create the pending order since the price is smaller than the candle.high", order.price, candles[currentDataIndex], date);
           }
           persistedVars.pendingOrder = null;
           return;
@@ -91,12 +95,16 @@ export default (function f({
 
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL * priceAdjustment) {
+        console.log("RESISTANCE", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
         marketOrder.stopLoss = marketOrder.price;
       }
     }
-
-    if (marketOrder) return;
+  
+    if (marketOrder) {
+      console.log("RESISTANCE", "There is an open position, doing nothing ...", date, marketOrder);
+      return;
+    }
 
     const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
@@ -110,6 +118,7 @@ export default (function f({
     for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex - 1; j++) {
       if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
         isFalsePositive = true;
+        console.log("RESISTANCE", "future_overcame", date);
         break;
       }
     }
@@ -125,6 +134,7 @@ export default (function f({
       if (!candles[j]) continue;
       if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
         isFalsePositive = true;
+        console.log("RESISTANCE", "past_overcame", date);
         break;
       }
     }
@@ -146,6 +156,7 @@ export default (function f({
 
       const diff = candles[currentDataIndex].low - lowestValue;
       if (diff < trendDiff) {
+        console.log("RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
         return;
       }
 
@@ -164,11 +175,17 @@ export default (function f({
         stopLoss,
         takeProfit,
       };
+      console.log("RESISTANCE", "Order to be created", date, o);
       if (!isValidTime) {
+        console.log("RESISTANCE", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
       } else {
+        console.log("RESISTANCE", "Time is right, creating the order", date);
         createOrder(o);
       }
+    } else {
+      console.log("RESISTANCE", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
+      console.log("RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
     }
   }
 
@@ -218,6 +235,7 @@ export default (function f({
     if (!isValidTime) {
       const order = orders.find((o) => o.type !== "market" && o.position === "short");
       if (order) {
+        console.log("SUPPORT", "Saved pending order", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
@@ -227,7 +245,10 @@ export default (function f({
         const order = persistedVars.pendingOrder as Order;
         if (order.position === "short") {
           if (order.price < candles[currentDataIndex].low) {
+            console.log("SUPPORT", "Creating pending order", date, order);
             createOrder(order);
+          } else {
+            console.log("SUPPORT", "Can't create the pending order since the price is bigger than the candle.low", order.price, candles[currentDataIndex], date);
           }
           persistedVars.pendingOrder = null;
           return;
@@ -237,13 +258,17 @@ export default (function f({
     }
 
     const marketOrder = orders.find((o) => o.type === "market");
-    if (marketOrder && marketOrder.position === "short") {
-      if (candles[currentDataIndex].low - marketOrder.takeProfit! < tpDistanceShortForBreakEvenSL * priceAdjustment) {
+    if (marketOrder && marketOrder.position === "long") {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL * priceAdjustment) {
+        console.log("SUPPORT", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
         marketOrder.stopLoss = marketOrder.price;
       }
     }
-
-    if (marketOrder) return;
+  
+    if (marketOrder) {
+      console.log("SUPPORT", "There is an open position, doing nothing ...", date, marketOrder);
+      return;
+    }
 
     const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
@@ -257,6 +282,7 @@ export default (function f({
     for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex; j++) {
       if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
         isFalsePositive = true;
+        console.log("SUPPORT", "future_overcame", date);
         break;
       }
     }
@@ -272,6 +298,7 @@ export default (function f({
       if (!candles[j]) continue;
       if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
         isFalsePositive = true;
+        console.log("SUPPORT", "past_overcame", date);
         break;
       }
     }
@@ -293,6 +320,7 @@ export default (function f({
 
       const diff = highestValue - candles[currentDataIndex].high;
       if (diff < trendDiff) {
+        console.log("SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
         return;
       }
 
@@ -311,11 +339,17 @@ export default (function f({
         stopLoss,
         takeProfit,
       };
+      console.log("SUPPORT", "Order to be created", date, o);
       if (!isValidTime) {
+        console.log("SUPPORT", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
       } else {
+        console.log("SUPPORT", "Time is right, creating the order", date);
         createOrder(o);
       }
+    } else {
+      console.log("SUPPORT", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
+      console.log("SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
     }
   }
 
