@@ -68,17 +68,23 @@ export default (function f({
 
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
 
+    console.log("RESISTANCE", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
+      console.log("RESISTANCE", "Not valid time", date);
       const order = orders.find((o) => o.type !== "market" && o.position === "long");
       if (order) {
-        console.log("RESISTANCE", "RESISTANCE", "Saved pending order", date, order);
+        console.log("RESISTANCE", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
+      } else {
+        console.log("RESISTANCE", "There isn't any active order", date);
       }
     } else {
+      console.log("RESISTANCE", "Time is right", date);
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
+        console.log("RESISTANCE", "There is a pending order", date, order);
         if (order.position === "long") {
           if (order.price > candles[currentDataIndex].high) {
             console.log("RESISTANCE", "Creating pending order", date, order);
@@ -88,9 +94,14 @@ export default (function f({
           }
           persistedVars.pendingOrder = null;
           return;
+        } else {
+          console.log("RESISTANCE", "Pending order is SHORT, will not be created", date);
         }
+      } else {
+        console.log("RESISTANCE", "There is not any pending order", date);
       }
       persistedVars.pendingOrder = null;
+      console.log("RESISTANCE", "Set pending order to null", date);
     }
 
     const marketOrder = orders.find((o) => o.type === "market");
@@ -232,17 +243,23 @@ export default (function f({
     }
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
 
+    console.log("SUPPORT", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
+      console.log("SUPPORT", "Not valid time", date);
       const order = orders.find((o) => o.type !== "market" && o.position === "short");
       if (order) {
-        console.log("SUPPORT", "Saved pending order", date, order);
+        console.log("SUPPORT", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
+      } else {
+        console.log("SUPPORT", "There isn't any active order", date);
       }
     } else {
+      console.log("SUPPORT", "Time is right", date);
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
+        console.log("SUPPORT", "There is a pending order", date, order);
         if (order.position === "short") {
           if (order.price < candles[currentDataIndex].low) {
             console.log("SUPPORT", "Creating pending order", date, order);
@@ -252,9 +269,14 @@ export default (function f({
           }
           persistedVars.pendingOrder = null;
           return;
+        } else {
+          console.log("SUPPORT", "Pending order is LONG, will not be created", date);
         }
+      } else {
+        console.log("SUPPORT", "There is not any pending order", date);
       }
       persistedVars.pendingOrder = null;
+      console.log("SUPPORT", "Set pending order to null", date);
     }
 
     const marketOrder = orders.find((o) => o.type === "market");
