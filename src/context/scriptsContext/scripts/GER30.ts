@@ -1,6 +1,7 @@
 import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
+
 export default (function f({
   candles,
   orders,
@@ -12,7 +13,10 @@ export default (function f({
   persistedVars,
   isWithinTime,
   params,
+  debugLog
 }: ScriptFuncParameters) {
+  const ENABLE_DEBUG = false;
+
   if (balance < 0) return;
   void params;
 
@@ -68,52 +72,52 @@ export default (function f({
 
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
 
-    console.log("RESISTANCE", "Current pending order", persistedVars.pendingOrder);
+    debugLog(ENABLE_DEBUG, "RESISTANCE", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
-      console.log("RESISTANCE", "Not valid time", date);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Not valid time", date);
       const order = orders.find((o) => o.type !== "market" && o.position === "long");
       if (order) {
-        console.log("RESISTANCE", "There is an active order, saving pending order...", date, order);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
       } else {
-        console.log("RESISTANCE", "There isn't any active order", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "There isn't any active order", date);
       }
     } else {
-      console.log("RESISTANCE", "Time is right", date);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Time is right", date);
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        console.log("RESISTANCE", "There is a pending order", date, order);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "There is a pending order", date, order);
         if (order.position === "long") {
           if (order.price > candles[currentDataIndex].high) {
-            console.log("RESISTANCE", "Creating pending order", date, order);
+            debugLog(ENABLE_DEBUG, "RESISTANCE", "Creating pending order", date, order);
             createOrder(order);
           } else {
-            console.log("RESISTANCE", "Can't create the pending order since the price is smaller than the candle.high", order.price, candles[currentDataIndex], date);
+            debugLog(ENABLE_DEBUG, "RESISTANCE", "Can't create the pending order since the price is smaller than the candle.high", order.price, candles[currentDataIndex], date);
           }
           persistedVars.pendingOrder = null;
           return;
         } else {
-          console.log("RESISTANCE", "Pending order is SHORT, will not be created", date);
+          debugLog(ENABLE_DEBUG, "RESISTANCE", "Pending order is SHORT, will not be created", date);
         }
       } else {
-        console.log("RESISTANCE", "There is not any pending order", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "There is not any pending order", date);
       }
       persistedVars.pendingOrder = null;
-      console.log("RESISTANCE", "Set pending order to null", date);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Set pending order to null", date);
     }
 
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
       if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL * priceAdjustment) {
-        console.log("RESISTANCE", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
         marketOrder.stopLoss = marketOrder.price;
       }
     }
   
     if (marketOrder) {
-      console.log("RESISTANCE", "There is an open position, doing nothing ...", date, marketOrder);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "There is an open position, doing nothing ...", date, marketOrder);
       return;
     }
 
@@ -129,7 +133,7 @@ export default (function f({
     for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex - 1; j++) {
       if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
         isFalsePositive = true;
-        console.log("RESISTANCE", "future_overcame", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "future_overcame", date);
         break;
       }
     }
@@ -145,7 +149,7 @@ export default (function f({
       if (!candles[j]) continue;
       if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
         isFalsePositive = true;
-        console.log("RESISTANCE", "past_overcame", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "past_overcame", date);
         break;
       }
     }
@@ -167,7 +171,7 @@ export default (function f({
 
       const diff = candles[currentDataIndex].low - lowestValue;
       if (diff < trendDiff) {
-        console.log("RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
         return;
       }
 
@@ -186,17 +190,17 @@ export default (function f({
         stopLoss,
         takeProfit,
       };
-      console.log("RESISTANCE", "Order to be created", date, o);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Order to be created", date, o);
       if (!isValidTime) {
-        console.log("RESISTANCE", "Not the right time, saving the order for later...", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
       } else {
-        console.log("RESISTANCE", "Time is right, creating the order", date);
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "Time is right, creating the order", date);
         createOrder(o);
       }
     } else {
-      console.log("RESISTANCE", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-      console.log("RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
     }
   }
 
@@ -243,52 +247,52 @@ export default (function f({
     }
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
 
-    console.log("SUPPORT", "Current pending order", persistedVars.pendingOrder);
+    debugLog(ENABLE_DEBUG, "SUPPORT", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
-      console.log("SUPPORT", "Not valid time", date);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Not valid time", date);
       const order = orders.find((o) => o.type !== "market" && o.position === "short");
       if (order) {
-        console.log("SUPPORT", "There is an active order, saving pending order...", date, order);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
         closeOrder(order.id!);
         return;
       } else {
-        console.log("SUPPORT", "There isn't any active order", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "There isn't any active order", date);
       }
     } else {
-      console.log("SUPPORT", "Time is right", date);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Time is right", date);
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
-        console.log("SUPPORT", "There is a pending order", date, order);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "There is a pending order", date, order);
         if (order.position === "short") {
           if (order.price < candles[currentDataIndex].low) {
-            console.log("SUPPORT", "Creating pending order", date, order);
+            debugLog(ENABLE_DEBUG, "SUPPORT", "Creating pending order", date, order);
             createOrder(order);
           } else {
-            console.log("SUPPORT", "Can't create the pending order since the price is bigger than the candle.low", order.price, candles[currentDataIndex], date);
+            debugLog(ENABLE_DEBUG, "SUPPORT", "Can't create the pending order since the price is bigger than the candle.low", order.price, candles[currentDataIndex], date);
           }
           persistedVars.pendingOrder = null;
           return;
         } else {
-          console.log("SUPPORT", "Pending order is LONG, will not be created", date);
+          debugLog(ENABLE_DEBUG, "SUPPORT", "Pending order is LONG, will not be created", date);
         }
       } else {
-        console.log("SUPPORT", "There is not any pending order", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "There is not any pending order", date);
       }
       persistedVars.pendingOrder = null;
-      console.log("SUPPORT", "Set pending order to null", date);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Set pending order to null", date);
     }
 
     const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
       if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL * priceAdjustment) {
-        console.log("SUPPORT", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], tpDistanceShortForBreakEvenSL);
         marketOrder.stopLoss = marketOrder.price;
       }
     }
   
     if (marketOrder) {
-      console.log("SUPPORT", "There is an open position, doing nothing ...", date, marketOrder);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "There is an open position, doing nothing ...", date, marketOrder);
       return;
     }
 
@@ -304,7 +308,7 @@ export default (function f({
     for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex; j++) {
       if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
         isFalsePositive = true;
-        console.log("SUPPORT", "future_overcame", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "future_overcame", date);
         break;
       }
     }
@@ -320,7 +324,7 @@ export default (function f({
       if (!candles[j]) continue;
       if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
         isFalsePositive = true;
-        console.log("SUPPORT", "past_overcame", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "past_overcame", date);
         break;
       }
     }
@@ -342,7 +346,7 @@ export default (function f({
 
       const diff = highestValue - candles[currentDataIndex].high;
       if (diff < trendDiff) {
-        console.log("SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
         return;
       }
 
@@ -361,17 +365,17 @@ export default (function f({
         stopLoss,
         takeProfit,
       };
-      console.log("SUPPORT", "Order to be created", date, o);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Order to be created", date, o);
       if (!isValidTime) {
-        console.log("SUPPORT", "Not the right time, saving the order for later...", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
       } else {
-        console.log("SUPPORT", "Time is right, creating the order", date);
+        debugLog(ENABLE_DEBUG, "SUPPORT", "Time is right, creating the order", date);
         createOrder(o);
       }
     } else {
-      console.log("SUPPORT", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-      console.log("SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
     }
   }
 
@@ -393,7 +397,8 @@ function f({
   closeOrder,
   persistedVars,
   isWithinTime,
-  params
+  params,
+  debugLog
 }) {
 `.trim(),
     ``

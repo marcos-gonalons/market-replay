@@ -12,7 +12,7 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
-import { getMinutesAsHalfAnHour } from "../../utils/Utils";
+import { debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
@@ -401,6 +401,7 @@ class ScriptsExecutionerService {
       closeOrder,
       isWithinTime,
       params,
+      debugLog
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -418,6 +419,7 @@ class ScriptsExecutionerService {
       void isWithinTime;
       void params;
       void trades;
+      void debugLog;
 
       // TODO: Function to modify an order
 
@@ -444,6 +446,7 @@ class ScriptsExecutionerService {
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
       isWithinTime: this.getIsWithinTimeFunc(),
+      debugLog: debugLog
     });
     return this;
   }

@@ -29,6 +29,7 @@ export interface ScriptFuncParameters {
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;
   drawings?: (() => void)[];
+  debugLog: (enabled: boolean, ...msgs: any[]) => void;
 }
 
 export interface ScriptParams {

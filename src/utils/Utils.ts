@@ -33,3 +33,9 @@ export function getMinutesAsHalfAnHour(minutes: number): string {
   if (minutes < 30) return "00";
   return "30";
 }
+
+
+export function debugLog(enabled: boolean, ...msgs: any[]) {
+  if (!enabled) return;
+  console.log(...msgs);
+}

@@ -13,7 +13,10 @@ export default (function f({
   persistedVars,
   isWithinTime,
   params,
+  debugLog
 }: ScriptFuncParameters) {
+  const ENABLE_DEBUG = false;
+
   void trades;
 
   const priceAdjustment = 1; // 1/100000;
@@ -92,7 +95,7 @@ export default (function f({
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
     if (order) {
-      console.log("Saved pending order", date, order);
+      debugLog(ENABLE_DEBUG, "Saved pending order", date, order);
       persistedVars.pendingOrder = { ...order };
       closeOrder(order.id!);
       return;
@@ -101,10 +104,10 @@ export default (function f({
     if (persistedVars.pendingOrder) {
       const order = persistedVars.pendingOrder as Order;
       if (order.price > candles[currentDataIndex].high) {
-        console.log("Creating pending order", date, order);
+        debugLog(ENABLE_DEBUG, "Creating pending order", date, order);
         createOrder(order);
       } else {
-        console.log("Can't create the pending order since the price is smaller than the candle.high", order.price, candles[currentDataIndex], date);
+        debugLog(ENABLE_DEBUG, "Can't create the pending order since the price is smaller than the candle.high", order.price, candles[currentDataIndex], date);
       }
       persistedVars.pendingOrder = null;
       return;
@@ -115,13 +118,13 @@ export default (function f({
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
     if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForBreakEvenSL * priceAdjustment) {
-      console.log("Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], scriptParams.tpDistanceShortForBreakEvenSL);
+      debugLog(ENABLE_DEBUG, "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], scriptParams.tpDistanceShortForBreakEvenSL);
       marketOrder.stopLoss = marketOrder.price;
     }
   }
 
   if (marketOrder) {
-    console.log("There is an open position, doing nothing ...", date, marketOrder);
+    debugLog(ENABLE_DEBUG, "There is an open position, doing nothing ...", date, marketOrder);
     return;
   }
 
@@ -138,7 +141,7 @@ export default (function f({
   for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex - 1; j++) {
     if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
       isFalsePositive = true;
-      console.log("future_overcame", date);
+      debugLog(ENABLE_DEBUG, "future_overcame", date);
       break;
     }
   }
@@ -154,7 +157,7 @@ export default (function f({
     if (!candles[j]) continue;
     if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
       isFalsePositive = true;
-      console.log("past_overcame", date);
+      debugLog(ENABLE_DEBUG, "past_overcame", date);
       break;
     }
   }
@@ -176,7 +179,7 @@ export default (function f({
 
     const diff = candles[currentDataIndex].low - lowestValue;
     if (diff < scriptParams.trendDiff) {
-      console.log("Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
+      debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
       return;
     }
 
@@ -195,17 +198,17 @@ export default (function f({
       stopLoss,
       takeProfit,
     };
-    console.log("Order to be created", date, o);
+    debugLog(ENABLE_DEBUG, "Order to be created", date, o);
     if (!isValidTime) {
-      console.log("Not the right time, saving the order for later...", date);
+      debugLog(ENABLE_DEBUG, "Not the right time, saving the order for later...", date);
       persistedVars.pendingOrder = o;
     } else {
-      console.log("Time is right, creating the order", date);
+      debugLog(ENABLE_DEBUG, "Time is right, creating the order", date);
       createOrder(o);
     }
   } else {
-    console.log("Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-    console.log("Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+    debugLog(ENABLE_DEBUG, "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
+    debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
   }
 
   // end script
@@ -224,7 +227,8 @@ function f({
   closeOrder,
   persistedVars,
   isWithinTime,
-  params
+  params,
+  debugLog
 }) {
 `.trim(),
     ``
