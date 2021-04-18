@@ -33,7 +33,7 @@ export default (function f({
     const trendCandles = 90;
     const trendDiff = 30;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
-    const priceOffset = 2;
+    const priceOffset = 2 * priceAdjustment;
     const validHours: ScriptParams["validHours"] = [
       { hour: "8:00", weekdays: [1, 2, 4, 5] },
       { hour: "8:30", weekdays: [1, 2, 4, 5] },
@@ -125,7 +125,7 @@ export default (function f({
   if (marketOrder && marketOrder.position === "short") {
     if (
       candles[currentDataIndex].low - marketOrder.takeProfit! <
-      scriptParams.tpDistanceShortForBreakEvenSL * priceAdjustment
+      scriptParams.tpDistanceShortForBreakEvenSL
     ) {
       debugLog(ENABLE_DEBUG, "Adjusting SL to break even ...", date, marketOrder, candles[currentDataIndex], scriptParams.tpDistanceShortForBreakEvenSL);
       marketOrder.stopLoss = marketOrder.price;
@@ -173,7 +173,7 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset * priceAdjustment;
+  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
   if (price < candles[currentDataIndex].close - spreadAdjustment) {
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
