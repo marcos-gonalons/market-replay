@@ -7,7 +7,7 @@ export default (function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,
@@ -125,6 +125,7 @@ export default (function f({
 
   if (marketOrder) {
     debugLog(ENABLE_DEBUG, "There is an open position, doing nothing ...", date, marketOrder);
+    //alert('Execute the code and save the orders in pendingOrder if there is an open position. Dude.')
     return;
   }
 
@@ -165,7 +166,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
-  if (price > candles[currentDataIndex].close + spreadAdjustment) {
+  if (price > candles[currentDataIndex].close + spread/2) {
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
@@ -208,7 +209,7 @@ export default (function f({
     }
   } else {
     debugLog(ENABLE_DEBUG, "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-    debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+    debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
   }
 
   // end script
@@ -222,7 +223,7 @@ function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,

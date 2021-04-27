@@ -1,6 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
-import { SPREAD_ADJUSTMENT } from "../painter/Constants";
+import { STOP_LOSS_POINTS_HANDICAP, STOP_ORDER_POINTS_HANDICAP } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({
@@ -114,16 +114,15 @@ export default function processOrders({
         }
       }
 
-      const adjust = spread / SPREAD_ADJUSTMENT;
       if (order.type === "buy-stop") {
-        order.price += adjust;
-        order.stopLoss = order.stopLoss ? order.stopLoss + adjust : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit + adjust : order.takeProfit;
+        order.price += STOP_ORDER_POINTS_HANDICAP;
+        order.stopLoss = order.stopLoss ? order.stopLoss + STOP_ORDER_POINTS_HANDICAP : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit + STOP_ORDER_POINTS_HANDICAP : order.takeProfit;
       }
       if (order.type === "sell-stop") {
-        order.price -= adjust;
-        order.stopLoss = order.stopLoss ? order.stopLoss - adjust : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit - adjust : order.takeProfit;
+        order.price -= STOP_ORDER_POINTS_HANDICAP;
+        order.stopLoss = order.stopLoss ? order.stopLoss - STOP_ORDER_POINTS_HANDICAP : order.stopLoss;
+        order.takeProfit = order.takeProfit ? order.takeProfit - STOP_ORDER_POINTS_HANDICAP : order.takeProfit;
       }
     }
 
@@ -202,7 +201,7 @@ export default function processOrders({
   }
 
   function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
-    const spreadAdjustment = order.position === "short" ? spread : -spread;
+    const spreadAdjustment = order.position === "short" ? STOP_LOSS_POINTS_HANDICAP : -STOP_LOSS_POINTS_HANDICAP;
     const endPrice = price + spreadAdjustment;
     const trade = {
       startDate: order.createdAt!,

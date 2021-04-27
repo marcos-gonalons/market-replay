@@ -15,7 +15,7 @@ import { Order, State as TradesContextState, Trade, TradesContext } from "../../
 import { debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
-import { DEFAULT_SPREAD, SPREAD_ADJUSTMENT } from "../painter/Constants";
+import { SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
 import getParamsArray from "./ParamsArray";
@@ -89,7 +89,7 @@ class ScriptsExecutionerService {
           trades,
           currentCandle: data[i],
           previousCandle: i - 1 >= 0 ? data[i - 1] : null,
-          spread: DEFAULT_SPREAD,
+          spread: SPREAD,
         });
 
         if (trades.length > lastTradesLength) {
@@ -167,7 +167,7 @@ class ScriptsExecutionerService {
         trades,
         currentCandle: data[i],
         previousCandle: i - 1 >= 0 ? data[i - 1] : null,
-        spread: DEFAULT_SPREAD,
+        spread: SPREAD,
       });
 
       if (trades.length > lastTradesLength) {
@@ -215,7 +215,7 @@ class ScriptsExecutionerService {
     const orderId: string = uuidv4();
 
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
-      const adjustment = DEFAULT_SPREAD;
+      const adjustment = SPREAD;
       if (order.position === "short") {
         order.price -= adjustment;
         order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;
@@ -395,7 +395,7 @@ class ScriptsExecutionerService {
       persistedVars,
       balance,
       currentDataIndex,
-      spreadAdjustment,
+      spread,
       createOrder,
       removeAllOrders,
       closeOrder,
@@ -412,7 +412,7 @@ class ScriptsExecutionerService {
       void persistedVars;
       void balance;
       void currentDataIndex;
-      void spreadAdjustment;
+      void spread;
       void createOrder;
       void removeAllOrders;
       void closeOrder;
@@ -440,7 +440,7 @@ class ScriptsExecutionerService {
       persistedVars: this.persistedVars,
       balance,
       currentDataIndex,
-      spreadAdjustment: DEFAULT_SPREAD / SPREAD_ADJUSTMENT,
+      spread: SPREAD,
       params,
       createOrder: this.getCreateOrderFunc(replayMode, orders),
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),

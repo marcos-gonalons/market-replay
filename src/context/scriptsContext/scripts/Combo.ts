@@ -7,7 +7,7 @@ export default (function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,
@@ -128,7 +128,7 @@ export default (function f({
   } else {
     if (persistedVars.pendingOrder) {
       const order = persistedVars.pendingOrder as Order;
-      if (order.price > candles[currentDataIndex].high + spreadAdjustment) {
+      if (order.price > candles[currentDataIndex].high + spread/2) {
         if (order.position === "short") {
           order.type = "sell-limit";
         }
@@ -184,7 +184,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
-  if (price > candles[currentDataIndex].close + spreadAdjustment) {
+  if (price > candles[currentDataIndex].close + spread/2) {
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex - 1].low;
 
@@ -235,7 +235,7 @@ function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,

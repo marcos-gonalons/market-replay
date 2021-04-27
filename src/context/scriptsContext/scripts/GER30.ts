@@ -7,7 +7,7 @@ export default (function f({
   orders,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,
@@ -157,7 +157,7 @@ export default (function f({
     if (isFalsePositive) return;
 
     const price = candles[horizontalLevelCandleIndex].high - priceOffset;
-    if (price > candles[currentDataIndex].close + spreadAdjustment) {
+    if (price > candles[currentDataIndex].close + (spread / 2)) {
       orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
       let lowestValue = candles[currentDataIndex].low;
 
@@ -200,7 +200,7 @@ export default (function f({
       }
     } else {
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-      debugLog(ENABLE_DEBUG, "RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
     }
   }
 
@@ -332,7 +332,7 @@ export default (function f({
     if (isFalsePositive) return;
 
     const price = candles[horizontalLevelCandleIndex].low + priceOffset;
-    if (price < candles[currentDataIndex].close - spreadAdjustment) {
+    if (price < candles[currentDataIndex].close - spread/2) {
       orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
       let highestValue = candles[currentDataIndex].high;
 
@@ -375,7 +375,7 @@ export default (function f({
       }
     } else {
       debugLog(ENABLE_DEBUG, "SUPPORT", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
-      debugLog(ENABLE_DEBUG, "SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
     }
   }
 
@@ -392,7 +392,7 @@ function f({
   orders,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,

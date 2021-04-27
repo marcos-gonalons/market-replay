@@ -7,7 +7,7 @@ export default (function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,
@@ -174,7 +174,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
-  if (price < candles[currentDataIndex].close - spreadAdjustment) {
+  if (price < candles[currentDataIndex].close - spread/2) {
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
 
@@ -217,7 +217,7 @@ export default (function f({
     }
   } else {
     debugLog(ENABLE_DEBUG, "Can't create the order since the price is bigger than the current candle.close - the spread adjustment", date);
-    debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spreadAdjustment, price);
+    debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
   }
 
   // end script
@@ -231,7 +231,7 @@ function f({
   trades,
   balance,
   currentDataIndex,
-  spreadAdjustment,
+  spread,
   createOrder,
   closeOrder,
   persistedVars,

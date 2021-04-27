@@ -8,7 +8,7 @@ export interface ScriptFuncParameters {
   persistedVars: { [key: string]: unknown };
   balance: number;
   currentDataIndex: number;
-  spreadAdjustment: number;
+  spread: number;
   params?: ScriptParams;
   createOrder: (order: Order) => string;
   removeAllOrders: () => void;
