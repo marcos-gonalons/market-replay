@@ -27,33 +27,33 @@ export default (function f({
     }
 
     const riskPercentage = 1.5;
-    const stopLossDistance = 16 * priceAdjustment;
+    const stopLossDistance = 24 * priceAdjustment;
     const takeProfitDistance = 34 * priceAdjustment;
     const tpDistanceShortForBreakEvenSL = 2 * priceAdjustment;
-    const trendCandles = 90;
-    const trendDiff = 5;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 21;
+    const trendCandles = 60;
+    const trendDiff = 15;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
     const priceOffset = 1 * priceAdjustment;
     const validHours: ScriptParams["validHours"] = [
       { hour: "9:00", weekdays: [] },
+      { hour: "9:30", weekdays: [] },
       { hour: "10:00", weekdays: [] },
       { hour: "10:30", weekdays: [] },
       { hour: "11:00", weekdays: [] },
       { hour: "11:30", weekdays: [] },
       { hour: "12:00", weekdays: [] },
       { hour: "12:30", weekdays: [] },
-      { hour: "15:30", weekdays: [] },
+      { hour: "13:00", weekdays: [] },
+      { hour: "13:30", weekdays: [] },
+      { hour: "14:00", weekdays: [] },
       { hour: "16:00", weekdays: [] },
       { hour: "16:30", weekdays: [] },
       { hour: "17:00", weekdays: [] },
-      { hour: "18:30", weekdays: [] },
-      { hour: "19:00", weekdays: [] },
-      { hour: "19:30", weekdays: [] },
+      { hour: "17:30", weekdays: [] },
       { hour: "20:00", weekdays: [] },
       { hour: "20:30", weekdays: [] },
-      { hour: "21:00", weekdays: [] },
     ];
-    const validMonths: ScriptParams["validMonths"] = [0, 1, 2, 3, 4, 5];
+    const validMonths: ScriptParams["validMonths"] = [0,1,2,3,4,5,6,7,8];
     const validDays: ScriptParams["validDays"] = [];
 
     return {
