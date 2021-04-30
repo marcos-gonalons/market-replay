@@ -132,11 +132,6 @@ export default (function f({
     }
   }
 
-  if (marketOrder) {
-    debugLog(ENABLE_DEBUG, "There is an open position, doing nothing ...", date, marketOrder);
-    return;
-  }
-
   const horizontalLevelCandleIndex =
     currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
   if (
@@ -208,13 +203,21 @@ export default (function f({
       takeProfit,
     };
     debugLog(ENABLE_DEBUG, "Order to be created", date, o);
+
+    if (marketOrder) {
+      debugLog(ENABLE_DEBUG, "There is an open position, saving the order for later...", date, marketOrder);
+      persistedVars.pendingOrder = o;
+      return;
+    }
+
     if (!isValidTime) {
       debugLog(ENABLE_DEBUG, "Not the right time, saving the order for later...", date);
       persistedVars.pendingOrder = o;
-    } else {
-      debugLog(ENABLE_DEBUG, "Time is right, creating the order", date);
-      createOrder(o);
+      return;
     }
+
+    debugLog(ENABLE_DEBUG, "Time is right, creating the order", date);
+    createOrder(o);
   } else {
     debugLog(ENABLE_DEBUG, "Can't create the order since the price is bigger than the current candle.close - the spread adjustment", date);
     debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);

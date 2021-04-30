@@ -116,11 +116,6 @@ export default (function f({
       }
     }
   
-    if (marketOrder) {
-      debugLog(ENABLE_DEBUG, "RESISTANCE", "There is an open position, doing nothing ...", date, marketOrder);
-      return;
-    }
-
     const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
       horizontalLevelCandleIndex < 0 ||
@@ -191,13 +186,21 @@ export default (function f({
         takeProfit,
       };
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Order to be created", date, o);
+
+      if (marketOrder) {
+        debugLog(ENABLE_DEBUG, "There is an open position, saving the order for later...", date, marketOrder);
+        persistedVars.pendingOrder = o;
+        return;
+      }
+
       if (!isValidTime) {
         debugLog(ENABLE_DEBUG, "RESISTANCE", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
-      } else {
-        debugLog(ENABLE_DEBUG, "RESISTANCE", "Time is right, creating the order", date);
-        createOrder(o);
+        return;
       }
+
+      debugLog(ENABLE_DEBUG, "RESISTANCE", "Time is right, creating the order", date);
+      createOrder(o);
     } else {
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
@@ -291,11 +294,6 @@ export default (function f({
       }
     }
   
-    if (marketOrder) {
-      debugLog(ENABLE_DEBUG, "SUPPORT", "There is an open position, doing nothing ...", date, marketOrder);
-      return;
-    }
-
     const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
       horizontalLevelCandleIndex < 0 ||
@@ -366,13 +364,21 @@ export default (function f({
         takeProfit,
       };
       debugLog(ENABLE_DEBUG, "SUPPORT", "Order to be created", date, o);
+
+      if (marketOrder) {
+        debugLog(ENABLE_DEBUG, "There is an open position, saving the order for later...", date, marketOrder);
+        persistedVars.pendingOrder = o;
+        return;
+      }
+
       if (!isValidTime) {
         debugLog(ENABLE_DEBUG, "SUPPORT", "Not the right time, saving the order for later...", date);
         persistedVars.pendingOrder = o;
-      } else {
-        debugLog(ENABLE_DEBUG, "SUPPORT", "Time is right, creating the order", date);
-        createOrder(o);
+        return;
       }
+
+      debugLog(ENABLE_DEBUG, "SUPPORT", "Time is right, creating the order", date);
+      createOrder(o);
     } else {
       debugLog(ENABLE_DEBUG, "SUPPORT", "Can't create the order since the price is smaller than the current candle.close + the spread adjustment", date);
       debugLog(ENABLE_DEBUG, "SUPPORT", "Candle, adjustment, price", candles[currentDataIndex], spread/2, price);
