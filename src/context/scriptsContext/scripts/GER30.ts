@@ -39,7 +39,7 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 16 * priceAdjustment;
     const takeProfitDistance = 34 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 2 * priceAdjustment;
+    const tpDistanceShortForBreakEvenSL = 0 * priceAdjustment;
     const trendCandles = 90;
     const trendDiff = 5;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 21;

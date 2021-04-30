@@ -8,6 +8,11 @@ import * as serviceWorker from "./serviceWorker";
 alert(`
   In the bot: spread 3 is actually fine for resistance now :)
   So maybe allow spread 3 in the bot
+
+
+  Add dynamic trailing stop
+  The closer to tp, the closer the SL to break even
+  Play with different parameters. Use the params array to test different combinations.
 `);
 */
 ReactDOM.render(
