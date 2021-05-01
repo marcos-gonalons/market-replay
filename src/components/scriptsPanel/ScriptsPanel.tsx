@@ -12,7 +12,6 @@ import {
   addScript,
   modifyScriptContents,
   setBest,
-  setIndexOfTheScriptBeingExecuted,
   setProgress,
 } from "../../context/scriptsContext/Actions";
 import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
@@ -184,7 +183,6 @@ function onReceiveMsgFromWorker(
     tradesContext.dispatch(setTrades(trades));
     tradesContext.dispatch(setBalance(balance));
     scriptsContext.dispatch(setProgress(0));
-    scriptsContext.dispatch(setIndexOfTheScriptBeingExecuted(null));
 
     painterService.draw();
 
