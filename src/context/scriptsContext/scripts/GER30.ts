@@ -71,6 +71,8 @@ export default (function f({
 
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
 
+    const marketOrder = orders.find((o) => o.type === "market");
+
     debugLog(ENABLE_DEBUG, "RESISTANCE", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Not valid time", date);
@@ -91,7 +93,16 @@ export default (function f({
         if (order.position === "long") {
           if (order.price > candles[currentDataIndex].high) {
             debugLog(ENABLE_DEBUG, "RESISTANCE", "Creating pending order", date, order);
-            createOrder(order);
+            if (!marketOrder) {
+              createOrder(order);
+            } else {
+              debugLog(
+                ENABLE_DEBUG,
+                "RESISTANCE",
+                "Can't create the pending order because there is an open position",
+                marketOrder
+              );
+            }
           } else {
             debugLog(
               ENABLE_DEBUG,
@@ -114,7 +125,6 @@ export default (function f({
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Set pending order to null", date);
     }
 
-    const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
       if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
         debugLog(
@@ -268,6 +278,7 @@ export default (function f({
       return;
     }
     const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
+    const marketOrder = orders.find((o) => o.type === "market");
 
     debugLog(ENABLE_DEBUG, "SUPPORT", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
@@ -289,7 +300,16 @@ export default (function f({
         if (order.position === "short") {
           if (order.price < candles[currentDataIndex].low) {
             debugLog(ENABLE_DEBUG, "SUPPORT", "Creating pending order", date, order);
-            createOrder(order);
+            if (!marketOrder) {
+              createOrder(order);
+            } else {
+              debugLog(
+                ENABLE_DEBUG,
+                "SUPPORT",
+                "Can't create the pending order because there is an open position",
+                marketOrder
+              );
+            }
           } else {
             debugLog(
               ENABLE_DEBUG,
@@ -312,7 +332,6 @@ export default (function f({
       debugLog(ENABLE_DEBUG, "SUPPORT", "Set pending order to null", date);
     }
 
-    const marketOrder = orders.find((o) => o.type === "market");
     if (marketOrder && marketOrder.position === "long") {
       if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
         debugLog(

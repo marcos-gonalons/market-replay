@@ -97,6 +97,7 @@ export default (function f({
   }
 
   const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
+  const marketOrder = orders.find((o) => o.type === "market");
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "short");
@@ -111,7 +112,11 @@ export default (function f({
       const order = persistedVars.pendingOrder as Order;
       if (order.price < candles[currentDataIndex].low) {
         debugLog(ENABLE_DEBUG, "Creating pending order", date, order);
-        createOrder(order);
+        if (!marketOrder) {
+          createOrder(order);
+        } else {
+          debugLog(ENABLE_DEBUG, "Can't create the pending order because there is an open position", marketOrder);
+        }
       } else {
         debugLog(
           ENABLE_DEBUG,
@@ -127,7 +132,6 @@ export default (function f({
     persistedVars.pendingOrder = null;
   }
 
-  const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "short") {
     if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForBreakEvenSL) {
       debugLog(
