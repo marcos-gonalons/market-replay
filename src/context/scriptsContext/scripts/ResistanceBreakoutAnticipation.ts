@@ -178,7 +178,7 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
   if (price > candles[currentDataIndex].close + spread / 2) {
-    orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+    // orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
