@@ -184,7 +184,6 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
   if (price < candles[currentDataIndex].close - spread / 2) {
-    orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
@@ -197,6 +196,7 @@ export default (function f({
 
     const diff = highestValue - candles[currentDataIndex].high;
     if (diff < scriptParams.trendDiff) {
+      orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
       debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
       return;
     }
