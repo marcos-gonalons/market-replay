@@ -79,7 +79,7 @@ export default (function f({
 
   const date = new Date(candles[currentDataIndex].timestamp);
 
-  if (date.getHours() < 1 || date.getHours() >= 21) {
+  if (date.getHours() < 7 || date.getHours() >= 21) {
     if (date.getHours() === 21 && date.getMinutes() === 58) {
       orders.map((mo) => closeOrder(mo.id!));
       persistedVars.pendingOrder = null;
