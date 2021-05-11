@@ -22,7 +22,7 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
   const date = new Date(candles[currentDataIndex].timestamp);
 
-  if (date.getHours() < 8 || date.getHours() >= 21) {
+  if (date.getHours() < 1 || date.getHours() >= 21) {
     if (date.getHours() === 21 && date.getMinutes() === 58) {
       orders.map((mo) => closeOrder(mo.id!));
       persistedVars.pendingOrder = null;
@@ -91,7 +91,7 @@ export default (function f({
         const order = persistedVars.pendingOrder as Order;
         debugLog(ENABLE_DEBUG, "RESISTANCE", "There is a pending order", date, order);
         if (order.position === "long") {
-          if (order.price > candles[currentDataIndex].high) {
+          if (order.price > candles[currentDataIndex].close) {
             debugLog(ENABLE_DEBUG, "RESISTANCE", "Creating pending order", date, order);
             if (!marketOrder) {
               createOrder(order);
@@ -443,8 +443,8 @@ export default (function f({
     }
   }
 
-  resistance();
   support();
+  resistance();
 
   // end script
 }
