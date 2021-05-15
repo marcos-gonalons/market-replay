@@ -9,13 +9,13 @@ export default function getParamsArray(): ScriptParams[] {
   const validDays: ScriptParams["validDays"] = [];
   const validMonths: ScriptParams["validMonths"] = [];
 
-  for (let priceOffset = 0; priceOffset < 5; priceOffset ++) {
-  for (let tpD = 1; tpD < 6; tpD++) {
+  for (const priceOffset of [0,1,2,3,4,5]) {
+  for (const tpDistanceShortForBreakEvenSL of [0]) {
   for (const trendCandles of [90,120]) {
   for (const trendDiff of [30]) {
-  for (let c = 14; c < 15; c++) {
-  for (let takeProfitDistance = 34; takeProfitDistance < 35; takeProfitDistance++) {
-  for (let stopLossDistance = 15; stopLossDistance < 16; stopLossDistance++) {
+  for (const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel of [14]) {
+  for (const takeProfitDistance of [34]) {
+  for (const stopLossDistance of [15]) {
     arr.push({
       validHours,
       validDays,
@@ -23,23 +23,18 @@ export default function getParamsArray(): ScriptParams[] {
       riskPercentage,
       stopLossDistance,
       takeProfitDistance,
-      tpDistanceShortForBreakEvenSL: tpD,
+      tpDistanceShortForBreakEvenSL,
       trendCandles,
       trendDiff,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: c,
+      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
       priceOffset,
       extraTrade: {
         stopLossDistance,
         takeProfitDistance,
-        tpDistanceShortForBreakEvenSL: tpD
+        tpDistanceShortForBreakEvenSL
       }
     });
   }}}}}}}
-
-  /**
-   * To beat
-   * {"validHours":[],"validDays":[],"validMonths":[],"riskPercentage":1.5,"stopLossDistance":15,"takeProfitDistance":34,"tpDistanceShortForBreakEvenSL":1,"trendCandles":90,"trendDiff":30,"candlesAmountWithLowerPriceToBeConsideredHorizontalLevel":14,"priceOffset":2,"extraTrade":{"stopLossDistance":15,"takeProfitDistance":34,"tpDistanceShortForBreakEvenSL":1},"profits":4026.586333333409,"totalTrades":3323}
-   */
 
   return arr;
 }
