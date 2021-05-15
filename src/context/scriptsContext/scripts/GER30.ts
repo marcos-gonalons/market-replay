@@ -16,7 +16,7 @@ export default (function f({
 }: ScriptFuncParameters) {
   const ENABLE_DEBUG = false;
 
-  if (balance < 0) return;
+  void balance;
   void params;
 
   if (candles.length === 0 || currentDataIndex === 0) return;

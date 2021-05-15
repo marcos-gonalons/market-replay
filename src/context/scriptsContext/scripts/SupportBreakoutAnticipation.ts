@@ -17,6 +17,7 @@ export default (function f({
 }: ScriptFuncParameters) {
   const ENABLE_DEBUG = false;
 
+  void balance;
   void trades;
 
   const priceAdjustment = 1; // 1/100000;
@@ -76,8 +77,6 @@ export default (function f({
       priceOffset,
     };
   }
-
-  if (balance < 0) return;
 
   const scriptParams = getParams(params || null);
 
