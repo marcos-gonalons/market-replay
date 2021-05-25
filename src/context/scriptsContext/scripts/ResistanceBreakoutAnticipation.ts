@@ -149,7 +149,7 @@ export default (function f({
   }
 
   let isFalsePositive = false;
-  for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex - 1; j++) {
+  for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex; j++) {
     if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
       isFalsePositive = true;
       debugLog(ENABLE_DEBUG, "future_overcame", date);
