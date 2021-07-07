@@ -11,5 +11,6 @@ export interface ReportData {
   negatives: number;
   successPercentage: number;
   profits: number;
+  maxDrawdown?: number;
   trades: Trade[];
 }

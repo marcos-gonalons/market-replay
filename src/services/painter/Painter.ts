@@ -4,12 +4,12 @@ import { State as TradesContextState, TradesContext } from "../../context/trades
 import { drawCandles } from "./CandlesPainter/CandlesPainter";
 import {
   CANDLES_PER_1000_PX,
+  DEFAULT_COLORS,
+  DEFAULT_FONT,
   MAX_ZOOM,
   PRICE_SCALE_WITH_IN_PX,
-  ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
   TIME_SCALE_HEIGHT_IN_PX,
-  DEFAULT_FONT,
-  DEFAULT_COLORS,
+  ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
 } from "./Constants";
 import { drawOrders } from "./OrdersPainter/OrdersPainter";
 import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
@@ -212,6 +212,8 @@ class PainterService {
     this.drawPriceScale();
     this.drawCurrentPriceInPriceScale();
     this.drawPriceInPointerPosition();
+
+    this.drawTechnicalIndicators(startingIndex, endingIndex);
 
     this.drawTimeScale(startingIndex, endingIndex);
     this.drawDateInPointerPosition(startingIndex);
@@ -493,6 +495,51 @@ class PainterService {
     if (!this.data || this.data.length === 0) return this;
     this.dataArrayOffset += value;
     this.validateOffset().updatePriceAndVolumeRangeInScreen();
+    return this;
+  }
+
+  private drawTechnicalIndicators(dataStartIndex: number, dataEndIndex: number): PainterService {
+    // for now, draw an orange line for all the CLOSE price
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = "rgb(255,255,0)";
+
+    const averageCandles = 10;
+
+    let candleNumber = 0;
+    for (let i = dataStartIndex; i < dataEndIndex; i++) {
+      // const candle = this.data[i];
+      const x = this.candleWidth * candleNumber + this.candleWidth / 2;
+
+      let sum = 0;
+      for (let j = i - averageCandles; j < i; j++) {
+        if (j < 1) continue;
+
+        sum += this.data[j].close;
+      }
+
+      const y = getYCoordOfPrice({
+        candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+        priceRange: this.priceRangeInScreen,
+        price: sum / averageCandles,
+      });
+      this.ctx.lineTo(x, y);
+
+      candleNumber++;
+    }
+
+    this.ctx.stroke();
+
+    /**
+     * 
+     *       ctx: this.ctx,
+      dataStartIndex,
+      dataEndIndex,
+      data: this.data,
+      priceRange: this.priceRangeInScreen,
+      candleWidth: this.candleWidth,
+      candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.candle,
+     */
     return this;
   }
 }

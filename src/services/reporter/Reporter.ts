@@ -2,7 +2,7 @@ import { Trade } from "../../context/tradesContext/Types";
 import { getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { Report, ReportData } from "./Types";
 
-export function generateReports(trades: Trade[]): Report[] {
+export function generateReports(trades: Trade[], initialBalance: number): Report[] {
   const hourlyReport: Report = {};
   const weekdayReport: Report = {};
   const monthlyReport: Report = {};
@@ -21,11 +21,25 @@ export function generateReports(trades: Trade[]): Report[] {
     "November",
     "December",
   ];
+
+  let maxDrawdown = 0;
+  let balance = initialBalance;
+  let maxBalance = balance;
   for (const trade of trades) {
     const date = new Date(trade.startDate);
     const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
     const weekday = weekdays[date.getDay()];
     const month = months[date.getMonth()];
+
+    balance += trade.result;
+    if (balance > maxBalance) {
+      maxBalance = balance;
+    } else {
+      const drawdown = maxBalance - balance;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    }
 
     if (!hourlyReport[hour]) {
       hourlyReport[hour] = initReport();
@@ -56,6 +70,7 @@ export function generateReports(trades: Trade[]): Report[] {
     monthlyReport[month].successPercentage = (monthlyReport[month].positives / monthlyReport[month].total) * 100;
   }
 
+  console.log("Max drawdown", maxDrawdown);
   return [hourlyReport, weekdayReport, monthlyReport];
 }
 

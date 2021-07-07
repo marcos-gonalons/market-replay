@@ -112,7 +112,7 @@ class ScriptsExecutionerService {
         j++;
       }
 
-      const reports = generateReports(trades);
+      const reports = generateReports(trades, initialBalance);
       let profits = 0;
       let totalTrades = 0;
       for (const k in reports[0]) {
@@ -196,7 +196,7 @@ class ScriptsExecutionerService {
           balance,
           progress: 100,
           trades,
-          reports: generateReports(trades),
+          reports: generateReports(trades, initialBalance),
         },
       });
     }
@@ -401,7 +401,7 @@ class ScriptsExecutionerService {
       closeOrder,
       isWithinTime,
       params,
-      debugLog
+      debugLog,
     }: ScriptFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
@@ -446,7 +446,7 @@ class ScriptsExecutionerService {
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
       isWithinTime: this.getIsWithinTimeFunc(),
-      debugLog: debugLog
+      debugLog: debugLog,
     });
     return this;
   }
