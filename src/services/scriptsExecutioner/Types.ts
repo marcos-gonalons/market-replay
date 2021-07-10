@@ -45,9 +45,10 @@ export interface ScriptParams {
   riskPercentage: number;
   stopLossDistance: number;
   takeProfitDistance: number;
-  tpDistanceShortForBreakEvenSL: number;
+  tpDistanceShortForTighterSL: number;
   trendCandles: number;
   trendDiff: number;
+  slDistanceWhenTpIsVeryClose: number;
   candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
   priceOffset: number;
 
@@ -57,6 +58,6 @@ export interface ScriptParams {
   extraTrade?: {
     stopLossDistance: number;
     takeProfitDistance: number;
-    tpDistanceShortForBreakEvenSL: number;
-  }
+    tpDistanceShortForTighterSL: number;
+  };
 }

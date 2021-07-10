@@ -17,9 +17,9 @@ export const SECONDS_IN_A_WEEK = SECONDS_IN_A_DAY * 7;
 export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * (365 / 12);
 export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;
 
-export const SPREAD = 2; // 0.000025; // 0.00001
-export const STOP_LOSS_POINTS_HANDICAP = 2;
-export const STOP_ORDER_POINTS_HANDICAP = 1.66;
+export const SPREAD = 0; // 0.000025; // 0.00001
+export const STOP_LOSS_POINTS_HANDICAP = 0.00025;
+export const STOP_ORDER_POINTS_HANDICAP = 0;
 
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",

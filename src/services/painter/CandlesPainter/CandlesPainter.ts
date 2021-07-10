@@ -20,7 +20,6 @@ export function drawCandles({
     const isPositive = candle.close >= candle.open;
 
     const x = candleWidth * candleNumber;
-
     const y = getYCoordOfPrice({
       candlesDisplayDimensions,
       priceRange,

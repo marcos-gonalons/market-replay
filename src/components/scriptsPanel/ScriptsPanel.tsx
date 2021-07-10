@@ -8,12 +8,7 @@ import { toast } from "react-toastify";
 import { Modal } from "semantic-ui-react";
 import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
-import {
-  addScript,
-  modifyScriptContents,
-  setBest,
-  setProgress,
-} from "../../context/scriptsContext/Actions";
+import { addScript, modifyScriptContents, setBest, setProgress } from "../../context/scriptsContext/Actions";
 import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
 import { State as ScriptsContextState } from "../../context/scriptsContext/Types";
 import { setBalance, setTrades } from "../../context/tradesContext/Actions";
@@ -139,6 +134,7 @@ function ScriptsPanel(): JSX.Element {
         hourlyReport={scriptReports[0]}
         weekdayReport={scriptReports[1]}
         monthlyReport={scriptReports[2]}
+        yearlyReport={scriptReports[3]}
         isVisible={isReportModalVisible}
         onClose={() => setIsReportModalVisible(false)}
       />

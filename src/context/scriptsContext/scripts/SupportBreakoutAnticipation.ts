@@ -30,7 +30,8 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 15 * priceAdjustment;
     const takeProfitDistance = 34 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 1 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 90;
     const trendDiff = 30;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
@@ -70,7 +71,8 @@ export default (function f({
       riskPercentage,
       stopLossDistance,
       takeProfitDistance,
-      tpDistanceShortForBreakEvenSL,
+      tpDistanceShortForTighterSL,
+      slDistanceWhenTpIsVeryClose,
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
@@ -132,16 +134,16 @@ export default (function f({
   }
 
   if (marketOrder && marketOrder.position === "short") {
-    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForBreakEvenSL) {
+    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL) {
       debugLog(
         ENABLE_DEBUG,
-        "Adjusting SL to break even ...",
+        "Adjusting SL ...",
         date,
         marketOrder,
         candles[currentDataIndex],
-        scriptParams.tpDistanceShortForBreakEvenSL
+        scriptParams.tpDistanceShortForTighterSL
       );
-      marketOrder.stopLoss = marketOrder.price;
+      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
     }
   }
 

@@ -500,6 +500,18 @@ class PainterService {
 
   private drawTechnicalIndicators(dataStartIndex: number, dataEndIndex: number): PainterService {
     // for now, draw an orange line for all the CLOSE price
+
+    // todo: calculate beforehand the average for each candle?
+    // But maybe that would take TOO long
+    // it would mean iterating over N candles for each candle
+    // so if we have 3 million candles, would be iterating a lot
+
+    // but do I need to recalculate each time?
+
+    /**
+
+     */
+
     this.ctx.beginPath();
     this.ctx.strokeStyle = "rgb(255,255,0)";
 

@@ -38,7 +38,8 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 24 * priceAdjustment;
     const takeProfitDistance = 34 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 0 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 0 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 60;
     const trendDiff = 15;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
@@ -126,17 +127,17 @@ export default (function f({
     }
 
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL) {
         debugLog(
           ENABLE_DEBUG,
           "RESISTANCE",
-          "Adjusting SL to break even ...",
+          "Adjusting SL ...",
           date,
           marketOrder,
           candles[currentDataIndex],
-          tpDistanceShortForBreakEvenSL
+          tpDistanceShortForTighterSL
         );
-        marketOrder.stopLoss = marketOrder.price;
+        marketOrder.stopLoss = marketOrder.price + slDistanceWhenTpIsVeryClose;
       }
     }
 
@@ -242,7 +243,8 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 15 * priceAdjustment;
     const takeProfitDistance = 34 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 1 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 90;
     const trendDiff = 30;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
@@ -334,17 +336,17 @@ export default (function f({
     }
 
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForBreakEvenSL) {
+      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL) {
         debugLog(
           ENABLE_DEBUG,
           "SUPPORT",
-          "Adjusting SL to break even ...",
+          "Adjusting SL ...",
           date,
           marketOrder,
           candles[currentDataIndex],
-          tpDistanceShortForBreakEvenSL
+          tpDistanceShortForTighterSL
         );
-        marketOrder.stopLoss = marketOrder.price;
+        marketOrder.stopLoss = marketOrder.price + slDistanceWhenTpIsVeryClose;
       }
     }
 

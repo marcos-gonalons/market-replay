@@ -24,7 +24,8 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 14 * priceAdjustment;
     const takeProfitDistance = 29 * priceAdjustment;
-    const tpDistanceShortForBreakEvenSL = 1 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 1 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 120;
     const trendDiff = 7;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
@@ -84,11 +85,12 @@ export default (function f({
       riskPercentage,
       stopLossDistance,
       takeProfitDistance,
-      tpDistanceShortForBreakEvenSL,
+      tpDistanceShortForTighterSL,
+      slDistanceWhenTpIsVeryClose,
       trendCandles,
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-      priceOffset
+      priceOffset,
     };
   }
 
@@ -111,12 +113,7 @@ export default (function f({
     }
   }
 
-  const isValidTime = isWithinTime(
-    scriptParams.validHours!,
-    scriptParams.validDays!,
-    scriptParams.validMonths!,
-    date
-  );
+  const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -128,7 +125,7 @@ export default (function f({
   } else {
     if (persistedVars.pendingOrder) {
       const order = persistedVars.pendingOrder as Order;
-      if (order.price > candles[currentDataIndex].high + spread/2) {
+      if (order.price > candles[currentDataIndex].high + spread / 2) {
         if (order.position === "short") {
           order.type = "sell-limit";
         }
@@ -142,8 +139,8 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForBreakEvenSL) {
-      marketOrder.stopLoss = marketOrder.price;
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
+      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
     }
   }
 
@@ -184,7 +181,7 @@ export default (function f({
   if (isFalsePositive) return;
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
-  if (price > candles[currentDataIndex].close + spread/2) {
+  if (price > candles[currentDataIndex].close + spread / 2) {
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex - 1].low;
 

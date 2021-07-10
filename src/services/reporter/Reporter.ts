@@ -6,6 +6,7 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
   const hourlyReport: Report = {};
   const weekdayReport: Report = {};
   const monthlyReport: Report = {};
+  const yearlyReport: Report = {};
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const months = [
     "January",
@@ -25,11 +26,13 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
   let maxDrawdown = 0;
   let balance = initialBalance;
   let maxBalance = balance;
+
   for (const trade of trades) {
     const date = new Date(trade.startDate);
     const hour = `${date.getHours().toString()}:${getMinutesAsHalfAnHour(date.getMinutes())}`;
     const weekday = weekdays[date.getDay()];
     const month = months[date.getMonth()];
+    const year = date.getFullYear().toString();
 
     balance += trade.result;
     if (balance > maxBalance) {
@@ -39,6 +42,10 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
       if (drawdown > maxDrawdown) {
         maxDrawdown = drawdown;
       }
+    }
+
+    if (!yearlyReport[year]) {
+      yearlyReport[year] = initReport();
     }
 
     if (!hourlyReport[hour]) {
@@ -53,6 +60,7 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
       monthlyReport[month] = initReport();
     }
 
+    updateReport(yearlyReport, year, trade);
     updateReport(hourlyReport, hour, trade);
     updateReport(weekdayReport, weekday, trade);
     updateReport(monthlyReport, month, trade);
@@ -70,8 +78,12 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
     monthlyReport[month].successPercentage = (monthlyReport[month].positives / monthlyReport[month].total) * 100;
   }
 
+  for (const year in yearlyReport) {
+    yearlyReport[year].successPercentage = (yearlyReport[year].positives / yearlyReport[year].total) * 100;
+  }
+
   console.log("Max drawdown", maxDrawdown);
-  return [hourlyReport, weekdayReport, monthlyReport];
+  return [hourlyReport, weekdayReport, monthlyReport, yearlyReport];
 }
 
 function initReport(): ReportData {

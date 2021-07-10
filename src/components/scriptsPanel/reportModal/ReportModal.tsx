@@ -14,19 +14,21 @@ export interface Props {
   readonly hourlyReport: Report;
   readonly weekdayReport: Report;
   readonly monthlyReport: Report;
+  readonly yearlyReport: Report;
   readonly onClose: () => void;
 }
 
-export type Tab = "hourly-report" | "weekday-report" | "monthly-report";
+export type Tab = "hourly-report" | "weekday-report" | "monthly-report" | "yearly-report";
 
 export default function ReportModal({
   isVisible,
   hourlyReport,
   weekdayReport,
   monthlyReport,
+  yearlyReport,
   onClose,
 }: Props): JSX.Element {
-  logSigma([hourlyReport, weekdayReport, monthlyReport]);
+  logSigma([hourlyReport, weekdayReport, monthlyReport, yearlyReport]);
   const [activeTab, setActiveTab] = useState<Tab>("hourly-report");
   const [areTradesVisible, setAreTradesVisible] = useState<boolean>(false);
   const {
@@ -37,7 +39,7 @@ export default function ReportModal({
       <Modal.Header>Reports</Modal.Header>
       <Modal.Content>
         {renderTabs(activeTab, setActiveTab)}
-        {renderTable(getReportToRender(activeTab, [hourlyReport, weekdayReport, monthlyReport]))}
+        {renderTable(getReportToRender(activeTab, [hourlyReport, weekdayReport, monthlyReport, yearlyReport]))}
         <button
           onClick={() => {
             setAreTradesVisible(!areTradesVisible);
@@ -64,6 +66,10 @@ function renderTabs(activeTab: Tab, setActiveTab: (tab: Tab) => void): JSX.Eleme
     {
       displayName: "Monthly report",
       tabName: "monthly-report",
+    },
+    {
+      displayName: "Yearly report",
+      tabName: "yearly-report",
     },
   ] as {
     displayName: string;
@@ -94,6 +100,8 @@ function getReportToRender(activeTab: Tab, reports: Report[]): Report {
       return reports[1];
     case "monthly-report":
       return reports[2];
+    case "yearly-report":
+      return reports[3];
   }
 }
 
