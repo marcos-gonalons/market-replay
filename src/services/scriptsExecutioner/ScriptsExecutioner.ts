@@ -12,7 +12,7 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
-import { debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
+import { adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { SPREAD } from "../painter/Constants";
@@ -278,17 +278,17 @@ class ScriptsExecutionerService {
           if (order.type === "market") {
             let result = (currentCandle!.close - order.price) * order.size;
             if (order.position === "short") result = -result;
-            tradesContext.dispatch(
-              addTrade({
-                startDate: order.createdAt!,
-                endDate: currentCandle!.timestamp,
-                startPrice: order.price,
-                endPrice: currentCandle!.close,
-                size: order.size,
-                position: order.position,
-                result,
-              })
-            );
+            const trade = {
+              startDate: order.createdAt!,
+              endDate: currentCandle!.timestamp,
+              startPrice: order.price,
+              endPrice: currentCandle!.close,
+              size: order.size,
+              position: order.position,
+              result,
+            };
+            adjustTradeResultWithRollover(trade, order.rollover || 0);
+            tradesContext.dispatch(addTrade(trade));
           }
 
           tradesContext.dispatch(removeOrder(id));

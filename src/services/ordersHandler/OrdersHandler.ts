@@ -1,5 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
+import { adjustTradeResultWithRollover } from "../../utils/Utils";
 import { STOP_LOSS_POINTS_HANDICAP, STOP_ORDER_POINTS_HANDICAP } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
@@ -198,6 +199,8 @@ export default function processOrders({
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
     if (trade.position === "short") trade.result = -trade.result;
+
+    adjustTradeResultWithRollover(trade, order.rollover || 0);
   }
 
   function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
@@ -217,5 +220,7 @@ export default function processOrders({
     indicesOfMarketOrdersToRemove.push(orderIndex);
 
     if (trade.position === "short") trade.result = -trade.result;
+
+    adjustTradeResultWithRollover(trade, order.rollover || 0);
   }
 }

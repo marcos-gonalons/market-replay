@@ -29,7 +29,7 @@ export interface ScriptFuncParameters {
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;
   drawings?: (() => void)[];
-  debugLog: (enabled: boolean, ...msgs: any[]) => void;
+  debugLog: (enabled: boolean, ...msgs: unknown[]) => void;
 }
 
 export interface ScriptParams {
@@ -51,6 +51,7 @@ export interface ScriptParams {
   slDistanceWhenTpIsVeryClose: number;
   candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
   priceOffset: number;
+  maxSecondsOpenTrade?: number;
 
   profits?: number;
   totalTrades?: number;

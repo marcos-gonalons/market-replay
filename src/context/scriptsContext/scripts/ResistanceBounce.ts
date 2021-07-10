@@ -30,12 +30,14 @@ export default (function f({
     const riskPercentage = 1.5;
     const stopLossDistance = 29 * priceAdjustment;
     const takeProfitDistance = 46 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 0 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 10 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = -15 * priceAdjustment;
     const trendCandles = 120;
     const trendDiff = 20 * priceAdjustment;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
     const priceOffset = -0.5 * priceAdjustment;
+    const maxSecondsOpenTrade = 35 * 24 * 60 * 60;
+
     const validHours: ScriptParams["validHours"] = [];
     const validMonths: ScriptParams["validMonths"] = [];
     const validDays: ScriptParams["validDays"] = [];
@@ -53,6 +55,7 @@ export default (function f({
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
       priceOffset,
+      maxSecondsOpenTrade,
     };
   }
 
@@ -75,6 +78,15 @@ export default (function f({
 
   const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
   const marketOrder = orders.find((o) => o.type === "market");
+
+  if (marketOrder && scriptParams.maxSecondsOpenTrade) {
+    const diffInSeconds = Math.floor((date.valueOf() - marketOrder.createdAt!.valueOf()) / 1000);
+
+    if (diffInSeconds >= scriptParams.maxSecondsOpenTrade) {
+      debugLog(ENABLE_DEBUG, "Closing the trade since it has been open for too much time", date, marketOrder);
+      closeOrder(marketOrder.id!);
+    }
+  }
 
   if (!isValidTime) {
     const order = orders.find((o) => o.type !== "market" && o.position === "long");
@@ -193,6 +205,7 @@ export default (function f({
       price,
       stopLoss,
       takeProfit,
+      rollover: 0.7,
     };
     debugLog(ENABLE_DEBUG, "Order to be created", date, o);
 

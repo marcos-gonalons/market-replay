@@ -15,6 +15,7 @@ interface Order {
   stopLoss?: number;
   takeProfit?: number;
   fillDate?: number;
+  rollover?: number;
 }
 
 interface Trade {

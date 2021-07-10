@@ -1,3 +1,5 @@
+import { Trade } from "../context/tradesContext/Types";
+
 export function getNSigma(nSigma: number, set: number[]): number {
   if (!set.length) return 0;
 
@@ -34,8 +36,12 @@ export function getMinutesAsHalfAnHour(minutes: number): string {
   return "30";
 }
 
-
-export function debugLog(enabled: boolean, ...msgs: any[]) {
+export function debugLog(enabled: boolean, ...msgs: unknown[]): void {
   if (!enabled) return;
   console.log(...msgs);
+}
+
+export function adjustTradeResultWithRollover(trade: Trade, rollover: number): void {
+  const diffInDays = Math.floor((trade.endDate.valueOf() - trade.startDate.valueOf()) / 1000 / 60 / 60 / 24);
+  trade.result = trade.result - diffInDays * rollover;
 }
