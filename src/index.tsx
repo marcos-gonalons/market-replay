@@ -1,20 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import App from "./App";
+import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 
-/*
-alert(`
-  In the bot: spread 3 is actually fine for resistance now :)
-  So maybe allow spread 3 in the bot
+window.addEventListener("beforeunload", function (e) {
+  e.preventDefault();
+  e.returnValue = "";
+});
 
-
-  Add dynamic trailing stop
-  The closer to tp, the closer the SL to break even
-  Play with different parameters. Use the params array to test different combinations.
-`);
-*/
 ReactDOM.render(
   <React.StrictMode>
     <App />

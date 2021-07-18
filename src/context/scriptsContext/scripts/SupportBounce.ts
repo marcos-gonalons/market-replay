@@ -121,8 +121,8 @@ export default (function f({
     persistedVars.pendingOrder = null;
   }
 
-  if (marketOrder && marketOrder.position === "short") {
-    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL) {
+  if (marketOrder && marketOrder.position === "long") {
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
       debugLog(
         ENABLE_DEBUG,
         "Adjusting SL ...",
@@ -146,7 +146,7 @@ export default (function f({
 
   let isFalsePositive = false;
   for (let j = horizontalLevelCandleIndex + 1; j < currentDataIndex; j++) {
-    if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
+    if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
       isFalsePositive = true;
       debugLog(ENABLE_DEBUG, "future_overcame", date);
       break;
@@ -162,7 +162,7 @@ export default (function f({
     j++
   ) {
     if (!candles[j]) continue;
-    if (candles[j].high >= candles[horizontalLevelCandleIndex].high) {
+    if (candles[j].low <= candles[horizontalLevelCandleIndex].low) {
       isFalsePositive = true;
       debugLog(ENABLE_DEBUG, "past_overcame", date);
       break;
@@ -171,39 +171,42 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
-  if (price > candles[currentDataIndex].close + spread / 2) {
+  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
+  if (price < candles[currentDataIndex].close - spread / 2) {
     // orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
-    let highestValue = candles[currentDataIndex].high;
+    let lowestValue = candles[currentDataIndex].low;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
       if (!candles[i]) break;
 
-      if (candles[i].high > highestValue) {
-        highestValue = candles[i].high;
+      if (candles[i].low < lowestValue) {
+        lowestValue = candles[i].low;
       }
     }
 
-    const diff = highestValue - candles[currentDataIndex].high;
+    const diff = candles[currentDataIndex].low - lowestValue;
     if (diff < scriptParams.trendDiff) {
-      debugLog(ENABLE_DEBUG, "Diff is too small, won't create the order...", date, diff, scriptParams.trendDiff);
+      debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
       return;
     }
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price + scriptParams.stopLossDistance;
-    const takeProfit = price - scriptParams.takeProfitDistance;
+    const stopLoss = price - scriptParams.stopLossDistance;
+    const takeProfit = price + scriptParams.takeProfitDistance;
 
-    const size =
+    let size =
       Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000)) * 10000 ||
       10000;
-    // const size = 10000;
+
+    ///////////////
+    size = 10000;
+    ///////////////
 
     const rollover = (0.7 * size) / 10000;
     const o = {
-      type: "sell-limit" as OrderType,
-      position: "short" as Position,
+      type: "buy-limit" as OrderType,
+      position: "long" as Position,
       size,
       price,
       stopLoss,

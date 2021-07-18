@@ -2,6 +2,7 @@ import Combo from "./scripts/Combo";
 import GER30 from "./scripts/GER30-1m";
 import ResistanceBounce from "./scripts/ResistanceBounce";
 import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
+import SupportBounce from "./scripts/SupportBounce";
 import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
 import { Script } from "./Types";
 
@@ -30,6 +31,11 @@ const SCRIPTS: Script[] = [
     name: "Resistance Bounce",
     isActive: true,
     contents: ResistanceBounce,
+  },
+  {
+    name: "Support Bounce",
+    isActive: true,
+    contents: SupportBounce,
   },
 ];
 
