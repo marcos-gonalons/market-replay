@@ -1,5 +1,5 @@
 import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
-import { Order, OrderType, Position } from "../../tradesContext/Types";
+import { OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
   candles,
@@ -17,6 +17,8 @@ export default (function f({
 }: ScriptFuncParameters) {
   const ENABLE_DEBUG = false;
 
+  void persistedVars;
+  void isWithinTime;
   void balance;
   void trades;
 
@@ -64,19 +66,6 @@ export default (function f({
   if (candles.length <= 1 || currentDataIndex === 0) return;
 
   const date = new Date(candles[currentDataIndex].timestamp);
-
-  /*if (date.getHours() < 7 || date.getHours() >= 21) {
-    if (date.getHours() === 21 && date.getMinutes() === 58) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-    if (date.getHours() !== 21) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-  }*/
-
-  const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
   const marketOrder = orders.find((o) => o.type === "market");
 
   if (marketOrder && scriptParams.maxSecondsOpenTrade) {
@@ -86,39 +75,6 @@ export default (function f({
       debugLog(ENABLE_DEBUG, "Closing the trade since it has been open for too much time", date, marketOrder);
       closeOrder(marketOrder.id!);
     }
-  }
-
-  if (!isValidTime) {
-    const order = orders.find((o) => o.type !== "market" && o.position === "long");
-    if (order) {
-      debugLog(ENABLE_DEBUG, "Saved pending order", date, order);
-      persistedVars.pendingOrder = { ...order };
-      closeOrder(order.id!);
-      return;
-    }
-  } else {
-    if (persistedVars.pendingOrder) {
-      const order = persistedVars.pendingOrder as Order;
-      if (order.price > candles[currentDataIndex].high) {
-        debugLog(ENABLE_DEBUG, "Creating pending order", date, order);
-        if (!marketOrder) {
-          createOrder(order);
-        } else {
-          debugLog(ENABLE_DEBUG, "Can't create the pending order because there is an open position", marketOrder);
-        }
-      } else {
-        debugLog(
-          ENABLE_DEBUG,
-          "Can't create the pending order since the price is smaller than the candle.high",
-          order.price,
-          candles[currentDataIndex],
-          date
-        );
-      }
-      persistedVars.pendingOrder = null;
-      return;
-    }
-    persistedVars.pendingOrder = null;
   }
 
   if (marketOrder && marketOrder.position === "short") {
@@ -195,10 +151,8 @@ export default (function f({
     const stopLoss = price + scriptParams.stopLossDistance;
     const takeProfit = price - scriptParams.takeProfitDistance;
 
-    const size =
-      Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000)) * 10000 ||
-      10000;
-    // const size = 10000;
+    //const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000)) * 10000 || 10000;
+    const size = 10000;
 
     const rollover = (0.7 * size) / 10000;
     const o = {
@@ -213,14 +167,7 @@ export default (function f({
     debugLog(ENABLE_DEBUG, "Order to be created", date, o);
 
     if (marketOrder) {
-      debugLog(ENABLE_DEBUG, "There is an open position, saving the order for later...", date, marketOrder);
-      persistedVars.pendingOrder = o;
-      return;
-    }
-
-    if (!isValidTime) {
-      debugLog(ENABLE_DEBUG, "Not the right time, saving the order for later...", date);
-      persistedVars.pendingOrder = o;
+      debugLog(ENABLE_DEBUG, "There is an open position, not creating the order ...", date, marketOrder);
       return;
     }
 
