@@ -1,5 +1,6 @@
 import Combo from "./scripts/Combo";
-import GER30 from "./scripts/GER30-1m";
+import EURUSD_1h from "./scripts/EURUSD-1h";
+import GER30_1m from "./scripts/GER30-1m";
 import ResistanceBounce from "./scripts/ResistanceBounce";
 import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
 import SupportBounce from "./scripts/SupportBounce";
@@ -10,7 +11,12 @@ const SCRIPTS: Script[] = [
   {
     name: "GER30 1M",
     isActive: true,
-    contents: GER30,
+    contents: GER30_1m,
+  },
+  {
+    name: "EURUSD 1H",
+    isActive: true,
+    contents: EURUSD_1h,
   },
   {
     name: "Combo",
