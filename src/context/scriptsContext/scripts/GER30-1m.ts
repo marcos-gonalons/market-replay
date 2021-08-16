@@ -127,7 +127,10 @@ export default (function f({
     }
 
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL) {
+      if (
+        candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
+        marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL
+      ) {
         debugLog(
           ENABLE_DEBUG,
           "RESISTANCE",
@@ -336,7 +339,10 @@ export default (function f({
     }
 
     if (marketOrder && marketOrder.position === "long") {
-      if (marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL) {
+      if (
+        candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
+        marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL
+      ) {
         debugLog(
           ENABLE_DEBUG,
           "SUPPORT",

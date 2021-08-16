@@ -32,12 +32,12 @@ export default (function f({
     const riskPercentage = 1;
     const stopLossDistance = 290 * priceAdjustment;
     const takeProfitDistance = 460 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 100 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = -150 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 150 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 120;
     const trendDiff = 200 * priceAdjustment;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
-    const priceOffset = -5 * priceAdjustment;
+    const priceOffset = -10 * priceAdjustment;
     const maxSecondsOpenTrade = 35 * 24 * 60 * 60; // 35 days
 
     const validHours: ScriptParams["validHours"] = [];
@@ -78,7 +78,12 @@ export default (function f({
   }
 
   if (marketOrder && marketOrder.position === "short") {
-    if (candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL) {
+    const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+    if (
+      candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
+      candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL &&
+      candles[currentDataIndex].close < newSLPrice
+    ) {
       debugLog(
         ENABLE_DEBUG,
         "Adjusting SL ...",
@@ -87,7 +92,7 @@ export default (function f({
         candles[currentDataIndex],
         scriptParams.tpDistanceShortForTighterSL
       );
-      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+      marketOrder.stopLoss = newSLPrice;
     }
   }
 

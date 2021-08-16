@@ -32,13 +32,13 @@ export default (function f({
     const riskPercentage = 1;
     const stopLossDistance = 180 * priceAdjustment;
     const takeProfitDistance = 370 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 150 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 100 * priceAdjustment;
-    const trendCandles = 72;
-    const trendDiff = 10 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 200 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 40 * priceAdjustment;
+    const trendCandles = 200;
+    const trendDiff = 220 * priceAdjustment;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
-    const priceOffset = -13 * priceAdjustment;
-    const maxSecondsOpenTrade = 35 * 24 * 60 * 60; // 35 days
+    const priceOffset = 18 * priceAdjustment;
+    const maxSecondsOpenTrade = 25 * 24 * 60 * 60; // 20 days
 
     const validHours: ScriptParams["validHours"] = [];
     const validMonths: ScriptParams["validMonths"] = [];
@@ -78,7 +78,12 @@ export default (function f({
   }
 
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
+    const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+    if (
+      candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
+      marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL &&
+      candles[currentDataIndex].close > newSLPrice
+    ) {
       debugLog(
         ENABLE_DEBUG,
         "Adjusting SL ...",
@@ -87,7 +92,7 @@ export default (function f({
         candles[currentDataIndex],
         scriptParams.tpDistanceShortForTighterSL
       );
-      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+      marketOrder.stopLoss = newSLPrice;
     }
   }
 
@@ -129,7 +134,6 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
   if (price < candles[currentDataIndex].close - spread / 2) {
-    // orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {

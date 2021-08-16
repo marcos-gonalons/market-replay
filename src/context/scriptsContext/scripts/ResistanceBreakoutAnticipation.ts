@@ -128,7 +128,10 @@ export default (function f({
   }
 
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
+    if (
+      candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
+      marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL
+    ) {
       debugLog(
         ENABLE_DEBUG,
         "Adjusting SL ...",
