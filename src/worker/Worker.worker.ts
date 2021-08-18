@@ -20,7 +20,7 @@ ctx.addEventListener("message", ({ data }: MessageEvent) => {
       case "scripts-executioner":
         const service = new ScriptsExecutionerService();
         const { script, data: candles, initialBalance } = payload as ScriptExecutionerWorkerMessageIn;
-        service.executeWithFullData2(script, candles, initialBalance, ctx);
+        service.executeWithFullData(script, candles, initialBalance, ctx);
         break;
     }
   } catch (err: unknown) {
