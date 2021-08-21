@@ -34,8 +34,8 @@ export default (function f({
     const takeProfitDistance = 470 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 0;
-    const trendDiff = 0 * priceAdjustment;
+    const trendCandles = 50;
+    const trendDiff = 10 * priceAdjustment;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 52;
     const priceOffset = -4 * priceAdjustment;
     const maxSecondsOpenTrade = 0;

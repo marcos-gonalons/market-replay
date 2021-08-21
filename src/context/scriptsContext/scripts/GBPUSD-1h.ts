@@ -31,15 +31,15 @@ export default (function f({
       }
 
       const riskPercentage = 1;
-      const stopLossDistance = 290 * priceAdjustment;
-      const takeProfitDistance = 460 * priceAdjustment;
-      const tpDistanceShortForTighterSL = 150 * priceAdjustment;
-      const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-      const trendCandles = 120;
-      const trendDiff = 200 * priceAdjustment;
-      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
+      const stopLossDistance = 180 * priceAdjustment;
+      const takeProfitDistance = 250 * priceAdjustment;
+      const tpDistanceShortForTighterSL = 50 * priceAdjustment;
+      const slDistanceWhenTpIsVeryClose = 50 * priceAdjustment;
+      const trendCandles = 25;
+      const trendDiff = 130 * priceAdjustment;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
       const priceOffset = -10 * priceAdjustment;
-      const maxSecondsOpenTrade = 35 * 24 * 60 * 60; // 35 days
+      const maxSecondsOpenTrade = 21 * 24 * 60 * 60;
 
       const validHours: ScriptParams["validHours"] = [];
       const validMonths: ScriptParams["validMonths"] = [];
@@ -198,15 +198,15 @@ export default (function f({
       }
 
       const riskPercentage = 1;
-      const stopLossDistance = 180 * priceAdjustment;
-      const takeProfitDistance = 370 * priceAdjustment;
-      const tpDistanceShortForTighterSL = 200 * priceAdjustment;
-      const slDistanceWhenTpIsVeryClose = 40 * priceAdjustment;
-      const trendCandles = 200;
-      const trendDiff = 220 * priceAdjustment;
-      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
-      const priceOffset = 18 * priceAdjustment;
-      const maxSecondsOpenTrade = 20 * 24 * 60 * 60; // 20 days
+      const stopLossDistance = 160 * priceAdjustment;
+      const takeProfitDistance = 470 * priceAdjustment;
+      const tpDistanceShortForTighterSL = 0 * priceAdjustment;
+      const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+      const trendCandles = 50;
+      const trendDiff = 10 * priceAdjustment;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 52;
+      const priceOffset = -4 * priceAdjustment;
+      const maxSecondsOpenTrade = 0;
 
       const validHours: ScriptParams["validHours"] = [];
       const validMonths: ScriptParams["validMonths"] = [];

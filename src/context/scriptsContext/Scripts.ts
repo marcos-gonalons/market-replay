@@ -1,5 +1,6 @@
 import Combo from "./scripts/Combo";
 import EURUSD_1h from "./scripts/EURUSD-1h";
+import GBPUSD_1h from "./scripts/GBPUSD-1h";
 import GER30_1m from "./scripts/GER30-1m";
 import ResistanceBounce from "./scripts/ResistanceBounce";
 import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
@@ -17,6 +18,11 @@ const SCRIPTS: Script[] = [
     name: "EURUSD 1H",
     isActive: true,
     contents: EURUSD_1h,
+  },
+  {
+    name: "GBPUSD 1H",
+    isActive: true,
+    contents: GBPUSD_1h,
   },
   {
     name: "Combo",
