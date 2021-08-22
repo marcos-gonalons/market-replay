@@ -6,6 +6,7 @@ import ResistanceBounce from "./scripts/ResistanceBounce";
 import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
 import SupportBounce from "./scripts/SupportBounce";
 import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
+import USDCAD_1h from "./scripts/USDCAD-1h";
 import { Script } from "./Types";
 
 const SCRIPTS: Script[] = [
@@ -23,6 +24,11 @@ const SCRIPTS: Script[] = [
     name: "GBPUSD 1H",
     isActive: true,
     contents: GBPUSD_1h,
+  },
+  {
+    name: "USDCAD 1H",
+    isActive: true,
+    contents: USDCAD_1h,
   },
   {
     name: "Combo",

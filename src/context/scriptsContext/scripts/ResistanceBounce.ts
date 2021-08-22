@@ -30,15 +30,15 @@ export default (function f({
     }
 
     const riskPercentage = 1;
-    const stopLossDistance = 180 * priceAdjustment;
-    const takeProfitDistance = 250 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 50 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 50 * priceAdjustment;
-    const trendCandles = 25;
-    const trendDiff = 130 * priceAdjustment;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
-    const priceOffset = -10 * priceAdjustment;
-    const maxSecondsOpenTrade = 21 * 24 * 60 * 60;
+    const stopLossDistance = 200 * priceAdjustment;
+    const takeProfitDistance = 260 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 230 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 170 * priceAdjustment;
+    const trendCandles = 132;
+    const trendDiff = 50 * priceAdjustment;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 30;
+    const priceOffset = 30 * priceAdjustment;
+    const maxSecondsOpenTrade = 42 * 24 * 60 * 60;
 
     const validHours: ScriptParams["validHours"] = [];
     const validMonths: ScriptParams["validMonths"] = [];
