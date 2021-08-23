@@ -206,7 +206,7 @@ export default (function f({
       const trendDiff = 10 * priceAdjustment;
       const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 52;
       const priceOffset = -4 * priceAdjustment;
-      const maxSecondsOpenTrade = 0;
+      const maxSecondsOpenTrade = 50 * 24 * 60 * 60;
 
       const validHours: ScriptParams["validHours"] = [];
       const validMonths: ScriptParams["validMonths"] = [];
