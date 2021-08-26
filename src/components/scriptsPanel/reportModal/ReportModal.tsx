@@ -206,9 +206,11 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
   trades.sort((a, b) => {
     return a.startDate.valueOf() > b.startDate.valueOf() ? 1 : -1;
   });
+  let balance = 5000;
   return (
     <div style={{ fontFamily: "monospace" }}>
       {trades.map((t) => {
+        balance += t.result;
         const d = new Date(t.startDate);
         const ed = new Date(t.endDate);
         return (
@@ -218,8 +220,8 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
               painterService.setOffsetByDate(d);
             }}
           >
-            <span>{`${t.size} ${t.position} -> ${t.result.toFixed(
-              2
+            <span>{`${t.size} ${t.position} -> ${t.result.toFixed(2)} -> ${balance.toFixed(
+              0
             )} -> ${d.toLocaleString()} to ${ed.toLocaleString()}`}</span>
           </div>
         );

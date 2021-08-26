@@ -15,7 +15,7 @@ import { Order, State as TradesContextState, Trade, TradesContext } from "../../
 import { adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
-import { SPREAD } from "../painter/Constants";
+import { EUR_EXCHANGE_RATE, SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
 import getParamsArray from "./ParamsArray";
@@ -119,17 +119,22 @@ class ScriptsExecutionerService {
         profits += reports[0][k].profits;
         totalTrades += reports[0][k].total;
       }
+
+      /***
       console.log("Params: ", params);
       console.log("Profits: " + profits);
       console.log("Total trades: " + totalTrades);
       console.log(reports);
       console.log("-".repeat(200));
       console.log("-".repeat(200));
+      /***/
 
       if (profits > best.profits!) {
         best = params;
         best.profits = profits;
         best.totalTrades = totalTrades;
+
+        console.log("new best", best);
 
         if (worker) {
           worker.postMessage({
@@ -288,6 +293,7 @@ class ScriptsExecutionerService {
               result,
             };
             adjustTradeResultWithRollover(trade, order.rollover || 0);
+            trade.result *= EUR_EXCHANGE_RATE;
             tradesContext.dispatch(addTrade(trade));
           }
 
@@ -301,6 +307,7 @@ class ScriptsExecutionerService {
 
         let result = (currentCandle!.close - order.price) * order.size;
         if (order.position === "short") result = -result;
+        result *= EUR_EXCHANGE_RATE;
 
         if (order.type === "market") {
           trades!.push({

@@ -82,7 +82,6 @@ export function generateReports(trades: Trade[], initialBalance: number): Report
     yearlyReport[year].successPercentage = (yearlyReport[year].positives / yearlyReport[year].total) * 100;
   }
 
-  console.log("Max drawdown", maxDrawdown);
   return [hourlyReport, weekdayReport, monthlyReport, yearlyReport];
 }
 

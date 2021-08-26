@@ -21,6 +21,14 @@ export const SPREAD = 0; // 0.000025; // 0.00001
 export const STOP_LOSS_POINTS_HANDICAP = 0.00025; // 0.00025 // 2
 export const STOP_ORDER_POINTS_HANDICAP = 0; // 1.66
 
+/***
+ * jpy 0.0077
+ * usd 0.85
+ * cad 0.67
+ * chf 0.93
+ */
+export const EUR_EXCHANGE_RATE = 0.0077;
+
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",
   text: "rgb(255,255,255)",
