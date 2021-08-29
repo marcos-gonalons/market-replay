@@ -23,7 +23,7 @@ export default (function f({
   void trades;
 
   function resistanceBounce() {
-    const priceAdjustment = 1 / 100;
+    const priceAdjustment = 1 / 10000;
 
     function getParams(params: ScriptParams | null): ScriptParams {
       if (params) {
@@ -31,15 +31,15 @@ export default (function f({
       }
 
       const riskPercentage = 0.5;
-      const stopLossDistance = 45 * priceAdjustment;
-      const takeProfitDistance = 330 * priceAdjustment;
+      const stopLossDistance = 0 * priceAdjustment;
+      const takeProfitDistance = 0 * priceAdjustment;
       const tpDistanceShortForTighterSL = 0 * priceAdjustment;
       const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
       const trendCandles = 0;
       const trendDiff = 0 * priceAdjustment;
-      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 10;
-      const priceOffset = 50 * priceAdjustment;
-      const maxSecondsOpenTrade = 45 * 24 * 60 * 60;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 0;
+      const priceOffset = 0 * priceAdjustment;
+      const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
 
       const validHours: ScriptParams["validHours"] = [];
       const validMonths: ScriptParams["validMonths"] = [];
@@ -157,11 +157,10 @@ export default (function f({
       const takeProfit = price - scriptParams.takeProfitDistance;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.0077)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
           10000 || 10000;
-      //const size = 10000;
 
-      const rollover = (60 * size) / 10000;
+      const rollover = (0.7 * size) / 10000;
       const o = {
         type: "sell-limit" as OrderType,
         position: "short" as Position,
@@ -191,23 +190,23 @@ export default (function f({
   }
 
   function supportBounce() {
-    const priceAdjustment = 1 / 100;
+    const priceAdjustment = 1 / 10000;
 
     function getParams(params: ScriptParams | null): ScriptParams {
       if (params) {
         return params;
       }
 
-      const riskPercentage = 1;
-      const stopLossDistance = 190 * priceAdjustment;
-      const takeProfitDistance = 70 * priceAdjustment;
-      const tpDistanceShortForTighterSL = 30 * priceAdjustment;
-      const slDistanceWhenTpIsVeryClose = -110 * priceAdjustment;
-      const trendCandles = 50;
-      const trendDiff = 10 * priceAdjustment;
-      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 45;
-      const priceOffset = -40 * priceAdjustment;
-      const maxSecondsOpenTrade = 25 * 24 * 60 * 60;
+      const riskPercentage = 0.5;
+      const stopLossDistance = 110 * priceAdjustment;
+      const takeProfitDistance = 50 * priceAdjustment;
+      const tpDistanceShortForTighterSL = 0 * priceAdjustment;
+      const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+      const trendCandles = 100;
+      const trendDiff = 110 * priceAdjustment;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 10;
+      const priceOffset = 40 * priceAdjustment;
+      const maxSecondsOpenTrade = 15 * 24 * 60 * 60;
 
       const validHours: ScriptParams["validHours"] = [];
       const validMonths: ScriptParams["validMonths"] = [];
@@ -325,11 +324,10 @@ export default (function f({
       const takeProfit = price + scriptParams.takeProfitDistance;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.0077)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
           10000 || 10000;
-      //      const size = 10000;
 
-      const rollover = (60 * size) / 10000;
+      const rollover = (0.7 * size) / 10000;
       const o = {
         type: "buy-limit" as OrderType,
         position: "long" as Position,
@@ -358,8 +356,8 @@ export default (function f({
     }
   }
 
+  //resistanceBounce();
   supportBounce();
-  resistanceBounce();
 
   // end script
 }

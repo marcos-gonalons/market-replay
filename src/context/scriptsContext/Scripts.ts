@@ -7,6 +7,7 @@ import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipa
 import SupportBounce from "./scripts/SupportBounce";
 import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
 import USDCAD_1h from "./scripts/USDCAD-1h";
+import USDCHF_1h from "./scripts/USDCHF-1h";
 import USDJPY_1h from "./scripts/USDJPY-1h";
 import { Script } from "./Types";
 
@@ -35,6 +36,11 @@ const SCRIPTS: Script[] = [
     name: "USDJPY 1H",
     isActive: true,
     contents: USDJPY_1h,
+  },
+  {
+    name: "USDCHF 1H",
+    isActive: true,
+    contents: USDCHF_1h,
   },
   {
     name: "Combo",
