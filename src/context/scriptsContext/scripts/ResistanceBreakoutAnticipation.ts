@@ -1,5 +1,5 @@
 import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
-import { Order, OrderType, Position } from "../../tradesContext/Types";
+import { OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
   candles,
@@ -17,45 +17,31 @@ export default (function f({
 }: ScriptFuncParameters) {
   const ENABLE_DEBUG = false;
 
+  void persistedVars;
+  void isWithinTime;
   void balance;
   void trades;
 
-  const priceAdjustment = 1; // 1/100000;
+  const priceAdjustment = 1 / 10000;
 
   function getParams(params: ScriptParams | null): ScriptParams {
     if (params) {
       return params;
     }
 
-    const riskPercentage = 1.5;
-    const stopLossDistance = 24 * priceAdjustment;
-    const takeProfitDistance = 34 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 0 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 60;
-    const trendDiff = 15;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
-    const priceOffset = 1 * priceAdjustment;
-    const validHours: ScriptParams["validHours"] = [
-      { hour: "9:00", weekdays: [] },
-      { hour: "9:30", weekdays: [] },
-      { hour: "10:00", weekdays: [] },
-      { hour: "10:30", weekdays: [] },
-      { hour: "11:00", weekdays: [] },
-      { hour: "11:30", weekdays: [] },
-      { hour: "12:00", weekdays: [] },
-      { hour: "12:30", weekdays: [] },
-      { hour: "13:00", weekdays: [] },
-      { hour: "13:30", weekdays: [] },
-      { hour: "14:00", weekdays: [] },
-      { hour: "16:00", weekdays: [] },
-      { hour: "16:30", weekdays: [] },
-      { hour: "17:00", weekdays: [] },
-      { hour: "17:30", weekdays: [] },
-      { hour: "20:00", weekdays: [] },
-      { hour: "20:30", weekdays: [] },
-    ];
-    const validMonths: ScriptParams["validMonths"] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    const riskPercentage = 1;
+    const stopLossDistance = 80 * priceAdjustment;
+    const takeProfitDistance = 130 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 10 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = 60 * priceAdjustment;
+    const trendCandles = 110;
+    const trendDiff = 35 * priceAdjustment;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 8;
+    const priceOffset = 60 * priceAdjustment;
+    const maxSecondsOpenTrade = 12 * 24 * 60 * 60;
+
+    const validHours: ScriptParams["validHours"] = [];
+    const validMonths: ScriptParams["validMonths"] = [];
     const validDays: ScriptParams["validDays"] = [];
 
     return {
@@ -71,60 +57,25 @@ export default (function f({
       trendDiff,
       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
       priceOffset,
+      maxSecondsOpenTrade,
     };
   }
 
   const scriptParams = getParams(params || null);
+  debugLog(ENABLE_DEBUG, "Params ", scriptParams);
 
   if (candles.length <= 1 || currentDataIndex === 0) return;
 
   const date = new Date(candles[currentDataIndex].timestamp);
-
-  if (date.getHours() < 7 || date.getHours() >= 21) {
-    if (date.getHours() === 21 && date.getMinutes() === 58) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-    if (date.getHours() !== 21) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-  }
-
-  const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
   const marketOrder = orders.find((o) => o.type === "market");
 
-  if (!isValidTime) {
-    const order = orders.find((o) => o.type !== "market" && o.position === "long");
-    if (order) {
-      debugLog(ENABLE_DEBUG, "Saved pending order", date, order);
-      persistedVars.pendingOrder = { ...order };
-      closeOrder(order.id!);
-      return;
+  if (marketOrder && scriptParams.maxSecondsOpenTrade) {
+    const diffInSeconds = Math.floor((date.valueOf() - marketOrder.createdAt!.valueOf()) / 1000);
+
+    if (diffInSeconds >= scriptParams.maxSecondsOpenTrade) {
+      debugLog(ENABLE_DEBUG, "Closing the trade since it has been open for too much time", date, marketOrder);
+      closeOrder(marketOrder.id!);
     }
-  } else {
-    if (persistedVars.pendingOrder) {
-      const order = persistedVars.pendingOrder as Order;
-      if (order.price > candles[currentDataIndex].high) {
-        debugLog(ENABLE_DEBUG, "Creating pending order", date, order);
-        if (!marketOrder) {
-          createOrder(order);
-        } else {
-          debugLog(ENABLE_DEBUG, "Can't create the pending order because there is an open position", marketOrder);
-        }
-      } else {
-        debugLog(
-          ENABLE_DEBUG,
-          "Can't create the pending order since the price is smaller than the candle.high",
-          order.price,
-          candles[currentDataIndex],
-          date
-        );
-      }
-      persistedVars.pendingOrder = null;
-      return;
-    }
-    persistedVars.pendingOrder = null;
   }
 
   if (marketOrder && marketOrder.position === "long") {
@@ -182,7 +133,6 @@ export default (function f({
 
   const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
   if (price > candles[currentDataIndex].close + spread / 2) {
-    // orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex].low;
 
     for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
@@ -203,9 +153,11 @@ export default (function f({
 
     const stopLoss = price - scriptParams.stopLossDistance;
     const takeProfit = price + scriptParams.takeProfitDistance;
-    const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
-    // const size = (Math.floor((balance * (scriptParams.riskPercentage / 100) / scriptParams.stopLossDistance) / 100000) * 100000) / 10;
+    const size =
+      Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        10000 || 10000;
 
+    const rollover = (0.7 * size) / 10000;
     const o = {
       type: "buy-stop" as OrderType,
       position: "long" as Position,
@@ -213,17 +165,12 @@ export default (function f({
       price,
       stopLoss,
       takeProfit,
+      rollover,
     };
     debugLog(ENABLE_DEBUG, "Order to be created", date, o);
 
     if (marketOrder) {
       debugLog(ENABLE_DEBUG, "There is an open position, saving the order for later...", date, marketOrder);
-      persistedVars.pendingOrder = o;
-      return;
-    }
-
-    if (!isValidTime) {
-      debugLog(ENABLE_DEBUG, "Not the right time, saving the order for later...", date);
       persistedVars.pendingOrder = o;
       return;
     }

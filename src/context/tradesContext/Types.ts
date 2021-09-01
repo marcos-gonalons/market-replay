@@ -16,6 +16,7 @@ interface Order {
   takeProfit?: number;
   fillDate?: number;
   rollover?: number;
+  metadata?: unknown;
 }
 
 interface Trade {
