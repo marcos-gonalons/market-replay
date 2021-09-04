@@ -2,6 +2,7 @@ import Combo from "./scripts/Combo";
 import EURUSD_1h from "./scripts/EURUSD-1h";
 import GBPUSD_1h from "./scripts/GBPUSD-1h";
 import GER30_1m from "./scripts/GER30-1m";
+import NZDUSD_1h from "./scripts/NZDUSD-1h";
 import ResistanceBounce from "./scripts/ResistanceBounce";
 import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipation";
 import SupportBounce from "./scripts/SupportBounce";
@@ -41,6 +42,11 @@ const SCRIPTS: Script[] = [
     name: "USDCHF 1H",
     isActive: true,
     contents: USDCHF_1h,
+  },
+  {
+    name: "NZDUSD 1H",
+    isActive: true,
+    contents: NZDUSD_1h,
   },
   {
     name: "Combo",

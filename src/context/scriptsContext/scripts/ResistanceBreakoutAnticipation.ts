@@ -30,15 +30,15 @@ export default (function f({
     }
 
     const riskPercentage = 1;
-    const stopLossDistance = 80 * priceAdjustment;
-    const takeProfitDistance = 130 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 10 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 60 * priceAdjustment;
+    const stopLossDistance = 180 * priceAdjustment;
+    const takeProfitDistance = 90 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 30 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = -170 * priceAdjustment;
     const trendCandles = 110;
-    const trendDiff = 35 * priceAdjustment;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 8;
-    const priceOffset = 60 * priceAdjustment;
-    const maxSecondsOpenTrade = 12 * 24 * 60 * 60;
+    const trendDiff = 50 * priceAdjustment;
+    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 20;
+    const priceOffset = 30 * priceAdjustment;
+    const maxSecondsOpenTrade = 35 * 24 * 60 * 60;
 
     const validHours: ScriptParams["validHours"] = [];
     const validMonths: ScriptParams["validMonths"] = [];
@@ -153,9 +153,9 @@ export default (function f({
 
     const stopLoss = price - scriptParams.stopLossDistance;
     const takeProfit = price + scriptParams.takeProfitDistance;
-    const size =
-      Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
-        10000 || 10000;
+    const size = 10000;
+    /*Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        10000 || 10000;*/
 
     const rollover = (0.7 * size) / 10000;
     const o = {

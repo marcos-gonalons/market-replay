@@ -27,7 +27,7 @@ export const STOP_ORDER_POINTS_HANDICAP = 0; // 1.66
  * cad 0.67
  * chf 0.93
  */
-export const EUR_EXCHANGE_RATE = 0.93;
+export const EUR_EXCHANGE_RATE = 0.85;
 
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",
