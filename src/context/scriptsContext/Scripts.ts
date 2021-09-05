@@ -1,3 +1,4 @@
+import AUDUSD_1h from "./scripts/AUDUSD-1h";
 import Combo from "./scripts/Combo";
 import EURUSD_1h from "./scripts/EURUSD-1h";
 import GBPUSD_1h from "./scripts/GBPUSD-1h";
@@ -47,6 +48,11 @@ const SCRIPTS: Script[] = [
     name: "NZDUSD 1H",
     isActive: true,
     contents: NZDUSD_1h,
+  },
+  {
+    name: "AUDUSD 1H",
+    isActive: true,
+    contents: AUDUSD_1h,
   },
   {
     name: "Combo",

@@ -10,15 +10,15 @@ export default function getParamsArray(): ScriptParams[] {
   const validDays: ScriptParams["validDays"] = [];
   const validMonths: ScriptParams["validMonths"] = [];
 
-  for (const stopLossDistance of [180].map((sl) => sl * priceAdjustment)) {
-    for (const takeProfitDistance of [90].map((tp) => tp * priceAdjustment)) {
-      for (const tpDistanceShortForTighterSL of [30].map((tp) => tp * priceAdjustment)) {
-        for (const slDistanceWhenTpIsVeryClose of [-170].map((tp) => tp * priceAdjustment)) {
-          for (const trendCandles of [110]) {
-            for (const trendDiff of [50].map((td) => td * priceAdjustment)) {
-              for (const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel of [20]) {
-                for (const priceOffset of [30].map((po) => po * priceAdjustment)) {
-                  for (const maxSecondsOpenTrade of [35 * 24 * 60 * 60]) {
+  for (const stopLossDistance of [90].map((sl) => sl * priceAdjustment)) {
+    for (const takeProfitDistance of [130].map((tp) => tp * priceAdjustment)) {
+      for (const tpDistanceShortForTighterSL of [50].map((tp) => tp * priceAdjustment)) {
+        for (const slDistanceWhenTpIsVeryClose of [-60].map((tp) => tp * priceAdjustment)) {
+          for (const trendCandles of [100].reverse()) {
+            for (const trendDiff of [10].reverse().map((td) => td * priceAdjustment)) {
+              for (const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel of [30]) {
+                for (const priceOffset of [-20].map((po) => po * priceAdjustment)) {
+                  for (const maxSecondsOpenTrade of [20 * 24 * 60 * 60]) {
                     arr.push({
                       validHours,
                       validDays,
