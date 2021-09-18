@@ -163,7 +163,7 @@ export default (function f({
       const takeProfit = price + scriptParams.takeProfitDistance;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.85)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;
