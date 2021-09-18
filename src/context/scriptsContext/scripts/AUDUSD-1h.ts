@@ -34,7 +34,7 @@ export default (function f({
         return params;
       }
 
-      const riskPercentage = 0.5;
+      const riskPercentage = 5;
       const stopLossDistance = 90 * priceAdjustment;
       const takeProfitDistance = 130 * priceAdjustment;
       const tpDistanceShortForTighterSL = 50 * priceAdjustment;
@@ -163,7 +163,7 @@ export default (function f({
       const takeProfit = price + scriptParams.takeProfitDistance;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;

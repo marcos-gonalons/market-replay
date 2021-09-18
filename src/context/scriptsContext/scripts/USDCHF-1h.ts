@@ -34,7 +34,7 @@ export default (function f({
         return params;
       }
 
-      const riskPercentage = 1;
+      const riskPercentage = 5;
       const stopLossDistance = 80 * priceAdjustment;
       const takeProfitDistance = 130 * priceAdjustment;
       const tpDistanceShortForTighterSL = 10 * priceAdjustment;
@@ -161,7 +161,7 @@ export default (function f({
       const stopLoss = price - scriptParams.stopLossDistance;
       const takeProfit = price + scriptParams.takeProfitDistance;
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;
@@ -202,7 +202,7 @@ export default (function f({
         return params;
       }
 
-      const riskPercentage = 1;
+      const riskPercentage = 5;
       const stopLossDistance = 110 * priceAdjustment;
       const takeProfitDistance = 50 * priceAdjustment;
       const tpDistanceShortForTighterSL = 0 * priceAdjustment;
@@ -331,7 +331,7 @@ export default (function f({
       const takeProfit = price + scriptParams.takeProfitDistance;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;
@@ -373,7 +373,7 @@ export default (function f({
         return params;
       }
 
-      const riskPercentage = 1;
+      const riskPercentage = 5;
       const stopLossDistance = 200 * priceAdjustment;
       const takeProfitDistance = 120 * priceAdjustment;
       const tpDistanceShortForTighterSL = 0 * priceAdjustment;
@@ -500,7 +500,7 @@ export default (function f({
       const stopLoss = price + scriptParams.stopLossDistance;
       const takeProfit = price - scriptParams.takeProfitDistance;
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
           10000 || 10000;
       //const size = 10000;
 
