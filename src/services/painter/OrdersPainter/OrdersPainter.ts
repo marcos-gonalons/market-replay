@@ -20,28 +20,22 @@ export function drawOrders({
   for (const order of orders) {
     if (order.createdAt! > currentCandle.timestamp) continue;
 
-    if (isPriceWithinRange(order.price as number)) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.price });
       drawOrderLine(y, order.type !== "market" ? colors.limit : colors.market);
       drawOrderData(y, order);
-    }
 
-    if (order.stopLoss && isPriceWithinRange(order.stopLoss)) {
+    if (order.stopLoss) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.stopLoss });
       drawOrderLine(y, colors.stopLoss);
       drawTakeProfitOrStopLossBox(order.stopLoss, "sl");
     }
-    if (order.takeProfit && isPriceWithinRange(order.takeProfit)) {
+    if (order.takeProfit) {
       y = getYCoordOfPrice({ candlesDisplayDimensions, priceRange, price: order.takeProfit });
       drawOrderLine(y, colors.takeProfit);
       drawTakeProfitOrStopLossBox(order.takeProfit, "tp");
     }
   }
   ctx.font = DEFAULT_FONT;
-
-  function isPriceWithinRange(price: number): boolean {
-    return price >= priceRange.min && price <= priceRange.max;
-  }
 
   function drawOrderLine(y: number, color: string): void {
     ctx.strokeStyle = color;
