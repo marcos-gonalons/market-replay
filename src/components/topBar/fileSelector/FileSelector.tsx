@@ -52,7 +52,8 @@ function onChangeFile(file: File, parserWorker: AppWorker, dispatch: React.Dispa
   const reader = new FileReader();
   reader.readAsText(file);
 
-  reader.onload = (event: ProgressEvent<FileReader>) => {
+  reader.onloadend = (event: ProgressEvent<FileReader>) => {
+    console.log("Ev", event);
     if (!event.target || !event.target.result) {
       toast.error("An error occurred while reading the file contents");
       return;

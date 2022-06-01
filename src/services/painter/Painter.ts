@@ -515,7 +515,7 @@ class PainterService {
     this.ctx.beginPath();
     this.ctx.strokeStyle = "rgb(255,255,0)";
 
-    const averageCandles = 10;
+    const averageCandles = 100;
 
     let candleNumber = 0;
     for (let i = dataStartIndex; i < dataEndIndex; i++) {

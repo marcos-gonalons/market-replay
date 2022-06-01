@@ -1,7 +1,7 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
 import { adjustTradeResultWithRollover } from "../../utils/Utils";
-import { EUR_EXCHANGE_RATE, STOP_LOSS_POINTS_HANDICAP, STOP_ORDER_POINTS_HANDICAP } from "../painter/Constants";
+import { EUR_EXCHANGE_RATE, STOP_ORDER_POINTS_HANDICAP } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
 export default function processOrders({
@@ -206,7 +206,7 @@ export default function processOrders({
   }
 
   function processStopLossTrade(order: Order, orderIndex: number, price: number): void {
-    const spreadAdjustment = order.position === "short" ? STOP_LOSS_POINTS_HANDICAP : -STOP_LOSS_POINTS_HANDICAP;
+    const spreadAdjustment = order.position === "short" ? STOP_ORDER_POINTS_HANDICAP : -STOP_ORDER_POINTS_HANDICAP;
     const endPrice = price + spreadAdjustment;
     const trade = {
       startDate: order.createdAt!,

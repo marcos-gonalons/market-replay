@@ -27,47 +27,25 @@ export default (function f({
   const date = new Date(candles[currentDataIndex].timestamp);
 
   if (date.getHours() < 7 || date.getHours() >= 21) {
-    if (date.getHours() === 21 && date.getMinutes() === 58) {
-      orders.map((mo) => closeOrder(mo.id!));
-      persistedVars.pendingOrder = null;
-    }
-    if (date.getHours() !== 21) {
+    if (date.getHours() === 21 && date.getMinutes() === 55) {
       orders.map((mo) => closeOrder(mo.id!));
       persistedVars.pendingOrder = null;
     }
   }
 
   function resistance() {
-    const priceAdjustment = 1; // 1/100000;
+    const priceAdjustment = 1;
     const riskPercentage = 1;
-    const stopLossDistance = 24 * priceAdjustment;
-    const takeProfitDistance = 34 * priceAdjustment;
+    const stopLossDistance = 7 * priceAdjustment;
+    const takeProfitDistance = 7 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 60;
     const trendDiff = 15;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
     const priceOffset = 1 * priceAdjustment;
-    const validHours: ScriptParams["validHours"] = [
-      { hour: "9:00", weekdays: [] },
-      { hour: "9:30", weekdays: [] },
-      { hour: "10:00", weekdays: [] },
-      { hour: "10:30", weekdays: [] },
-      { hour: "11:00", weekdays: [] },
-      { hour: "11:30", weekdays: [] },
-      { hour: "12:00", weekdays: [] },
-      { hour: "12:30", weekdays: [] },
-      { hour: "13:00", weekdays: [] },
-      { hour: "13:30", weekdays: [] },
-      { hour: "14:00", weekdays: [] },
-      { hour: "16:00", weekdays: [] },
-      { hour: "16:30", weekdays: [] },
-      { hour: "17:00", weekdays: [] },
-      { hour: "17:30", weekdays: [] },
-      { hour: "20:00", weekdays: [] },
-      { hour: "20:30", weekdays: [] },
-    ];
-    const validMonths: ScriptParams["validMonths"] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    const validHours: ScriptParams["validHours"] = [];
+    const validMonths: ScriptParams["validMonths"] = [];
     const validDays: ScriptParams["validDays"] = [];
 
     if (!isWithinTime([], [], validMonths, date) || !isWithinTime([], validDays, [], date)) {
@@ -81,7 +59,7 @@ export default (function f({
     debugLog(ENABLE_DEBUG, "RESISTANCE", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Not valid time", date);
-      const order = orders.find((o) => o.type !== "market" && o.position === "long");
+      const order = orders.find((o) => o.type !== "market" && o.position === "short");
       if (order) {
         debugLog(ENABLE_DEBUG, "RESISTANCE", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
@@ -95,7 +73,7 @@ export default (function f({
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
         debugLog(ENABLE_DEBUG, "RESISTANCE", "There is a pending order", date, order);
-        if (order.position === "long") {
+        if (order.position === "short") {
           if (order.price > candles[currentDataIndex].close) {
             debugLog(ENABLE_DEBUG, "RESISTANCE", "Creating pending order", date, order);
             if (!marketOrder) {
@@ -130,10 +108,10 @@ export default (function f({
       debugLog(ENABLE_DEBUG, "RESISTANCE", "Set pending order to null", date);
     }
 
-    if (marketOrder && marketOrder.position === "long") {
+    if (marketOrder && marketOrder.position === "short") {
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-        marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL
+        candles[currentDataIndex].low - marketOrder.takeProfit! < tpDistanceShortForTighterSL
       ) {
         debugLog(
           ENABLE_DEBUG,
@@ -199,19 +177,19 @@ export default (function f({
       const diff = candles[currentDataIndex].low - lowestValue;
       if (diff < trendDiff) {
         debugLog(ENABLE_DEBUG, "RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
-        return;
+        // return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
+      const stopLoss = price + stopLossDistance;
+      const takeProfit = price - takeProfitDistance;
       void riskPercentage;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
 
       const o = {
-        type: "buy-stop" as OrderType,
-        position: "long" as Position,
+        type: "sell-limit" as OrderType,
+        position: "short" as Position,
         size,
         price,
         stopLoss,
@@ -247,41 +225,17 @@ export default (function f({
   function support() {
     const priceAdjustment = 1; // 1/100000;
     const riskPercentage = 1;
-    const stopLossDistance = 15 * priceAdjustment;
-    const takeProfitDistance = 34 * priceAdjustment;
+    const stopLossDistance = 7 * priceAdjustment;
+    const takeProfitDistance = 7 * priceAdjustment;
     const tpDistanceShortForTighterSL = 1 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const trendCandles = 90;
     const trendDiff = 30;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
     const priceOffset = 2 * priceAdjustment;
-    const validHours: ScriptParams["validHours"] = [
-      { hour: "8:00", weekdays: [1, 2, 4, 5] },
-      { hour: "8:30", weekdays: [1, 2, 4, 5] },
-      { hour: "9:00", weekdays: [1, 2, 4, 5] },
-      { hour: "10:00", weekdays: [1, 2, 4, 5] },
-      { hour: "10:30", weekdays: [1, 2, 4, 5] },
-      { hour: "11:00", weekdays: [1, 2, 4, 5] },
-      { hour: "11:30", weekdays: [1, 2, 4, 5] },
-      { hour: "12:00", weekdays: [1, 2, 4, 5] },
-      { hour: "12:30", weekdays: [1, 2, 4, 5] },
-      { hour: "13:00", weekdays: [1, 2, 4, 5] },
-      { hour: "14:00", weekdays: [1, 2, 4, 5] },
-      { hour: "14:30", weekdays: [1, 2, 4, 5] },
-      { hour: "15:00", weekdays: [1, 2, 4, 5] },
-      { hour: "15:30", weekdays: [1, 2, 4, 5] },
-      { hour: "16:00", weekdays: [1, 2, 4, 5] },
-      { hour: "16:30", weekdays: [1, 2, 4, 5] },
-      { hour: "17:00", weekdays: [1, 2, 4, 5] },
-      { hour: "18:00", weekdays: [1, 2, 4, 5] },
-    ];
-    const validMonths: ScriptParams["validMonths"] = [0, 2, 3, 4, 5, 7, 8, 9, 11];
-    const validDays: ScriptParams["validDays"] = [
-      { weekday: 1, hours: [] },
-      { weekday: 2, hours: [] },
-      { weekday: 4, hours: [] },
-      { weekday: 5, hours: [] },
-    ];
+    const validHours: ScriptParams["validHours"] = [];
+    const validMonths: ScriptParams["validMonths"] = [];
+    const validDays: ScriptParams["validDays"] = [];
 
     if (!isWithinTime([], [], validMonths, date) || !isWithinTime([], validDays, [], date)) {
       return;
@@ -292,7 +246,7 @@ export default (function f({
     debugLog(ENABLE_DEBUG, "SUPPORT", "Current pending order", persistedVars.pendingOrder);
     if (!isValidTime) {
       debugLog(ENABLE_DEBUG, "SUPPORT", "Not valid time", date);
-      const order = orders.find((o) => o.type !== "market" && o.position === "short");
+      const order = orders.find((o) => o.type !== "market" && o.position === "long");
       if (order) {
         debugLog(ENABLE_DEBUG, "SUPPORT", "There is an active order, saving pending order...", date, order);
         persistedVars.pendingOrder = { ...order };
@@ -306,7 +260,7 @@ export default (function f({
       if (persistedVars.pendingOrder) {
         const order = persistedVars.pendingOrder as Order;
         debugLog(ENABLE_DEBUG, "SUPPORT", "There is a pending order", date, order);
-        if (order.position === "short") {
+        if (order.position === "long") {
           if (order.price < candles[currentDataIndex].low) {
             debugLog(ENABLE_DEBUG, "SUPPORT", "Creating pending order", date, order);
             if (!marketOrder) {
@@ -408,21 +362,20 @@ export default (function f({
 
       const diff = highestValue - candles[currentDataIndex].high;
       if (diff < trendDiff) {
-        orders.filter((o) => o.type !== "market" && o.position === "short").map((nmo) => closeOrder(nmo.id!));
         debugLog(ENABLE_DEBUG, "SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
-        return;
+        // return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price + stopLossDistance;
-      const takeProfit = price - takeProfitDistance;
+      const stopLoss = price - stopLossDistance;
+      const takeProfit = price + takeProfitDistance;
       void riskPercentage;
       const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
 
       const o = {
-        type: "sell-stop" as OrderType,
-        position: "short" as Position,
+        type: "buy-limit" as OrderType,
+        position: "long" as Position,
         size,
         price,
         stopLoss,

@@ -11,72 +11,78 @@ import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
 import USDCAD_1h from "./scripts/USDCAD-1h";
 import USDCHF_1h from "./scripts/USDCHF-1h";
 import USDJPY_1h from "./scripts/USDJPY-1h";
+import EUROSTOXX50_5m from "./scripts/EUROSTOXX50-5m";
 import { Script } from "./Types";
 
 const SCRIPTS: Script[] = [
   {
     name: "GER30 1M",
-    isActive: true,
+    isActive: false,
     contents: GER30_1m,
   },
   {
+    name: "EUROSTOXX50 5M",
+    isActive: false,
+    contents: EUROSTOXX50_5m,
+  },
+  {
     name: "EURUSD 1H",
-    isActive: true,
+    isActive: false,
     contents: EURUSD_1h,
   },
   {
     name: "GBPUSD 1H",
-    isActive: true,
+    isActive: false,
     contents: GBPUSD_1h,
   },
   {
     name: "USDCAD 1H",
-    isActive: true,
+    isActive: false,
     contents: USDCAD_1h,
   },
   {
     name: "USDJPY 1H",
-    isActive: true,
+    isActive: false,
     contents: USDJPY_1h,
   },
   {
     name: "USDCHF 1H",
-    isActive: true,
+    isActive: false,
     contents: USDCHF_1h,
   },
   {
     name: "NZDUSD 1H",
-    isActive: true,
+    isActive: false,
     contents: NZDUSD_1h,
   },
   {
     name: "AUDUSD 1H",
-    isActive: true,
+    isActive: false,
     contents: AUDUSD_1h,
   },
   {
     name: "Combo",
-    isActive: true,
+    isActive: false,
     contents: Combo,
   },
   {
     name: "Resistance Breakout Anticipation",
-    isActive: true,
+    isActive: false,
     contents: ResistanceBreakoutAnticipation,
   },
   {
     name: "Support Breakout Anticipation",
-    isActive: true,
+    isActive: false,
     contents: SupportBreakoutAnticipation,
   },
   {
     name: "Resistance Bounce",
-    isActive: true,
+    isActive: false,
     contents: ResistanceBounce,
   },
   {
     name: "Support Bounce",
-    isActive: true,
+    isActive: false,
     contents: SupportBounce,
   },
 ];

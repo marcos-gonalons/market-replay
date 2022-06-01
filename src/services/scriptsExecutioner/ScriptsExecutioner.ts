@@ -307,10 +307,9 @@ class ScriptsExecutionerService {
 
         let result = (currentCandle!.close - order.price) * order.size;
         if (order.position === "short") result = -result;
-        result *= EUR_EXCHANGE_RATE;
 
         if (order.type === "market") {
-          trades!.push({
+          const trade = {
             startDate: order.createdAt!,
             endDate: currentCandle!.timestamp,
             startPrice: order.price,
@@ -318,7 +317,10 @@ class ScriptsExecutionerService {
             size: order.size,
             position: order.position,
             result,
-          });
+          }
+          trades!.push(trade);
+          adjustTradeResultWithRollover(trade, order.rollover || 0)
+          trade.result = trade.result * EUR_EXCHANGE_RATE
         }
 
         orders!.splice(
