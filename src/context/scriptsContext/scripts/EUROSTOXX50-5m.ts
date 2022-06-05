@@ -40,8 +40,8 @@ export default (function f({
     const takeProfitDistance = 7 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 60;
-    const trendDiff = 15;
+    const trendCandles = 0;
+    const trendDiff = 0;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
     const priceOffset = 1 * priceAdjustment;
     const validHours: ScriptParams["validHours"] = [];
@@ -163,21 +163,20 @@ export default (function f({
 
     const price = candles[horizontalLevelCandleIndex].high - priceOffset;
     if (price > candles[currentDataIndex].close + spread / 2) {
-      // orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
-      let lowestValue = candles[currentDataIndex].low;
+    let highestValue = candles[currentDataIndex].high;
 
-      for (let i = currentDataIndex; i > currentDataIndex - trendCandles; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - trendCandles; i--) {
         if (!candles[i]) break;
 
-        if (candles[i].low < lowestValue) {
-          lowestValue = candles[i].low;
+        if (candles[i].high > highestValue) {
+        highestValue = candles[i].high;
         }
-      }
+    }
 
-      const diff = candles[currentDataIndex].low - lowestValue;
+    const diff = highestValue - candles[currentDataIndex].high;
       if (diff < trendDiff) {
         debugLog(ENABLE_DEBUG, "RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
-        // return;
+        return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
@@ -229,8 +228,8 @@ export default (function f({
     const takeProfitDistance = 7 * priceAdjustment;
     const tpDistanceShortForTighterSL = 1 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 90;
-    const trendDiff = 30;
+    const trendCandles = 0;
+    const trendDiff = 0;
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
     const priceOffset = 2 * priceAdjustment;
     const validHours: ScriptParams["validHours"] = [];
@@ -350,20 +349,20 @@ export default (function f({
 
     const price = candles[horizontalLevelCandleIndex].low + priceOffset;
     if (price < candles[currentDataIndex].close - spread / 2) {
-      let highestValue = candles[currentDataIndex].high;
+      let lowestValue = candles[currentDataIndex].low;
 
       for (let i = currentDataIndex; i > currentDataIndex - trendCandles; i--) {
         if (!candles[i]) break;
 
-        if (candles[i].high > highestValue) {
-          highestValue = candles[i].high;
+        if (candles[i].low < lowestValue) {
+          lowestValue = candles[i].low;
         }
       }
 
-      const diff = highestValue - candles[currentDataIndex].high;
+      const diff = candles[currentDataIndex].low - lowestValue;
       if (diff < trendDiff) {
         debugLog(ENABLE_DEBUG, "SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
-        // return;
+        return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
