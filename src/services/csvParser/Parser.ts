@@ -1,4 +1,5 @@
 import { Candle } from "../../context/globalContext/Types";
+import { AddIndicatorsData } from "../indicators/Builder";
 
 export function parse(csvContents: string): Candle[] {
   if (csvContents.length === 0) {
@@ -18,16 +19,21 @@ export function parse(csvContents: string): Candle[] {
     if (dateObject.toString() === "Invalid Date") {
       throw new Error(`Invalid date: ${date}`);
     }
-    data.push({
+    const candle: Candle = {
       timestamp: dateObject.valueOf(),
       open: parseFloat(open ?? 0),
       high: parseFloat(high ?? 0),
       low: parseFloat(low ?? 0),
       close: parseFloat(close ?? 0),
       volume: parseFloat(volume ?? 0),
-    });
+      indicators: {
+        movingAverages: []
+      },
+    };
 
-    // TODO: Same as the scripts executioner, return from time to time the progress %
+    data.push(candle);
+
+    AddIndicatorsData(data);
   }
 
   return data;

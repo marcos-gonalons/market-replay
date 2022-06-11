@@ -11,6 +11,7 @@ import {
   TIME_SCALE_HEIGHT_IN_PX,
   ZOOM_LEVEL_CANDLES_AMOUNT_MODIFIER,
 } from "./Constants";
+import { drawIndicators } from "./IndicatorsPainter/IndicatorsPainter";
 import { drawOrders } from "./OrdersPainter/OrdersPainter";
 import { drawPointerLines } from "./PointerLinesPainter/PointerLinesPainter";
 import {
@@ -499,61 +500,19 @@ class PainterService {
   }
 
   private drawTechnicalIndicators(dataStartIndex: number, dataEndIndex: number): PainterService {
-    // for now, draw an orange line for all the CLOSE price
-
-    // todo: calculate beforehand the average for each candle?
-    // But maybe that would take TOO long
-    // it would mean iterating over N candles for each candle
-    // so if we have 3 million candles, would be iterating a lot
-
-    // but do I need to recalculate each time?
-
-    /**
-
-     */
-
-    this.ctx.beginPath();
-    this.ctx.strokeStyle = "rgb(255,255,0)";
-
-    const averageCandles = 100;
-
-    let candleNumber = 0;
-    for (let i = dataStartIndex; i < dataEndIndex; i++) {
-      // const candle = this.data[i];
-      const x = this.candleWidth * candleNumber + this.candleWidth / 2;
-
-      let sum = 0;
-      for (let j = i - averageCandles; j < i; j++) {
-        if (j < 1) continue;
-
-        sum += this.data[j].close;
-      }
-
-      const y = getYCoordOfPrice({
-        candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
-        priceRange: this.priceRangeInScreen,
-        price: sum / averageCandles,
-      });
-      this.ctx.lineTo(x, y);
-
-      candleNumber++;
-    }
-
-    this.ctx.stroke();
-
-    /**
-     * 
-     *       ctx: this.ctx,
+    drawIndicators({
+      ctx: this.ctx,
       dataStartIndex,
       dataEndIndex,
       data: this.data,
       priceRange: this.priceRangeInScreen,
       candleWidth: this.candleWidth,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
-      colors: this.colors.candle,
-     */
+    });
     return this;
   }
+
+
 }
 
 export default PainterService;

@@ -35,24 +35,51 @@ export default (function f({
 
   function resistance() {
     const priceAdjustment = 1;
-    const riskPercentage = 1;
-    const stopLossDistance = 7 * priceAdjustment;
-    const takeProfitDistance = 7 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 0 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 0;
-    const trendDiff = 0;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 24;
-    const priceOffset = 1 * priceAdjustment;
-    const validHours: ScriptParams["validHours"] = [];
-    const validMonths: ScriptParams["validMonths"] = [];
-    const validDays: ScriptParams["validDays"] = [];
 
-    if (!isWithinTime([], [], validMonths, date) || !isWithinTime([], validDays, [], date)) {
+    function getParams(params: ScriptParams | null): ScriptParams {
+      if (params) {
+        return params;
+      }
+
+      const riskPercentage = 1;
+      const stopLossDistance = 23 * priceAdjustment;
+      const takeProfitDistance = 27 * priceAdjustment;
+      const tpDistanceShortForTighterSL = 0 * priceAdjustment;
+      const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+      const trendCandles = 0;
+      const trendDiff = 0 * priceAdjustment;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 85;
+      const priceOffset = 3 * priceAdjustment;
+      const maxSecondsOpenTrade = 0;
+
+      const validHours: ScriptParams["validHours"] = [];
+      const validMonths: ScriptParams["validMonths"] = [];
+      const validDays: ScriptParams["validDays"] = [];
+
+      return {
+        validHours,
+        validDays,
+        validMonths,
+        riskPercentage,
+        stopLossDistance,
+        takeProfitDistance,
+        tpDistanceShortForTighterSL,
+        slDistanceWhenTpIsVeryClose,
+        trendCandles,
+        trendDiff,
+        candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+        priceOffset,
+        maxSecondsOpenTrade,
+      };
+    }
+
+    const scriptParams = getParams(params || null);
+
+    if (!isWithinTime([], [], scriptParams.validMonths!, date) || !isWithinTime([], scriptParams.validDays!, [], date)) {
       return;
     }
 
-    const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
+    const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
 
     const marketOrder = orders.find((o) => o.type === "market");
 
@@ -111,7 +138,7 @@ export default (function f({
     if (marketOrder && marketOrder.position === "short") {
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-        candles[currentDataIndex].low - marketOrder.takeProfit! < tpDistanceShortForTighterSL
+        candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL
       ) {
         debugLog(
           ENABLE_DEBUG,
@@ -120,16 +147,16 @@ export default (function f({
           date,
           marketOrder,
           candles[currentDataIndex],
-          tpDistanceShortForTighterSL
+          scriptParams.tpDistanceShortForTighterSL
         );
-        marketOrder.stopLoss = marketOrder.price + slDistanceWhenTpIsVeryClose;
+        marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
       }
     }
 
-    const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    const horizontalLevelCandleIndex = currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
     ) {
       return;
     }
@@ -147,7 +174,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -161,11 +188,11 @@ export default (function f({
 
     if (isFalsePositive) return;
 
-    const price = candles[horizontalLevelCandleIndex].high - priceOffset;
+    const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
     if (price > candles[currentDataIndex].close + spread / 2) {
     let highestValue = candles[currentDataIndex].high;
 
-    for (let i = currentDataIndex; i > currentDataIndex - trendCandles; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
         if (!candles[i]) break;
 
         if (candles[i].high > highestValue) {
@@ -174,17 +201,16 @@ export default (function f({
     }
 
     const diff = highestValue - candles[currentDataIndex].high;
-      if (diff < trendDiff) {
-        debugLog(ENABLE_DEBUG, "RESISTANCE", "Diff is too big, won't create the order...", date, diff, trendDiff);
+      if (diff < scriptParams.trendDiff) {
+        debugLog(ENABLE_DEBUG, "RESISTANCE", "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
         return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price + stopLossDistance;
-      const takeProfit = price - takeProfitDistance;
-      void riskPercentage;
-      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
+      const stopLoss = price + scriptParams.stopLossDistance;
+      const takeProfit = price - scriptParams.takeProfitDistance;
+      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
 
       const o = {
         type: "sell-limit" as OrderType,
@@ -222,24 +248,51 @@ export default (function f({
   }
 
   function support() {
-    const priceAdjustment = 1; // 1/100000;
-    const riskPercentage = 1;
-    const stopLossDistance = 7 * priceAdjustment;
-    const takeProfitDistance = 7 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 1 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const trendCandles = 0;
-    const trendDiff = 0;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 14;
-    const priceOffset = 2 * priceAdjustment;
-    const validHours: ScriptParams["validHours"] = [];
-    const validMonths: ScriptParams["validMonths"] = [];
-    const validDays: ScriptParams["validDays"] = [];
+    const priceAdjustment = 1;
 
-    if (!isWithinTime([], [], validMonths, date) || !isWithinTime([], validDays, [], date)) {
+    function getParams(params: ScriptParams | null): ScriptParams {
+      if (params) {
+        return params;
+      }
+
+      const riskPercentage = 1;
+      const stopLossDistance = 15 * priceAdjustment;
+      const takeProfitDistance = 15 * priceAdjustment;
+      const tpDistanceShortForTighterSL = 0 * priceAdjustment;
+      const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+      const trendCandles = 0;
+      const trendDiff = 0 * priceAdjustment;
+      const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 27;
+      const priceOffset = 0 * priceAdjustment;
+      const maxSecondsOpenTrade = 0;
+
+      const validHours: ScriptParams["validHours"] = [];
+      const validMonths: ScriptParams["validMonths"] = [];
+      const validDays: ScriptParams["validDays"] = [];
+
+      return {
+        validHours,
+        validDays,
+        validMonths,
+        riskPercentage,
+        stopLossDistance,
+        takeProfitDistance,
+        tpDistanceShortForTighterSL,
+        slDistanceWhenTpIsVeryClose,
+        trendCandles,
+        trendDiff,
+        candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
+        priceOffset,
+        maxSecondsOpenTrade,
+      };
+    }
+
+    const scriptParams = getParams(params || null);
+
+    if (!isWithinTime([], [], scriptParams.validMonths!, date) || !isWithinTime([], scriptParams.validDays!, [], date)) {
       return;
     }
-    const isValidTime = isWithinTime(validHours!, validDays!, validMonths!, date);
+    const isValidTime = isWithinTime(scriptParams.validHours!, scriptParams.validDays!, scriptParams.validMonths!, date);
     const marketOrder = orders.find((o) => o.type === "market");
 
     debugLog(ENABLE_DEBUG, "SUPPORT", "Current pending order", persistedVars.pendingOrder);
@@ -297,7 +350,7 @@ export default (function f({
     if (marketOrder && marketOrder.position === "long") {
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-        marketOrder.takeProfit! - candles[currentDataIndex].high < tpDistanceShortForTighterSL
+        marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL
       ) {
         debugLog(
           ENABLE_DEBUG,
@@ -306,16 +359,16 @@ export default (function f({
           date,
           marketOrder,
           candles[currentDataIndex],
-          tpDistanceShortForTighterSL
+          scriptParams.tpDistanceShortForTighterSL
         );
-        marketOrder.stopLoss = marketOrder.price + slDistanceWhenTpIsVeryClose;
+        marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
       }
     }
 
-    const horizontalLevelCandleIndex = currentDataIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    const horizontalLevelCandleIndex = currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
     ) {
       return;
     }
@@ -333,7 +386,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -347,11 +400,11 @@ export default (function f({
 
     if (isFalsePositive) return;
 
-    const price = candles[horizontalLevelCandleIndex].low + priceOffset;
+    const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
     if (price < candles[currentDataIndex].close - spread / 2) {
       let lowestValue = candles[currentDataIndex].low;
 
-      for (let i = currentDataIndex; i > currentDataIndex - trendCandles; i--) {
+      for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
         if (!candles[i]) break;
 
         if (candles[i].low < lowestValue) {
@@ -360,17 +413,16 @@ export default (function f({
       }
 
       const diff = candles[currentDataIndex].low - lowestValue;
-      if (diff < trendDiff) {
-        debugLog(ENABLE_DEBUG, "SUPPORT", "Diff is too big, won't create the order...", date, diff, trendDiff);
+      if (diff < scriptParams.trendDiff) {
+        debugLog(ENABLE_DEBUG, "SUPPORT", "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
         return;
       }
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - stopLossDistance;
-      const takeProfit = price + takeProfitDistance;
-      void riskPercentage;
-      const size = Math.floor((balance * (riskPercentage / 100)) / stopLossDistance + 1) || 1;
+      const stopLoss = price - scriptParams.stopLossDistance;
+      const takeProfit = price + scriptParams.takeProfitDistance;
+      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
 
       const o = {
         type: "buy-limit" as OrderType,
@@ -407,8 +459,10 @@ export default (function f({
     }
   }
 
-  support();
   resistance();
+
+  void support;
+  // support();
 
   // end script
 }

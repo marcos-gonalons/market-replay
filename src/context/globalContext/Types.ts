@@ -10,9 +10,17 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
-  average?: number;
+  indicators: {
+    movingAverages: MovingAverage[]
+  }
   meta?: { [key: string]: unknown };
 }
+
+interface MovingAverage {
+  value: number;
+  candlesAmount: number;
+}
+
 
 interface State {
   readonly painterService: PainterService | null;
