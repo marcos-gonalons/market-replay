@@ -508,6 +508,7 @@ class PainterService {
       priceRange: this.priceRangeInScreen,
       candleWidth: this.candleWidth,
       candlesDisplayDimensions: this.getCandlesDisplayDimensions(),
+      colors: this.colors.indicators
     });
     return this;
   }

@@ -1,5 +1,5 @@
 import { Candle } from "../../../context/globalContext/Types";
-import { CandlesDisplayDimensions, Range } from "../Types";
+import { CandlesDisplayDimensions, Colors, Range } from "../Types";
 
 export interface DrawIndicatorsParameters {
   ctx: CanvasRenderingContext2D;
@@ -9,5 +9,6 @@ export interface DrawIndicatorsParameters {
   priceRange: Range;
   candleWidth: number;
   candlesDisplayDimensions: CandlesDisplayDimensions;
+  colors: Colors["indicators"];
 }
 

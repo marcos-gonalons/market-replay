@@ -9,6 +9,7 @@ export function drawIndicators({
   priceRange,
   candleWidth,
   candlesDisplayDimensions,
+  colors
 }: DrawIndicatorsParameters): void {
 
   drawMovingAverages();
@@ -17,7 +18,7 @@ export function drawIndicators({
     const movingAveragesAmount = data[dataStartIndex].indicators.movingAverages.length;
     for (let _i = 0; _i < movingAveragesAmount; _i++) {
       ctx.beginPath();
-      ctx.strokeStyle = "rgb(255,255,0)";
+      ctx.strokeStyle = colors.movingAverages[data[dataStartIndex].indicators.movingAverages[_i].name];
     
       let candleNumber = 0;
       for (let i = dataStartIndex; i < dataEndIndex; i++) {

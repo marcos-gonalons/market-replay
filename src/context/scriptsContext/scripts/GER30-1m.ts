@@ -34,7 +34,7 @@ export default (function f({
 
   function resistance() {
     const params: StrategyParams = {
-      riskPercentage: 2,
+      riskPercentage: 1,
       withPendingOrders: true,
       stopLossDistance: 24,
       takeProfitDistance: 34,
@@ -78,7 +78,7 @@ export default (function f({
   function support() {
     const params: StrategyParams = {
       withPendingOrders: true,
-      riskPercentage: 2,
+      riskPercentage: 1,
       stopLossDistance: 15,
       takeProfitDistance: 34,
       tpDistanceShortForTighterSL: 1,

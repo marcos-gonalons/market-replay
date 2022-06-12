@@ -77,4 +77,10 @@ export const DEFAULT_COLORS: Colors = {
     positive: "rgba(0,201,10,.25)",
     negative: "rgba(201,10,0,.25)",
   },
+  indicators: {
+    movingAverages: {
+      SMA: "rgb(255,255,0)",
+      EMA: "rgb(255,255,255)"
+    }
+  }
 };

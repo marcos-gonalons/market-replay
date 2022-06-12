@@ -17,6 +17,7 @@ interface Candle {
 }
 
 interface MovingAverage {
+  name: string;
   value: number;
   candlesAmount: number;
 }

@@ -52,6 +52,13 @@ export interface Colors {
     positive: string;
     negative: string;
   };
+  indicators: {
+    movingAverages: {
+      [key: string]: string;
+      SMA: string;
+      EMA: string;
+    }
+  }
 }
 
 export interface Coords {
