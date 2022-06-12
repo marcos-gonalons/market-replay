@@ -1,4 +1,4 @@
-import { ScriptParams } from "../../services/scriptsExecutioner/Types";
+import { StrategyParams } from "../../services/scriptsExecutioner/Types";
 
 interface Script {
   name: string;
@@ -11,7 +11,7 @@ interface State {
   readonly indexOfTheScriptBeingEdited: number;
   readonly progress: number;
   readonly indexOfTheScriptBeingExecuted: number | null;
-  readonly best: ScriptParams | null;
+  readonly best: StrategyParams | null;
 }
 
 const ActionTypes = {

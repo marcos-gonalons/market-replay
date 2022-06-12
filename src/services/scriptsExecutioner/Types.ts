@@ -1,7 +1,7 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order, Trade } from "../../context/tradesContext/Types";
 
-export interface ScriptFuncParameters {
+export interface StrategyFuncParameters {
   candles: Candle[];
   orders: Order[];
   trades: Trade[];
@@ -9,9 +9,9 @@ export interface ScriptFuncParameters {
   balance: number;
   currentDataIndex: number;
   spread: number;
-  params?: ScriptParams;
+  params?: StrategyParams;
   createOrder: (order: Order) => string;
-  removeAllOrders: () => void;
+  removeAllOrders?: () => void;
   closeOrder: (orderId: string) => void;
   isWithinTime: (
     executeHours: {
@@ -30,9 +30,10 @@ export interface ScriptFuncParameters {
   ctx?: CanvasRenderingContext2D;
   drawings?: (() => void)[];
   debugLog: (enabled: boolean, ...msgs: unknown[]) => void;
+  strategies: Strategy[];
 }
 
-export interface ScriptParams {
+export interface StrategyParams {
   validHours?: {
     hour: string;
     weekdays: number[];
@@ -61,4 +62,23 @@ export interface ScriptParams {
     takeProfitDistance: number;
     tpDistanceShortForTighterSL: number;
   };
+
+  withPendingOrders?: boolean;
+}
+
+export interface Strategy {
+  name: string;
+  func: ({
+    candles,
+    orders,
+    trades,
+    balance,
+    currentDataIndex,
+    spread,
+    createOrder,
+    closeOrder,
+    persistedVars,
+    isWithinTime,
+    debugLog
+  }: StrategyFuncParameters) => void;
 }

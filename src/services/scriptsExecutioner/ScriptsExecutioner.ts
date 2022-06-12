@@ -1,6 +1,10 @@
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import { Candle } from "../../context/globalContext/Types";
+import { Strategy as ResistanceBreakoutStrategy } from "../../context/scriptsContext/strategies/ResistanceBreakout";
+import { Strategy as SupportBreakoutStrategy } from "../../context/scriptsContext/strategies/SupportBreakout";
+// import { Strategy as ResistanceBounceStrategy } from "../../context/scriptsContext/strategies/ResistanceBounce";
+// import { Strategy as SupportBounceStrategy } from "../../context/scriptsContext/strategies/SupportBounce";
 import { Script } from "../../context/scriptsContext/Types";
 import {
   addOrder,
@@ -19,7 +23,7 @@ import { EUR_EXCHANGE_RATE, SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
 import getParamsArray from "./ParamsArray";
-import { ScriptFuncParameters, ScriptParams } from "./Types";
+import { Strategy, StrategyFuncParameters, StrategyParams } from "./Types";
 
 class ScriptsExecutionerService {
   private PainterService?: PainterService;
@@ -73,7 +77,7 @@ class ScriptsExecutionerService {
   ): ScriptsExecutionerService {
     const paramsArray = getParamsArray();
 
-    let best: ScriptParams = paramsArray[0];
+    let best: StrategyParams = paramsArray[0];
     best.profits = -9999999;
 
     let j = 0;
@@ -215,8 +219,8 @@ class ScriptsExecutionerService {
     return this;
   }
 
-  private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["createOrder"] {
-    let createOrderFunc: ScriptFuncParameters["createOrder"];
+  private getCreateOrderFunc(replayMode: boolean, orders?: Order[]): StrategyFuncParameters["createOrder"] {
+    let createOrderFunc: StrategyFuncParameters["createOrder"];
     const orderId: string = uuidv4();
 
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
@@ -250,8 +254,8 @@ class ScriptsExecutionerService {
     return createOrderFunc;
   }
 
-  private getRemoveAllOrdersFunc(replayMode: boolean, orders?: Order[]): ScriptFuncParameters["removeAllOrders"] {
-    let removeAllOrdersFunc: ScriptFuncParameters["removeAllOrders"];
+  private getRemoveAllOrdersFunc(replayMode: boolean, orders?: Order[]): StrategyFuncParameters["removeAllOrders"] {
+    let removeAllOrdersFunc: StrategyFuncParameters["removeAllOrders"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
@@ -271,8 +275,8 @@ class ScriptsExecutionerService {
     orders?: Order[],
     trades?: Trade[],
     currentCandle?: Candle
-  ): ScriptFuncParameters["closeOrder"] {
-    let closeOrderFunc: ScriptFuncParameters["closeOrder"];
+  ): StrategyFuncParameters["closeOrder"] {
+    let closeOrderFunc: StrategyFuncParameters["closeOrder"];
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
@@ -333,7 +337,7 @@ class ScriptsExecutionerService {
     return closeOrderFunc;
   }
 
-  private getIsWithinTimeFunc(): ScriptFuncParameters["isWithinTime"] {
+  private getIsWithinTimeFunc(): StrategyFuncParameters["isWithinTime"] {
     return (
       executeHours: {
         hour: string;
@@ -392,7 +396,7 @@ class ScriptsExecutionerService {
     orders: Order[],
     trades: Trade[],
     currentDataIndex: number,
-    params?: ScriptParams
+    params?: StrategyParams
   ): ScriptsExecutionerService {
     (function ({
       canvas,
@@ -411,7 +415,8 @@ class ScriptsExecutionerService {
       isWithinTime,
       params,
       debugLog,
-    }: ScriptFuncParameters) {
+      strategies,
+    }: StrategyFuncParameters) {
       // This void thingies is to avoid complains from eslint/typescript
       void canvas;
       void ctx;
@@ -429,6 +434,7 @@ class ScriptsExecutionerService {
       void params;
       void trades;
       void debugLog;
+      void strategies;
 
       // TODO: Function to modify an order
 
@@ -455,10 +461,22 @@ class ScriptsExecutionerService {
       removeAllOrders: this.getRemoveAllOrdersFunc(replayMode, orders),
       closeOrder: this.getCloseOrderFunc(replayMode, orders, trades, candles[currentDataIndex]),
       isWithinTime: this.getIsWithinTimeFunc(),
-      debugLog: debugLog,
+      debugLog,
+      strategies: this.getStrategies()
     });
     return this;
   }
+
+  private getStrategies(): Strategy[] {
+    return [{
+      name: "Resistance Breakout",
+      func: ResistanceBreakoutStrategy
+    },{
+      name: "Support Breakout",
+      func: SupportBreakoutStrategy
+    }];
+  }
+
 }
 
 export default ScriptsExecutionerService;

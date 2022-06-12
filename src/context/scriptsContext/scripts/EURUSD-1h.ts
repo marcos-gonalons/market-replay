@@ -1,4 +1,4 @@
-import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
+import { StrategyFuncParameters, StrategyParams } from "../../../services/scriptsExecutioner/Types";
 import { OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
@@ -14,7 +14,7 @@ export default (function f({
   isWithinTime,
   params,
   debugLog,
-}: ScriptFuncParameters) {
+}: StrategyFuncParameters) {
   const ENABLE_DEBUG = false;
 
   void persistedVars;
@@ -25,7 +25,7 @@ export default (function f({
   function resistanceBounce() {
     const priceAdjustment = 1 / 10000;
 
-    function getParams(params: ScriptParams | null): ScriptParams {
+    function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
       }
@@ -41,9 +41,9 @@ export default (function f({
       const priceOffset = -10 * priceAdjustment;
       const maxSecondsOpenTrade = 35 * 24 * 60 * 60; // 35 days
 
-      const validHours: ScriptParams["validHours"] = [];
-      const validMonths: ScriptParams["validMonths"] = [];
-      const validDays: ScriptParams["validDays"] = [];
+      const validHours: StrategyParams["validHours"] = [];
+      const validMonths: StrategyParams["validMonths"] = [];
+      const validDays: StrategyParams["validDays"] = [];
 
       return {
         validHours,
@@ -192,7 +192,7 @@ export default (function f({
   function supportBounce() {
     const priceAdjustment = 1 / 10000;
 
-    function getParams(params: ScriptParams | null): ScriptParams {
+    function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
       }
@@ -208,9 +208,9 @@ export default (function f({
       const priceOffset = 18 * priceAdjustment;
       const maxSecondsOpenTrade = 20 * 24 * 60 * 60; // 20 days
 
-      const validHours: ScriptParams["validHours"] = [];
-      const validMonths: ScriptParams["validMonths"] = [];
-      const validDays: ScriptParams["validDays"] = [];
+      const validHours: StrategyParams["validHours"] = [];
+      const validMonths: StrategyParams["validMonths"] = [];
+      const validDays: StrategyParams["validDays"] = [];
 
       return {
         validHours,

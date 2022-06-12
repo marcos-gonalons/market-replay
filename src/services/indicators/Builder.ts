@@ -1,17 +1,15 @@
 import { Candle } from "../../context/globalContext/Types";
 
 export function AddIndicatorsData(candles: Candle[]) {
+    const movingAveragesLengths: number[] = [10,20,50,100,200];
 
-    candles[candles.length-1].indicators.movingAverages.push({
-        value: getMovingAverage(10, candles),
-        candlesAmount: 10
-    });
-
-    candles[candles.length-1].indicators.movingAverages.push({
-        value: getMovingAverage(100, candles),
-        candlesAmount: 100
-    });
-
+    for (const len of movingAveragesLengths) {
+        if (len !== 200) continue;
+         candles[candles.length-1].indicators.movingAverages.push({
+            value: getMovingAverage(len, candles),
+            candlesAmount: len
+        });
+    }
 }
 
 function getMovingAverage(candlesAmount: number, candles: Candle[]) {

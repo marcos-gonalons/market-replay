@@ -1,14 +1,14 @@
-import { ScriptParams } from "./Types";
+import { StrategyParams } from "./Types";
 
-export default function getParamsArray(): ScriptParams[] {
-  const arr: ScriptParams[] = [];
+export default function getParamsArray(): StrategyParams[] {
+  const arr: StrategyParams[] = [];
 
   const riskPercentage = 1;
   const priceAdjustment = 1;
 
-  const validHours: ScriptParams["validHours"] = [];
-  const validDays: ScriptParams["validDays"] = [];
-  const validMonths: ScriptParams["validMonths"] = [];
+  const validHours: StrategyParams["validHours"] = [];
+  const validDays: StrategyParams["validDays"] = [];
+  const validMonths: StrategyParams["validMonths"] = [];
 
   /**
    * 

@@ -1,4 +1,4 @@
-import { ScriptFuncParameters, ScriptParams } from "../../../services/scriptsExecutioner/Types";
+import { StrategyFuncParameters, StrategyParams } from "../../../services/scriptsExecutioner/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 
 export default (function f({
@@ -13,10 +13,10 @@ export default (function f({
   persistedVars,
   isWithinTime,
   params,
-}: ScriptFuncParameters) {
+}: StrategyFuncParameters) {
   void trades;
 
-  function getParams(params: ScriptParams | null): ScriptParams {
+  function getParams(params: StrategyParams | null): StrategyParams {
     if (params) {
       return params;
     }
@@ -31,7 +31,7 @@ export default (function f({
     const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 15;
     const priceOffset = 2 * priceAdjustment;
 
-    const validHours: ScriptParams["validHours"] = [
+    const validHours: StrategyParams["validHours"] = [
       { hour: "0:00", weekdays: [1, 2, 3, 4] },
       { hour: "0:30", weekdays: [1, 2, 3, 4] },
       { hour: "1:00", weekdays: [1, 2, 3, 4] },
@@ -75,8 +75,8 @@ export default (function f({
       { hour: "21:00", weekdays: [1, 2, 3, 4] },
       { hour: "21:30", weekdays: [1, 2, 3, 4] },
     ];
-    const validMonths: ScriptParams["validMonths"] = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11];
-    const validDays: ScriptParams["validDays"] = [];
+    const validMonths: StrategyParams["validMonths"] = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+    const validDays: StrategyParams["validDays"] = [];
 
     return {
       validHours,

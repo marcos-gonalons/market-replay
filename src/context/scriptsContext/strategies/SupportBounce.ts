@@ -1,7 +1,7 @@
-import { StrategyFuncParameters, StrategyParams } from "../../../services/scriptsExecutioner/Types";
+import { StrategyFuncParameters } from "../../../services/scriptsExecutioner/Types";
 import { OrderType, Position } from "../../tradesContext/Types";
 
-export default (function f({
+export default function Strategy({
   candles,
   orders,
   trades,
@@ -18,70 +18,37 @@ export default (function f({
   const ENABLE_DEBUG = false;
 
   void persistedVars;
-  void isWithinTime;
-  void balance;
   void trades;
 
-  const priceAdjustment = 1 / 10000;
+  debugLog(ENABLE_DEBUG, "Params ", params);
+  const date = new Date(candles[currentDataIndex].timestamp);
 
-  function getParams(params: StrategyParams | null): StrategyParams {
-    if (params) {
-      return params;
-    }
-
-    const riskPercentage = 0.5;
-    const stopLossDistance = 90 * priceAdjustment;
-    const takeProfitDistance = 130 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 50 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = -60 * priceAdjustment;
-    const trendCandles = 100;
-    const trendDiff = 10 * priceAdjustment;
-    const candlesAmountWithLowerPriceToBeConsideredHorizontalLevel = 30;
-    const priceOffset = -20 * priceAdjustment;
-    const maxSecondsOpenTrade = 20 * 24 * 60 * 60;
-
-    const validHours: StrategyParams["validHours"] = [];
-    const validMonths: StrategyParams["validMonths"] = [];
-    const validDays: StrategyParams["validDays"] = [];
-
-    return {
-      validHours,
-      validDays,
-      validMonths,
-      riskPercentage,
-      stopLossDistance,
-      takeProfitDistance,
-      tpDistanceShortForTighterSL,
-      slDistanceWhenTpIsVeryClose,
-      trendCandles,
-      trendDiff,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
-      priceOffset,
-      maxSecondsOpenTrade,
-    };
+  if (!isWithinTime([], [], params!.validMonths || [], date) || !isWithinTime([], params!.validDays || [], [], date)) {
+    return;
   }
-
-  const scriptParams = getParams(params || null);
-
+  const isValidTime = isWithinTime(params!.validHours || [], params!.validDays || [], params!.validMonths || [], date);
+  void isValidTime;
+  if (balance < 0) {
+    balance = 1;
+  }
   if (candles.length <= 1 || currentDataIndex === 0) return;
 
-  const date = new Date(candles[currentDataIndex].timestamp);
   const marketOrder = orders.find((o) => o.type === "market");
 
-  if (marketOrder && scriptParams.maxSecondsOpenTrade) {
+  if (marketOrder && params!.maxSecondsOpenTrade) {
     const diffInSeconds = Math.floor((date.valueOf() - marketOrder.createdAt!.valueOf()) / 1000);
 
-    if (diffInSeconds >= scriptParams.maxSecondsOpenTrade) {
+    if (diffInSeconds >= params!.maxSecondsOpenTrade) {
       debugLog(ENABLE_DEBUG, "Closing the trade since it has been open for too much time", date, marketOrder);
       closeOrder(marketOrder.id!);
     }
   }
 
   if (marketOrder && marketOrder.position === "long") {
-    const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+    const newSLPrice = marketOrder.price + params!.slDistanceWhenTpIsVeryClose;
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL &&
+      marketOrder.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL &&
       candles[currentDataIndex].close > newSLPrice
     ) {
       debugLog(
@@ -90,17 +57,17 @@ export default (function f({
         date,
         marketOrder,
         candles[currentDataIndex],
-        scriptParams.tpDistanceShortForTighterSL
+        params!.tpDistanceShortForTighterSL
       );
       marketOrder.stopLoss = newSLPrice;
     }
   }
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    currentDataIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+    currentDataIndex < params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
   ) {
     return;
   }
@@ -118,7 +85,7 @@ export default (function f({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    let j = horizontalLevelCandleIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
     j < horizontalLevelCandleIndex;
     j++
   ) {
@@ -132,11 +99,11 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
+  const price = candles[horizontalLevelCandleIndex].low + params!.priceOffset;
   if (price < candles[currentDataIndex].close - spread / 2) {
     let lowestValue = candles[currentDataIndex].low;
 
-    for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - params!.trendCandles; i--) {
       if (!candles[i]) break;
 
       if (candles[i].low < lowestValue) {
@@ -145,18 +112,18 @@ export default (function f({
     }
 
     const diff = candles[currentDataIndex].low - lowestValue;
-    if (diff < scriptParams.trendDiff) {
-      debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
+    if (diff < params!.trendDiff) {
+      debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, params!.trendDiff);
       return;
     }
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price - scriptParams.stopLossDistance;
-    const takeProfit = price + scriptParams.takeProfitDistance;
+    const stopLoss = price - params!.stopLossDistance;
+    const takeProfit = price + params!.takeProfitDistance;
 
     //const size =
-    //Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 1000 * 0.93)) *
+    //Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 1000 * 0.93)) *
     //10000 || 10000;
     const size = 10000;
 
@@ -188,31 +155,4 @@ export default (function f({
     debugLog(ENABLE_DEBUG, "Candle, adjustment, price", candles[currentDataIndex], spread / 2, price);
   }
 
-  // end script
 }
-  .toString()
-  .replace(
-    `
-function f({
-  candles,
-  orders,
-  trades,
-  balance,
-  currentDataIndex,
-  spread,
-  createOrder,
-  closeOrder,
-  persistedVars,
-  isWithinTime,
-  params,
-  debugLog
-}) {
-`.trim(),
-    ``
-  )
-  .replace(
-    ` // end script
-
-}`.trim(),
-    ``
-  ));

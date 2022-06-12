@@ -1,4 +1,4 @@
-import { ScriptParams } from "../../services/scriptsExecutioner/Types";
+import { StrategyParams } from "../../services/scriptsExecutioner/Types";
 import { ReducerAction } from "../Types";
 import { ActionTypes } from "./Types";
 
@@ -50,7 +50,7 @@ export function setProgress(progress: number): ReducerAction {
   };
 }
 
-export function setBest(best: ScriptParams): ReducerAction {
+export function setBest(best: StrategyParams): ReducerAction {
   return {
     type: ActionTypes.SET_BEST,
     payload: best,
