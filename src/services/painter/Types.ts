@@ -54,9 +54,7 @@ export interface Colors {
   };
   indicators: {
     movingAverages: {
-      [key: string]: string;
-      SMA: string;
-      EMA: string;
+      [key: string]: { [key: string]: string }
     }
   }
 }
