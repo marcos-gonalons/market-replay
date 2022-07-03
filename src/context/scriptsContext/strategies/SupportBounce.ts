@@ -1,7 +1,7 @@
 import { StrategyFuncParameters } from "../../../services/scriptsExecutioner/Types";
 import { OrderType, Position } from "../../tradesContext/Types";
 
-export default function Strategy({
+export function Strategy({
   candles,
   orders,
   trades,

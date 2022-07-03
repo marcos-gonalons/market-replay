@@ -63,8 +63,9 @@ export interface StrategyParams {
   withPendingOrders?: boolean;
 }
 
+type StrategyName = "Resistance Breakout" | "Support Breakout" | "Resistance Bounce" | "Support Bounce" | "EMA Crossover"
 export interface Strategy {
-  name: string;
+  name: StrategyName;
   func: ({
     candles,
     orders,

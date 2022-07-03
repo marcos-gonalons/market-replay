@@ -29,8 +29,8 @@ export default (function f({
     const priceAdjustment = 1 / 10000;
 
     const riskPercentage = 1;
-    const stopLossDistance = 0 * priceAdjustment;
-    const takeProfitDistance = 0 * priceAdjustment;
+    const stopLossDistance = 2 * priceAdjustment;
+    const takeProfitDistance = 2 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const priceOffset = 0 * priceAdjustment;
@@ -53,7 +53,6 @@ export default (function f({
       maxSecondsOpenTrade,
     };
   }
-
 
   strategies.find(s => s.name === "EMA Crossover")!.func({
     candles, orders, trades, balance, currentDataIndex, spread,

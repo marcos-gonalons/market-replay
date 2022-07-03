@@ -140,7 +140,7 @@ export function Strategy({
 
     const stopLoss = price - params!.stopLossDistance;
     const takeProfit = price + params!.takeProfitDistance;
-    const size = Math.floor((balance * (params!.riskPercentage / 100)) / params!.stopLossDistance + 1) || 1;
+    const size = 1; // Math.floor((balance * (params!.riskPercentage / 100)) / params!.stopLossDistance + 1) || 1;
     const rollover = 0;
 
     const o = {

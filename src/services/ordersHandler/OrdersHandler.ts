@@ -26,6 +26,7 @@ export default function processOrders({
 
     const [slRealPrice, tpRealPrice] = getBracketPricesTakingSpreadIntoAccount(order);
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
+    const orderCreatedInPreviousCandle = previousCandle!.timestamp === order.createdAt!;
 
     if (orderCreatedInCurrentCandle) {
       if (order.stopLoss && order.takeProfit) {
@@ -56,8 +57,41 @@ export default function processOrders({
       continue;
     }
 
+    if (orderCreatedInPreviousCandle) {
+      if (order.stopLoss) {
+        if (isPriceWithinCandle(slRealPrice, previousCandle!) || (
+          (order.position === "long" && previousCandle!.low <= slRealPrice) ||
+          (order.position === "short" && previousCandle!.high >= slRealPrice)
+        )) {
+          processStopLossTrade(order, index, order.stopLoss!);
+          continue;
+        } else if (gapHasOvercomePrice(slRealPrice, previousCandle!, previousCandle)) {
+          processStopLossTrade(order, index, previousCandle!.open);
+          continue;
+        }
+      }
+  
+      if (order.takeProfit) {
+        if (
+          isPriceWithinCandle(tpRealPrice, previousCandle!) ||
+          gapHasOvercomePrice(tpRealPrice, previousCandle!, previousCandle) || 
+          (
+            (order.position === "long" && previousCandle!.high >= tpRealPrice) ||
+            (order.position === "short" && previousCandle!.low <= tpRealPrice)
+          )
+        ) {
+          processTakeProfitTrade(order, index);
+          continue;
+        }
+      }
+      continue;
+    }
+
     if (order.stopLoss) {
-      if (isPriceWithinCandle(slRealPrice, currentCandle)) {
+      if (isPriceWithinCandle(slRealPrice, currentCandle) || (
+        (order.position === "long" && currentCandle.low <= slRealPrice) ||
+        (order.position === "short" && currentCandle.high >= slRealPrice)
+      )) {
         processStopLossTrade(order, index, order.stopLoss!);
         continue;
       } else if (gapHasOvercomePrice(slRealPrice, currentCandle, previousCandle)) {
@@ -69,7 +103,11 @@ export default function processOrders({
     if (order.takeProfit) {
       if (
         isPriceWithinCandle(tpRealPrice, currentCandle) ||
-        gapHasOvercomePrice(tpRealPrice, currentCandle, previousCandle)
+        gapHasOvercomePrice(tpRealPrice, currentCandle, previousCandle) || 
+        (
+          (order.position === "long" && currentCandle.high >= tpRealPrice) ||
+          (order.position === "short" && currentCandle.low <= tpRealPrice)
+        )
       ) {
         processTakeProfitTrade(order, index);
         continue;

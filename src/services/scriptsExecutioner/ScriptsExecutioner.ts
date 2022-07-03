@@ -3,8 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { Candle } from "../../context/globalContext/Types";
 import { Strategy as ResistanceBreakoutStrategy } from "../../context/scriptsContext/strategies/ResistanceBreakout";
 import { Strategy as SupportBreakoutStrategy } from "../../context/scriptsContext/strategies/SupportBreakout";
-// import { Strategy as ResistanceBounceStrategy } from "../../context/scriptsContext/strategies/ResistanceBounce";
-// import { Strategy as SupportBounceStrategy } from "../../context/scriptsContext/strategies/SupportBounce";
+import { Strategy as ResistanceBounceStrategy } from "../../context/scriptsContext/strategies/ResistanceBounce";
+import { Strategy as SupportBounceStrategy } from "../../context/scriptsContext/strategies/SupportBounce";
+import { Strategy as EmaCrossoverStrategy } from "../../context/scriptsContext/strategies/EmaCrossover";
 import { Script } from "../../context/scriptsContext/Types";
 import {
   addOrder,
@@ -474,6 +475,15 @@ class ScriptsExecutionerService {
     },{
       name: "Support Breakout",
       func: SupportBreakoutStrategy
+    },{
+      name: "Resistance Bounce",
+      func: ResistanceBounceStrategy
+    },{
+      name: "Support Bounce",
+      func: SupportBounceStrategy
+    },{
+      name: "EMA Crossover",
+      func: EmaCrossoverStrategy
     }];
   }
 

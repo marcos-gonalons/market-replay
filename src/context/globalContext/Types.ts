@@ -47,4 +47,4 @@ const ActionTypes = {
 };
 
 export { ActionTypes };
-export type { State, Candle };
+export type { State, Candle, MovingAverage };
