@@ -79,7 +79,7 @@ export default (function f({
     }
 
     if (marketOrder) {
-      const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+      const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
         candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL &&
@@ -98,10 +98,10 @@ export default (function f({
     }
 
     const horizontalLevelCandleIndex =
-      currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel! * 2
     ) {
       return;
     }
@@ -119,7 +119,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -137,7 +137,7 @@ export default (function f({
     if (price > candles[currentDataIndex].close + spread / 2) {
       let highestValue = candles[currentDataIndex].high;
 
-      for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
+      for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles!; i--) {
         if (!candles[i]) break;
 
         if (candles[i].high > highestValue) {
@@ -146,7 +146,7 @@ export default (function f({
       }
 
       const diff = highestValue - candles[currentDataIndex].high;
-      if (diff < scriptParams.trendDiff) {
+      if (diff < scriptParams.trendDiff!) {
         debugLog(ENABLE_DEBUG, "Diff is too small, won't create the order...", date, diff, scriptParams.trendDiff);
         return;
       }
@@ -246,7 +246,7 @@ export default (function f({
     }
 
     if (marketOrder) {
-      const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+      const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
         marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL &&
@@ -265,10 +265,10 @@ export default (function f({
     }
 
     const horizontalLevelCandleIndex =
-      currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+      currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel! * 2
     ) {
       return;
     }
@@ -286,7 +286,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -304,7 +304,7 @@ export default (function f({
     if (price < candles[currentDataIndex].close - spread / 2) {
       let lowestValue = candles[currentDataIndex].low;
 
-      for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles; i--) {
+      for (let i = currentDataIndex; i > currentDataIndex - scriptParams.trendCandles!; i--) {
         if (!candles[i]) break;
 
         if (candles[i].low < lowestValue) {
@@ -313,7 +313,7 @@ export default (function f({
       }
 
       const diff = candles[currentDataIndex].low - lowestValue;
-      if (diff < scriptParams.trendDiff) {
+      if (diff < scriptParams.trendDiff!) {
         debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, scriptParams.trendDiff);
         return;
       }

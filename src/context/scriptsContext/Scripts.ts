@@ -12,6 +12,7 @@ import USDCAD_1h from "./scripts/USDCAD-1h";
 import USDCHF_1h from "./scripts/USDCHF-1h";
 import USDJPY_1h from "./scripts/USDJPY-1h";
 import EUROSTOXX50_5m from "./scripts/EUROSTOXX50-5m";
+import EMACrossover from "./scripts/EmaCrossover";
 import { Script } from "./Types";
 
 const SCRIPTS: Script[] = [
@@ -84,6 +85,11 @@ const SCRIPTS: Script[] = [
     name: "Support Bounce",
     isActive: false,
     contents: SupportBounce,
+  },
+  {
+    name: "EMA Crossover",
+    isActive: false,
+    contents: EMACrossover,
   },
 ];
 

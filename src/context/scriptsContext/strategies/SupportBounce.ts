@@ -45,7 +45,7 @@ export default function Strategy({
   }
 
   if (marketOrder && marketOrder.position === "long") {
-    const newSLPrice = marketOrder.price + params!.slDistanceWhenTpIsVeryClose;
+    const newSLPrice = marketOrder.price + params!.slDistanceWhenTpIsVeryClose!;
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
       marketOrder.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL &&
@@ -64,10 +64,10 @@ export default function Strategy({
   }
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    currentDataIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+    currentDataIndex < params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel! * 2
   ) {
     return;
   }
@@ -85,7 +85,7 @@ export default function Strategy({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    let j = horizontalLevelCandleIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
     j < horizontalLevelCandleIndex;
     j++
   ) {
@@ -103,7 +103,7 @@ export default function Strategy({
   if (price < candles[currentDataIndex].close - spread / 2) {
     let lowestValue = candles[currentDataIndex].low;
 
-    for (let i = currentDataIndex; i > currentDataIndex - params!.trendCandles; i--) {
+    for (let i = currentDataIndex; i > currentDataIndex - params!.trendCandles!; i--) {
       if (!candles[i]) break;
 
       if (candles[i].low < lowestValue) {
@@ -112,7 +112,7 @@ export default function Strategy({
     }
 
     const diff = candles[currentDataIndex].low - lowestValue;
-    if (diff < params!.trendDiff) {
+    if (diff < params!.trendDiff!) {
       debugLog(ENABLE_DEBUG, "Diff is too big, won't create the order...", date, diff, params!.trendDiff);
       return;
     }

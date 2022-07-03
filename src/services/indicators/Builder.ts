@@ -12,7 +12,7 @@ export function AddIndicatorsData(candles: Candle[]) {
         });
     }
 */
-    const emaLengths: number[] = [10,20,50,100,200];
+    const emaLengths: number[] = [9,21,200];
     for (const len of emaLengths) {
          candles[candles.length-1].indicators.movingAverages.push({
             name: "EMA",

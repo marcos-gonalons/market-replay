@@ -140,17 +140,17 @@ export default (function f({
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
     if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
-      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose;
+      marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
     }
   }
 
   if (marketOrder) return;
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    currentDataIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel * 2
+    currentDataIndex < scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel! * 2
   ) {
     return;
   }
@@ -167,7 +167,7 @@ export default (function f({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel;
+    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
     j < horizontalLevelCandleIndex;
     j++
   ) {
@@ -185,7 +185,7 @@ export default (function f({
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex - 1].low;
 
-    for (let i = currentDataIndex - 1; i > currentDataIndex - scriptParams.trendCandles; i--) {
+    for (let i = currentDataIndex - 1; i > currentDataIndex - scriptParams.trendCandles!; i--) {
       if (!candles[i]) break;
 
       if (candles[i].low < lowestValue) {
@@ -194,7 +194,7 @@ export default (function f({
     }
 
     const diff = candles[currentDataIndex - 1].low - lowestValue;
-    if (diff < scriptParams.trendDiff) {
+    if (diff < scriptParams.trendDiff!) {
       return;
     }
 

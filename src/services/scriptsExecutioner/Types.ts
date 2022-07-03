@@ -46,23 +46,20 @@ export interface StrategyParams {
   riskPercentage: number;
   stopLossDistance: number;
   takeProfitDistance: number;
+
+  
+  trendCandles?: number;
+  trendDiff?: number;
+  slDistanceWhenTpIsVeryClose?: number;
+  candlesAmountWithLowerPriceToBeConsideredHorizontalLevel?: number;
+
+
   tpDistanceShortForTighterSL: number;
-  trendCandles: number;
-  trendDiff: number;
-  slDistanceWhenTpIsVeryClose: number;
-  candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: number;
   priceOffset: number;
   maxSecondsOpenTrade?: number;
 
   profits?: number;
   totalTrades?: number;
-
-  extraTrade?: {
-    stopLossDistance: number;
-    takeProfitDistance: number;
-    tpDistanceShortForTighterSL: number;
-  };
-
   withPendingOrders?: boolean;
 }
 

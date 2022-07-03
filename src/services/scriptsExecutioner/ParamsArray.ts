@@ -41,12 +41,7 @@ export default function getParamsArray(): StrategyParams[] {
                       trendDiff,
                       candlesAmountWithLowerPriceToBeConsideredHorizontalLevel,
                       priceOffset,
-                      maxSecondsOpenTrade,
-                      extraTrade: {
-                        stopLossDistance,
-                        takeProfitDistance,
-                        tpDistanceShortForTighterSL,
-                      },
+                      maxSecondsOpenTrade
                     });
                   }
                 }
