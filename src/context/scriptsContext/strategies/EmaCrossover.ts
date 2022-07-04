@@ -64,7 +64,10 @@ export function Strategy({
         candles[currentDataIndex],
         params!.tpDistanceShortForTighterSL
       );
-      openPosition.stopLoss = openPosition.price + params!.slDistanceWhenTpIsVeryClose!;
+      const newSL = openPosition.price + params!.slDistanceWhenTpIsVeryClose!;
+      if (newSL < candles[currentDataIndex].open) {
+        openPosition.stopLoss = newSL;
+      }
     }
   }
 
