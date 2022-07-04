@@ -139,7 +139,7 @@ export default (function f({
 
   const marketOrder = orders.find((o) => o.type === "market");
   if (marketOrder && marketOrder.position === "long") {
-    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL) {
+    if (marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL!) {
       marketOrder.stopLoss = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
     }
   }
@@ -180,7 +180,7 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
+  const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset!;
   if (price > candles[currentDataIndex].close + spread / 2) {
     orders.filter((o) => o.type !== "market" && o.position === "long").map((nmo) => closeOrder(nmo.id!));
     let lowestValue = candles[currentDataIndex - 1].low;

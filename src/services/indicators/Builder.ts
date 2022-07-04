@@ -27,7 +27,7 @@ function getMovingAverage(candlesAmount: number, candles: Candle[]): number {
     for (let j = candles.length - candlesAmount; j < candles.length; j++) {
       if (j < 0) continue;
 
-      sum += candles[j].high;
+      sum += candles[j].close;
     }
 
     return sum / candlesAmount;
@@ -35,12 +35,12 @@ function getMovingAverage(candlesAmount: number, candles: Candle[]): number {
 */
 function getExponentialMovingAverage(candlesAmount: number, candles: Candle[], smoothingFactor: number = 2): number {
     if (candles.length === 1) {
-        return candles[0].high;
+        return candles[0].close;
     }
 
     const multiplier = smoothingFactor / (candlesAmount+1);
     const previousEMA = candles[candles.length-2].indicators.movingAverages.find(ma => ma.name === "EMA" && ma.candlesAmount === candlesAmount);
-    let previousValue = previousEMA ? previousEMA.value : candles[candles.length-2].high;
+    let previousValue = previousEMA ? previousEMA.value : candles[candles.length-2].close;
 
-    return candles[candles.length-1].high * multiplier + (previousValue * (1-multiplier));
+    return candles[candles.length-1].close * multiplier + (previousValue * (1-multiplier));
 }

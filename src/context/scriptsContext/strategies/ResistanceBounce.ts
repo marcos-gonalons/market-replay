@@ -49,7 +49,7 @@ export function Strategy({
     const newSLPrice = marketOrder.price + params!.slDistanceWhenTpIsVeryClose!;
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      candles[currentDataIndex].low - marketOrder.takeProfit! < params!.tpDistanceShortForTighterSL &&
+      candles[currentDataIndex].low - marketOrder.takeProfit! < params!.tpDistanceShortForTighterSL! &&
       candles[currentDataIndex].close < newSLPrice
     ) {
       debugLog(
@@ -100,7 +100,7 @@ export function Strategy({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].high - params!.priceOffset;
+  const price = candles[horizontalLevelCandleIndex].high - params!.priceOffset!;
   if (price > candles[currentDataIndex].close + spread / 2) {
     // orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
     let highestValue = candles[currentDataIndex].high;

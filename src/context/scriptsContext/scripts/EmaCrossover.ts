@@ -30,11 +30,11 @@ export default (function f({
 
     const riskPercentage = 1;
     const stopLossDistance = 10 * priceAdjustment;
-    const takeProfitDistance = 25 * priceAdjustment;
+    const takeProfitDistance = 15 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
-    const priceOffset = 0 * priceAdjustment;
     const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
+    const candlesAmountWithoutEMAsCrossing = 10;
 
     const validHours: StrategyParams["validHours"] = [];
     const validMonths: StrategyParams["validMonths"] = [];
@@ -49,7 +49,7 @@ export default (function f({
       takeProfitDistance,
       tpDistanceShortForTighterSL,
       slDistanceWhenTpIsVeryClose,
-      priceOffset,
+      candlesAmountWithoutEMAsCrossing,
       maxSecondsOpenTrade,
     };
   }
@@ -65,7 +65,16 @@ export default (function f({
     candlesAmountWithoutCrossing
       Amount of days the small EMA must be below/above the big EMA to be a valid setup
 
-    
+    Another potential approach: on successful setup, create limit order instead of market order
+    to wait for the retracement
+
+  Next steps
+    - Do some runs for 15m and 5m for each forex pair with different parameters (execute with full data 2)
+    - Write down the results
+    - Analyze the results
+      - Decide if we should implement the other approach with limit order on crossover instead of market order.
+      - Decide the stop loss strategy -> fixed distance, or latest low
+
    */
 
   strategies.find(s => s.name === "EMA Crossover")!.func({

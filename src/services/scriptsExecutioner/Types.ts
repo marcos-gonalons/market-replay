@@ -53,9 +53,10 @@ export interface StrategyParams {
   slDistanceWhenTpIsVeryClose?: number;
   candlesAmountWithLowerPriceToBeConsideredHorizontalLevel?: number;
 
+  candlesAmountWithoutEMAsCrossing?: number;
 
-  tpDistanceShortForTighterSL: number;
-  priceOffset: number;
+  tpDistanceShortForTighterSL?: number;
+  priceOffset?: number;
   maxSecondsOpenTrade?: number;
 
   profits?: number;

@@ -225,7 +225,7 @@ class ScriptsExecutionerService {
     const orderId: string = uuidv4();
 
     function adjustPricesTakingSpreadIntoConsideration(order: Order): void {
-      const adjustment = SPREAD;
+      const adjustment = SPREAD/2;
       if (order.position === "short") {
         order.price -= adjustment;
         order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;

@@ -29,7 +29,6 @@ export default function processOrders({
     const orderCreatedInPreviousCandle = previousCandle!.timestamp === order.createdAt!;
 
     if (orderCreatedInCurrentCandle || orderCreatedInPreviousCandle) {
-      debugger;
       if (order.stopLoss && order.takeProfit) {
         if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
           indicesOfMarketOrdersToRemove.push(index);

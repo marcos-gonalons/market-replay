@@ -80,7 +80,7 @@ export default (function f({
   if (marketOrder && marketOrder.position === "short") {
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL
+      candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL!
     ) {
       debugLog(
         ENABLE_DEBUG,
@@ -130,7 +130,7 @@ export default (function f({
 
   if (isFalsePositive) return;
 
-  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
+  const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset!;
   if (price < candles[currentDataIndex].close - spread / 2) {
     let highestValue = candles[currentDataIndex].high;
 

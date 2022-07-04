@@ -54,7 +54,7 @@ export function Strategy({
     if (
       params!.tpDistanceShortForTighterSL !== 0 && 
       candles[currentDataIndex].timestamp > openPosition.createdAt! &&
-      openPosition.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL
+      openPosition.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL!
     ) {
       debugLog(
         ENABLE_DEBUG,
@@ -77,12 +77,10 @@ export function Strategy({
   const smallEMA = 9;
   const bigEMA = 21;
 
-  const candlesAmountWithoutCrossing = 20;
-
   if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
 
-    for (let i = currentDataIndex - candlesAmountWithoutCrossing - 1; i <= currentDataIndex - 1; i++) {
+    for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
       if (i <= 0) return;
 
       if (getEMA(candles[i], smallEMA).value >= getEMA(candles[i], bigEMA).value) {
@@ -91,7 +89,7 @@ export function Strategy({
       }
     }
 
-    if (getEMA(candles[currentDataIndex], smallEMA).value < getEMA(candles[currentDataIndex], bigEMA).value) {
+    if (getEMA(candles[currentDataIndex-1], smallEMA).value < getEMA(candles[currentDataIndex-1], bigEMA).value) {
       debugLog(ENABLE_DEBUG, "Small EMA is still below the big EMA - doing nothing", currentCandle, date);
       return;
     }

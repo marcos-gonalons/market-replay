@@ -82,7 +82,7 @@ export default (function f({
       const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-        candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL &&
+        candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL! &&
         candles[currentDataIndex].close < newSLPrice
       ) {
         debugLog(
@@ -133,7 +133,7 @@ export default (function f({
 
     if (isFalsePositive) return;
 
-    const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset;
+    const price = candles[horizontalLevelCandleIndex].high - scriptParams.priceOffset!;
     if (price > candles[currentDataIndex].close + spread / 2) {
       let highestValue = candles[currentDataIndex].high;
 
@@ -250,7 +250,7 @@ export default (function f({
       const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
       if (
         candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-        marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL &&
+        marketOrder.takeProfit! - candles[currentDataIndex].high < scriptParams.tpDistanceShortForTighterSL! &&
         candles[currentDataIndex].close > newSLPrice
       ) {
         debugLog(
@@ -301,7 +301,7 @@ export default (function f({
 
     if (isFalsePositive) return;
 
-    const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset;
+    const price = candles[horizontalLevelCandleIndex].low + scriptParams.priceOffset!;
     if (price < candles[currentDataIndex].close - spread / 2) {
       let lowestValue = candles[currentDataIndex].low;
 
