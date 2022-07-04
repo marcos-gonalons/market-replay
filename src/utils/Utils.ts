@@ -51,5 +51,5 @@ export function adjustTradeResultWithRollover(trade: Trade, rollover: number): v
 }
 
 export function addCommissions(trade: Trade): void {
-  trade.result = trade.result - (COMMISSIONS * trade.startPrice + COMMISSIONS * trade.endPrice);
+  trade.result = trade.result - (COMMISSIONS * trade.startPrice * trade.size + COMMISSIONS * trade.endPrice * trade.size);
 }
