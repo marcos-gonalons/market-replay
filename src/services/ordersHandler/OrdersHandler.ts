@@ -1,6 +1,6 @@
 import { Candle } from "../../context/globalContext/Types";
 import { Order } from "../../context/tradesContext/Types";
-import { adjustTradeResultWithRollover } from "../../utils/Utils";
+import { addCommissions, adjustTradeResultWithRollover } from "../../utils/Utils";
 import { EUR_EXCHANGE_RATE, STOP_ORDER_POINTS_HANDICAP } from "../painter/Constants";
 import { ProcessOrdersParameters } from "./Types";
 
@@ -28,7 +28,8 @@ export default function processOrders({
     const orderCreatedInCurrentCandle = currentCandle.timestamp === order.createdAt!;
     const orderCreatedInPreviousCandle = previousCandle!.timestamp === order.createdAt!;
 
-    if (orderCreatedInCurrentCandle) {
+    if (orderCreatedInCurrentCandle || orderCreatedInPreviousCandle) {
+      debugger;
       if (order.stopLoss && order.takeProfit) {
         if (isPriceWithinCandle(slRealPrice, currentCandle) && isPriceWithinCandle(tpRealPrice, currentCandle)) {
           indicesOfMarketOrdersToRemove.push(index);
@@ -52,36 +53,6 @@ export default function processOrders({
           (order.position === "short" && currentCandle.close > currentCandle.open)
         ) {
           processStopLossTrade(order, index, order.stopLoss);
-        }
-      }
-      continue;
-    }
-
-    if (orderCreatedInPreviousCandle) {
-      if (order.stopLoss) {
-        if (isPriceWithinCandle(slRealPrice, previousCandle!) || (
-          (order.position === "long" && previousCandle!.low <= slRealPrice) ||
-          (order.position === "short" && previousCandle!.high >= slRealPrice)
-        )) {
-          processStopLossTrade(order, index, order.stopLoss!);
-          continue;
-        } else if (gapHasOvercomePrice(slRealPrice, previousCandle!, previousCandle)) {
-          processStopLossTrade(order, index, previousCandle!.open);
-          continue;
-        }
-      }
-  
-      if (order.takeProfit) {
-        if (
-          isPriceWithinCandle(tpRealPrice, previousCandle!) ||
-          gapHasOvercomePrice(tpRealPrice, previousCandle!, previousCandle) || 
-          (
-            (order.position === "long" && previousCandle!.high >= tpRealPrice) ||
-            (order.position === "short" && previousCandle!.low <= tpRealPrice)
-          )
-        ) {
-          processTakeProfitTrade(order, index);
-          continue;
         }
       }
       continue;
@@ -239,6 +210,7 @@ export default function processOrders({
     if (trade.position === "short") trade.result = -trade.result;
 
     adjustTradeResultWithRollover(trade, order.rollover || 0);
+    addCommissions(trade);
 
     trade.result *= EUR_EXCHANGE_RATE;
   }
@@ -262,6 +234,7 @@ export default function processOrders({
     if (trade.position === "short") trade.result = -trade.result;
 
     adjustTradeResultWithRollover(trade, order.rollover || 0);
+    addCommissions(trade);
 
     trade.result *= EUR_EXCHANGE_RATE;
   }

@@ -29,8 +29,8 @@ export default (function f({
     const priceAdjustment = 1 / 10000;
 
     const riskPercentage = 1;
-    const stopLossDistance = 2 * priceAdjustment;
-    const takeProfitDistance = 2 * priceAdjustment;
+    const stopLossDistance = 10 * priceAdjustment;
+    const takeProfitDistance = 25 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const priceOffset = 0 * priceAdjustment;
@@ -53,6 +53,20 @@ export default (function f({
       maxSecondsOpenTrade,
     };
   }
+
+  // TODO: Define params
+  /**
+    stopLossDistance
+      SL Can be a fixed distance, or it can be the latest low
+        - If it's the latest low, I must define the candlesAmountToBeConsideredHorizontalLevel
+
+      Can be a mix of both: define a max SL distance, if the latest low > max, then use max.
+    
+    candlesAmountWithoutCrossing
+      Amount of days the small EMA must be below/above the big EMA to be a valid setup
+
+    
+   */
 
   strategies.find(s => s.name === "EMA Crossover")!.func({
     candles, orders, trades, balance, currentDataIndex, spread,

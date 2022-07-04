@@ -17,7 +17,7 @@ import {
   setTrades,
 } from "../../context/tradesContext/Actions";
 import { Order, State as TradesContextState, Trade, TradesContext } from "../../context/tradesContext/Types";
-import { adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
+import { addCommissions, adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
 import { EUR_EXCHANGE_RATE, SPREAD } from "../painter/Constants";
@@ -298,6 +298,7 @@ class ScriptsExecutionerService {
               result,
             };
             adjustTradeResultWithRollover(trade, order.rollover || 0);
+            addCommissions(trade);
             trade.result *= EUR_EXCHANGE_RATE;
             tradesContext.dispatch(addTrade(trade));
           }
@@ -324,7 +325,8 @@ class ScriptsExecutionerService {
             result,
           }
           trades!.push(trade);
-          adjustTradeResultWithRollover(trade, order.rollover || 0)
+          adjustTradeResultWithRollover(trade, order.rollover || 0);
+          addCommissions(trade);
           trade.result = trade.result * EUR_EXCHANGE_RATE
         }
 

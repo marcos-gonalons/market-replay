@@ -73,13 +73,13 @@ export function Strategy({
     return;
   }
 
-  const hugeEMA = 200;
+  const baseEMA = 200;
   const smallEMA = 9;
   const bigEMA = 21;
 
-  const candlesAmountWithoutCrossing = 5;
+  const candlesAmountWithoutCrossing = 20;
 
-  if (currentCandle.open > getEMA(currentCandle, hugeEMA).value) {
+  if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
 
     for (let i = currentDataIndex - candlesAmountWithoutCrossing - 1; i <= currentDataIndex - 1; i++) {
@@ -119,7 +119,7 @@ export function Strategy({
   }
   
 
-  if (currentCandle.open < getEMA(currentCandle, 200).value) {
+  if (currentCandle.open < getEMA(currentCandle, baseEMA).value) {
     debugLog(ENABLE_DEBUG, "Price is below 200 EMA, only shorts allowed", currentCandle, date);
   }
 

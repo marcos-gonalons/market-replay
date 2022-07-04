@@ -1,4 +1,5 @@
 import { Trade } from "../context/tradesContext/Types";
+import { COMMISSIONS } from "../services/painter/Constants";
 
 export function getNSigma(nSigma: number, set: number[]): number {
   if (!set.length) return 0;
@@ -42,6 +43,13 @@ export function debugLog(enabled: boolean, ...msgs: unknown[]): void {
 }
 
 export function adjustTradeResultWithRollover(trade: Trade, rollover: number): void {
-  const diffInDays = Math.floor((trade.endDate.valueOf() - trade.startDate.valueOf()) / 1000 / 60 / 60 / 24);
+  let diffInDays = Math.floor((trade.endDate.valueOf() - trade.startDate.valueOf()) / 1000 / 60 / 60 / 24);
+  if (diffInDays > 0) {
+    diffInDays--;
+  }
   trade.result = trade.result - diffInDays * rollover;
+}
+
+export function addCommissions(trade: Trade): void {
+  trade.result = trade.result - (COMMISSIONS * trade.startPrice + COMMISSIONS * trade.endPrice);
 }
