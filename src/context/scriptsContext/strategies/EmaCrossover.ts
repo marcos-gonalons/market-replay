@@ -66,7 +66,10 @@ export function Strategy({
       );
       const newSL = openPosition.price + params!.slDistanceWhenTpIsVeryClose!;
       if (newSL < candles[currentDataIndex].open) {
+        debugLog(ENABLE_DEBUG, "Adjusted SL", date, newSL);
         openPosition.stopLoss = newSL;
+      } else {
+        debugLog(ENABLE_DEBUG, "Can't adjust the SL, is higher than current price", date, newSL, candles[currentDataIndex]);
       }
     }
   }
