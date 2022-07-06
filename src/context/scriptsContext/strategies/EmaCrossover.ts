@@ -65,7 +65,7 @@ export function Strategy({
         params!.tpDistanceShortForTighterSL
       );
       const newSL = openPosition.price + params!.slDistanceWhenTpIsVeryClose!;
-      if (newSL < candles[currentDataIndex].open) {
+      if (newSL < candles[currentDataIndex].close) {
         debugLog(ENABLE_DEBUG, "Adjusted SL", date, newSL);
         openPosition.stopLoss = newSL;
       } else {
