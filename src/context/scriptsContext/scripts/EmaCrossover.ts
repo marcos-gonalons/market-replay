@@ -29,12 +29,12 @@ export default (function f({
     const priceAdjustment = 1 / 10000;
 
     const riskPercentage = 1;
-    const stopLossDistance = 10 * priceAdjustment;
+    const stopLossDistance = 30 * priceAdjustment;
     const takeProfitDistance = 30 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
-    const candlesAmountWithoutEMAsCrossing = 10;
+    const candlesAmountWithoutEMAsCrossing = 0;
 
     const validHours: StrategyParams["validHours"] = [];
     const validMonths: StrategyParams["validMonths"] = [];
