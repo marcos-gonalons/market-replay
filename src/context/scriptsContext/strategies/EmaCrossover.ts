@@ -17,7 +17,7 @@ export function Strategy({
   params,
   debugLog,
 }: StrategyFuncParameters) {
-  const ENABLE_DEBUG = true;
+  const ENABLE_DEBUG = false;
 
   void persistedVars;
   void trades;

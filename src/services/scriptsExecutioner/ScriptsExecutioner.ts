@@ -79,7 +79,9 @@ class ScriptsExecutionerService {
     const paramsArray = getParamsArray();
 
     let best: StrategyParams = paramsArray[0];
+    let bestWithGoodSuccessRate: StrategyParams = {...paramsArray[0]};
     best.profits = -9999999;
+    bestWithGoodSuccessRate.profits = -9999999;
 
     let j = 0;
     for (const params of paramsArray) {
@@ -120,10 +122,14 @@ class ScriptsExecutionerService {
       const reports = generateReports(trades, initialBalance);
       let profits = 0;
       let totalTrades = 0;
+      let positives = 0;
       for (const k in reports[0]) {
         profits += reports[0][k].profits;
         totalTrades += reports[0][k].total;
+        positives += reports[0][k].positives;
       }
+
+      let successRate = (positives/totalTrades)*100;
 
       /***
       console.log("Params: ", params);
@@ -135,7 +141,7 @@ class ScriptsExecutionerService {
       /***/
 
       if (profits > best.profits!) {
-        best = params;
+        best = {...params};
         best.profits = profits;
         best.totalTrades = totalTrades;
 
@@ -153,10 +159,35 @@ class ScriptsExecutionerService {
           });
         }
       }
+
+      if (successRate >= 35 && profits > bestWithGoodSuccessRate.profits!) {
+        bestWithGoodSuccessRate = {...params};
+        bestWithGoodSuccessRate.profits = profits;
+        bestWithGoodSuccessRate.totalTrades = totalTrades;
+
+        console.log("new best with good successRate", bestWithGoodSuccessRate);
+
+        if (worker) {
+          worker.postMessage({
+            type: "scripts-executioner",
+            payload: {
+              balance,
+              progress: (j * 100) / (data.length * paramsArray.length),
+              trades,
+              best,
+            },
+          });
+        }
+      }
+      
     }
 
     console.log("Best", best);
     console.log("Best", JSON.stringify(best));
+
+
+    console.log("Best with good success rate", bestWithGoodSuccessRate);
+    console.log("Best with good success rate", JSON.stringify(bestWithGoodSuccessRate));
     return this;
   }
 
