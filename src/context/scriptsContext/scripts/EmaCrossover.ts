@@ -29,8 +29,10 @@ export default (function f({
     const priceAdjustment = 1 / 10000;
 
     const riskPercentage = 1;
-    const stopLossDistance = 30 * priceAdjustment;
-    const takeProfitDistance = 30 * priceAdjustment;
+    const maxStopLossDistance = 100 * priceAdjustment;
+    const candlesAmountToBeConsideredHorizontalLevel = 10;
+    const priceOffset = 10 * priceAdjustment;
+    const takeProfitDistance = 10 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
@@ -45,7 +47,9 @@ export default (function f({
       validDays,
       validMonths,
       riskPercentage,
-      stopLossDistance,
+      stopLossDistance: maxStopLossDistance,
+      candlesAmountToBeConsideredHorizontalLevel,
+      priceOffset,
       takeProfitDistance,
       tpDistanceShortForTighterSL,
       slDistanceWhenTpIsVeryClose,

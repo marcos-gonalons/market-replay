@@ -83,10 +83,10 @@ export function Strategy({
   }
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
+    currentDataIndex - params!.candlesAmountToBeConsideredHorizontalLevel!;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel! * 2
+    currentDataIndex < params!.candlesAmountToBeConsideredHorizontalLevel! * 2
   ) {
     return;
   }
@@ -104,7 +104,7 @@ export function Strategy({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - params!.candlesAmountWithLowerPriceToBeConsideredHorizontalLevel!;
+    let j = horizontalLevelCandleIndex - params!.candlesAmountToBeConsideredHorizontalLevel!;
     j < horizontalLevelCandleIndex;
     j++
   ) {

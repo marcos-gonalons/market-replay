@@ -2,6 +2,7 @@ import { StrategyFuncParameters } from "../../../services/scriptsExecutioner/Typ
 
 import type { Candle, MovingAverage } from "../../globalContext/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
+import { get as GetHorizontalLevel } from "./common/GetHorizontalLevel";
 
 export function Strategy({
   candles,
@@ -17,7 +18,7 @@ export function Strategy({
   params,
   debugLog,
 }: StrategyFuncParameters) {
-  const ENABLE_DEBUG = false;
+  const ENABLE_DEBUG = true;
 
   void persistedVars;
   void trades;
@@ -108,7 +109,6 @@ export function Strategy({
   const bigEMA = 21;
 
   if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
-    return;
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
@@ -126,7 +126,20 @@ export function Strategy({
     }
 
     const price = currentCandle.open;
-    const stopLoss = price - params!.stopLossDistance;
+
+    const stopLoss = getStopLoss({
+      longOrShort: "long",
+      orderPrice: price,
+      stopLossDistance: params!.stopLossDistance,
+      candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
+      priceOffset: params!.priceOffset!,
+      candles,
+      currentDataIndex,
+      log: (...msg: any[]) => {
+        debugLog(ENABLE_DEBUG, date, ...msg)
+      }
+    });
+
     const takeProfit = price + params!.takeProfitDistance;
     // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 10000 * 0.85)) * 10000 || 10000;
     const size = 10000;
@@ -149,6 +162,7 @@ export function Strategy({
   
 
   if (currentCandle.open < getEMA(currentCandle, baseEMA).value) {
+    return;
     debugLog(ENABLE_DEBUG, "Price is below 200 EMA, only shorts allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
@@ -166,11 +180,24 @@ export function Strategy({
     }
 
     const price = currentCandle.open;
-    const stopLoss = price + params!.stopLossDistance;
+
+    const stopLoss = getStopLoss({
+      longOrShort: "short",
+      orderPrice: price,
+      stopLossDistance: params!.stopLossDistance,
+      candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
+      priceOffset: params!.priceOffset!,
+      candles,
+      currentDataIndex,
+      log: (...msg: any[]) => {
+        debugLog(ENABLE_DEBUG, date, ...msg)
+      }
+    });
+
     const takeProfit = price - params!.takeProfitDistance;
     // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 10000 * 0.85)) * 10000 || 10000;
     const size = 10000;
-    const rollover = (0.7 * size) / 10000;
+    const rollover = (90 * size) / 10000;
     const o: Order = {
       type: "market" as OrderType,
       position: "short" as Position,
@@ -192,4 +219,59 @@ export function Strategy({
 
 function getEMA(candle: Candle, candlesAmount: number): MovingAverage {
   return candle.indicators.movingAverages.find(m => m.candlesAmount === candlesAmount)!;
+}
+
+interface GetStopLossParams {
+  readonly orderPrice: number;
+  readonly stopLossDistance: number;
+  readonly currentDataIndex: number;
+  readonly candlesAmountToBeConsideredHorizontalLevel: number;
+  readonly longOrShort: "long" | "short";
+  readonly priceOffset: number;
+  readonly candles: Candle[];
+  readonly log: (...msg: any[]) => void;
+}
+function getStopLoss({
+  orderPrice,
+  stopLossDistance,
+  currentDataIndex,
+  candlesAmountToBeConsideredHorizontalLevel,
+  longOrShort,
+  candles,
+  priceOffset,
+  log
+}: GetStopLossParams): number {
+  if (candlesAmountToBeConsideredHorizontalLevel > 0) {
+    const p = {
+      currentDataIndex,
+      candlesAmountToBeConsideredHorizontalLevel,
+      priceOffset,
+      candles,
+      log
+    };
+    if (longOrShort === "long") {
+      let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "support" });
+      if (!sl || sl >= orderPrice) {
+        return orderPrice - stopLossDistance;
+      }
+      return sl;
+    }
+    if (longOrShort === "short") {
+      let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "resistance" });
+      if (!sl || sl <= orderPrice) {
+        return orderPrice + stopLossDistance;
+      }
+      return sl;
+    }
+  } else { 
+    if (longOrShort === "long") {
+      return orderPrice - stopLossDistance;
+    }
+    if (longOrShort === "short") {
+      return orderPrice + stopLossDistance;
+    }
+  }
+
+
+  return 0;
 }

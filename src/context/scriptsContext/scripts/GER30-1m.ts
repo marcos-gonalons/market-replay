@@ -42,7 +42,7 @@ export default (function f({
       slDistanceWhenTpIsVeryClose: 0,
       trendCandles: 60,
       trendDiff: 15,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 24,
+      candlesAmountToBeConsideredHorizontalLevel: 24,
       priceOffset: 1,
       maxSecondsOpenTrade: 0,
       validHours: [
@@ -85,7 +85,7 @@ export default (function f({
       slDistanceWhenTpIsVeryClose: 0,
       trendCandles: 90,
       trendDiff: 30,
-      candlesAmountWithLowerPriceToBeConsideredHorizontalLevel: 14,
+      candlesAmountToBeConsideredHorizontalLevel: 14,
       priceOffset: 2,
       validHours: [
         { hour: "8:00", weekdays: [1, 2, 4, 5] },
