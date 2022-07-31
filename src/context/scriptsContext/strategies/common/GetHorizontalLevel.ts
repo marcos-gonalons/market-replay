@@ -3,7 +3,10 @@ import { Candle } from "../../../globalContext/Types";
 interface Params {
   readonly resistanceOrSupport: "resistance" | "support";
   readonly currentDataIndex: number;
-  readonly candlesAmountToBeConsideredHorizontalLevel: number;
+  readonly candlesAmountToBeConsideredHorizontalLevel: {
+    readonly future: number;
+    readonly past: number;
+  };
   readonly priceOffset: number;
   readonly candles: Candle[];
   readonly log: (...msg: any[]) => void;
@@ -20,11 +23,8 @@ export function get({
   let amount = 100;
 
   for (let x = currentDataIndex; x > currentDataIndex - amount; x--) {
-    const horizontalLevelCandleIndex = x - candlesAmountToBeConsideredHorizontalLevel!;
-    if (
-      horizontalLevelCandleIndex < 0 ||
-      x < candlesAmountToBeConsideredHorizontalLevel! * 2
-    ) {
+    const horizontalLevelCandleIndex = x - candlesAmountToBeConsideredHorizontalLevel.future;
+    if (horizontalLevelCandleIndex < 0 || x < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
       continue;
     }
     
@@ -49,7 +49,7 @@ export function get({
 
     isFalsePositive = false;
     for (
-     let j = horizontalLevelCandleIndex - candlesAmountToBeConsideredHorizontalLevel!;
+     let j = horizontalLevelCandleIndex - candlesAmountToBeConsideredHorizontalLevel.past;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -78,5 +78,4 @@ export function get({
   }
 
   return null;
-
 }

@@ -18,7 +18,7 @@ export function Strategy({
   params,
   debugLog,
 }: StrategyFuncParameters) {
-  const ENABLE_DEBUG = true;
+  const ENABLE_DEBUG = false;
 
   void persistedVars;
   void trades;
@@ -225,7 +225,10 @@ interface GetStopLossParams {
   readonly orderPrice: number;
   readonly stopLossDistance: number;
   readonly currentDataIndex: number;
-  readonly candlesAmountToBeConsideredHorizontalLevel: number;
+  readonly candlesAmountToBeConsideredHorizontalLevel?: {
+    readonly future: number;
+    readonly past: number;
+  };
   readonly longOrShort: "long" | "short";
   readonly priceOffset: number;
   readonly candles: Candle[];
@@ -241,7 +244,7 @@ function getStopLoss({
   priceOffset,
   log
 }: GetStopLossParams): number {
-  if (candlesAmountToBeConsideredHorizontalLevel > 0) {
+  if (candlesAmountToBeConsideredHorizontalLevel) {
     const p = {
       currentDataIndex,
       candlesAmountToBeConsideredHorizontalLevel,

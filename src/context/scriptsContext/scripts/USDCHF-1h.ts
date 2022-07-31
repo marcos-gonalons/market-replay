@@ -41,7 +41,10 @@ export default (function f({
       const slDistanceWhenTpIsVeryClose = 60 * priceAdjustment;
       const trendCandles = 110;
       const trendDiff = 35 * priceAdjustment;
-      const candlesAmountToBeConsideredHorizontalLevel = 8;
+      const candlesAmountToBeConsideredHorizontalLevel = {
+        future: 8,
+        past: 8
+      };
       const priceOffset = 60 * priceAdjustment;
       const maxSecondsOpenTrade = 12 * 24 * 60 * 60;
 
@@ -103,10 +106,10 @@ export default (function f({
     }
 
     const horizontalLevelCandleIndex =
-      currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+      currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel! * 2
+      currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future + scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past
     ) {
       return;
     }
@@ -124,7 +127,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past;
       j < horizontalLevelCandleIndex;
       j++
     ) {
@@ -380,7 +383,10 @@ export default (function f({
       const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
       const trendCandles = 180;
       const trendDiff = 70 * priceAdjustment;
-      const candlesAmountToBeConsideredHorizontalLevel = 50;
+      const candlesAmountToBeConsideredHorizontalLevel = {
+        future: 50,
+        past: 50
+      };
       const priceOffset = 30 * priceAdjustment;
       const maxSecondsOpenTrade = 18 * 24 * 60 * 60;
       const validHours: StrategyParams["validHours"] = [];
@@ -441,10 +447,10 @@ export default (function f({
     }
 
     const horizontalLevelCandleIndex =
-      currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+      currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future;
     if (
       horizontalLevelCandleIndex < 0 ||
-      currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel! * 2
+      currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future + scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past
     ) {
       return;
     }
@@ -462,7 +468,7 @@ export default (function f({
 
     isFalsePositive = false;
     for (
-      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+      let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past;
       j < horizontalLevelCandleIndex;
       j++
     ) {

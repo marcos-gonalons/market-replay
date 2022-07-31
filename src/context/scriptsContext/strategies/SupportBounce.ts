@@ -64,10 +64,10 @@ export function Strategy({
   }
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - params!.candlesAmountToBeConsideredHorizontalLevel!;
+    currentDataIndex - params!.candlesAmountToBeConsideredHorizontalLevel!.future;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < params!.candlesAmountToBeConsideredHorizontalLevel! * 2
+    currentDataIndex < params!.candlesAmountToBeConsideredHorizontalLevel!.future + params!.candlesAmountToBeConsideredHorizontalLevel!.past
   ) {
     return;
   }
@@ -85,7 +85,7 @@ export function Strategy({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - params!.candlesAmountToBeConsideredHorizontalLevel!;
+    let j = horizontalLevelCandleIndex - params!.candlesAmountToBeConsideredHorizontalLevel!.past;
     j < horizontalLevelCandleIndex;
     j++
   ) {

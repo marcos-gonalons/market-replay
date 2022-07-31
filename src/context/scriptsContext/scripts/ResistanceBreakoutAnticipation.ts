@@ -36,7 +36,10 @@ export default (function f({
     const slDistanceWhenTpIsVeryClose = -170 * priceAdjustment;
     const trendCandles = 110;
     const trendDiff = 50 * priceAdjustment;
-    const candlesAmountToBeConsideredHorizontalLevel = 20;
+    const candlesAmountToBeConsideredHorizontalLevel = {
+      future: 20,
+      past: 20
+    };
     const priceOffset = 30 * priceAdjustment;
     const maxSecondsOpenTrade = 35 * 24 * 60 * 60;
 
@@ -96,10 +99,10 @@ export default (function f({
   }
 
   const horizontalLevelCandleIndex =
-    currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+    currentDataIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future;
   if (
     horizontalLevelCandleIndex < 0 ||
-    currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel! * 2
+    currentDataIndex < scriptParams.candlesAmountToBeConsideredHorizontalLevel!.future + scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past
   ) {
     return;
   }
@@ -117,7 +120,7 @@ export default (function f({
 
   isFalsePositive = false;
   for (
-    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!;
+    let j = horizontalLevelCandleIndex - scriptParams.candlesAmountToBeConsideredHorizontalLevel!.past;
     j < horizontalLevelCandleIndex;
     j++
   ) {

@@ -51,7 +51,10 @@ export interface StrategyParams {
   trendCandles?: number;
   trendDiff?: number;
   slDistanceWhenTpIsVeryClose?: number;
-  candlesAmountToBeConsideredHorizontalLevel?: number;
+  candlesAmountToBeConsideredHorizontalLevel?: {
+    future: number;
+    past: number;
+  };
 
   candlesAmountWithoutEMAsCrossing?: number;
 
