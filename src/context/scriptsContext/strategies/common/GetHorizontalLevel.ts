@@ -20,9 +20,12 @@ export function get({
   candles,
   log
 }: Params): number|null {
-  let amount = 100;
+  let candlesToCheck = 300;
 
-  for (let x = currentDataIndex; x > currentDataIndex - amount; x--) {
+  for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
+    if (x < 0) {
+      break;
+    }
     const horizontalLevelCandleIndex = x - candlesAmountToBeConsideredHorizontalLevel.future;
     if (horizontalLevelCandleIndex < 0 || x < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
       continue;

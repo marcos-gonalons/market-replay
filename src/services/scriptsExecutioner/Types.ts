@@ -44,6 +44,7 @@ export interface StrategyParams {
   }[];
   validMonths?: number[];
   riskPercentage: number;
+  minStopLossDistance?: number;
   stopLossDistance: number;
   takeProfitDistance: number;
 

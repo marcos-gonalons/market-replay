@@ -30,16 +30,17 @@ export default (function f({
 
     const riskPercentage = 1;
     const maxStopLossDistance = 300 * priceAdjustment;
+    const minStopLossDistance = 50 * priceAdjustment;
     const candlesAmountToBeConsideredHorizontalLevel = {
       future: 1,
       past: 15
     }
-    const priceOffset = -30 * priceAdjustment;
-    const takeProfitDistance = 180 * priceAdjustment;
+    const priceOffset = -10 * priceAdjustment;
+    const takeProfitDistance = 50 * priceAdjustment;
     const tpDistanceShortForTighterSL = 0 * priceAdjustment;
     const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
     const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
-    const candlesAmountWithoutEMAsCrossing = 35;
+    const candlesAmountWithoutEMAsCrossing = 0;
 
     const validHours: StrategyParams["validHours"] = [];
     const validMonths: StrategyParams["validMonths"] = [];
@@ -50,6 +51,7 @@ export default (function f({
       validDays,
       validMonths,
       riskPercentage,
+      minStopLossDistance,
       stopLossDistance: maxStopLossDistance,
       candlesAmountToBeConsideredHorizontalLevel,
       priceOffset,
