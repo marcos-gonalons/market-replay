@@ -257,11 +257,12 @@ function getStopLoss({
       log
     };
     if (longOrShort === "long") {
+      debugger;
       let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "support" });
       if (!sl || sl >= orderPrice) {
         return orderPrice - maxStopLossDistance;
       }
-      if (orderPrice - sl < minStopLossDistance) {
+      if (orderPrice - sl > minStopLossDistance) {
         return orderPrice - minStopLossDistance;
       }
       return sl;
@@ -271,7 +272,7 @@ function getStopLoss({
       if (!sl || sl <= orderPrice) {
         return orderPrice + maxStopLossDistance;
       }
-      if (sl - orderPrice < minStopLossDistance) {
+      if (sl - orderPrice > minStopLossDistance) {
         return orderPrice + minStopLossDistance;
       }
       return sl;
