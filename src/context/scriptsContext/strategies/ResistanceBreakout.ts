@@ -138,9 +138,9 @@ export function Strategy({
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price - params!.stopLossDistance;
-    const takeProfit = price + params!.takeProfitDistance;
-    const size = 1; // Math.floor((balance * (params!.riskPercentage / 100)) / params!.stopLossDistance + 1) || 1;
+    const stopLoss = price - params!.stopLossDistance!;
+    const takeProfit = price + params!.takeProfitDistance!;
+    const size = 1; // Math.floor((balance * (params!.riskPercentage / 100)) / params!.stopLossDistance! + 1) || 1;
     const rollover = 0;
 
     const o = {

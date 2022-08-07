@@ -29,18 +29,19 @@ export default (function f({
     const priceAdjustment = 1 / 100;
 
     const riskPercentage = 1;
-    const maxStopLossDistance = 300 * priceAdjustment;
-    const minStopLossDistance = 300 * priceAdjustment;
+    const slDistanceWhenHorizontalLevelCantBeFound = 300 * priceAdjustment;
+    const minStopLossDistance = 0 * priceAdjustment;
+    const maxStopLossDistance = 160 * priceAdjustment;
     const candlesAmountToBeConsideredHorizontalLevel = {
-      future: 1,
-      past: 10
+      future: 40,
+      past: 20
     }
-    const priceOffset = 0 * priceAdjustment;
-    const takeProfitDistance = 50 * priceAdjustment;
-    const tpDistanceShortForTighterSL = 0 * priceAdjustment;
-    const slDistanceWhenTpIsVeryClose = 0 * priceAdjustment;
+    const priceOffset = 40 * priceAdjustment;
+    const takeProfitDistance = 200 * priceAdjustment;
+    const tpDistanceShortForTighterSL = 20 * priceAdjustment;
+    const slDistanceWhenTpIsVeryClose = -40 * priceAdjustment;
     const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
-    const candlesAmountWithoutEMAsCrossing = 10;
+    const candlesAmountWithoutEMAsCrossing = 30;
 
     const validHours: StrategyParams["validHours"] = [];
     const validMonths: StrategyParams["validMonths"] = [];
@@ -52,7 +53,8 @@ export default (function f({
       validMonths,
       riskPercentage,
       minStopLossDistance,
-      stopLossDistance: maxStopLossDistance,
+      maxStopLossDistance,
+      slDistanceWhenHorizontalLevelCantBeFound,
       candlesAmountToBeConsideredHorizontalLevel,
       priceOffset,
       takeProfitDistance,
@@ -62,31 +64,6 @@ export default (function f({
       maxSecondsOpenTrade,
     };
   }
-
-  // TODO: Define params
-  /**
-    stopLossDistance
-      SL Can be a fixed distance, or it can be the latest low
-        - If it's the latest low, I must define the candlesAmountToBeConsideredHorizontalLevel
-
-      Can be a mix of both: define a max SL distance, if the latest low > max, then use max.
-    
-    candlesAmountWithoutCrossing
-      Amount of days the small EMA must be below/above the big EMA to be a valid setup
-
-    Another potential approach: on successful setup, create limit order instead of market order
-    to wait for the retracement
-
-  Next steps
-    - Do some runs for 15m and 5m for each forex pair with different parameters (execute with full data 2)
-    - Write down the results
-    - Analyze the results
-      - Decide if we should implement the other approach with limit order on crossover instead of market order.
-        - Or another approach: only execute the trade if the candle.open is < than the 9 ema, for example
-          or is > than 9 ema but by very little. Define the distance, and check
-      - Decide the stop loss strategy -> fixed distance, or latest low
-
-   */
 
   strategies.find(s => s.name === "EMA Crossover")!.func({
     candles, orders, trades, balance, currentDataIndex, spread,

@@ -130,8 +130,9 @@ export function Strategy({
     const stopLoss = getStopLoss({
       longOrShort: "long",
       orderPrice: price,
-      maxStopLossDistance: params!.stopLossDistance,
+      slDistanceWhenHorizontalLevelCantBeFound: params!.slDistanceWhenHorizontalLevelCantBeFound!,
       minStopLossDistance: params!.minStopLossDistance!,
+      maxStopLossDistance: params!.maxStopLossDistance!,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
       priceOffset: params!.priceOffset!,
       candles,
@@ -141,8 +142,8 @@ export function Strategy({
       }
     });
 
-    const takeProfit = price + params!.takeProfitDistance;
-    // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 10000 * 0.85)) * 10000 || 10000;
+    const takeProfit = price + params!.takeProfitDistance!!;
+    // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 10000 * 0.85)) * 10000 || 10000;
     const size = 10000;
     const rollover = (0.7 * size) / 10000;
     const o: Order = {
@@ -185,8 +186,9 @@ export function Strategy({
     const stopLoss = getStopLoss({
       longOrShort: "short",
       orderPrice: price,
-      maxStopLossDistance: params!.stopLossDistance,
+      slDistanceWhenHorizontalLevelCantBeFound: params!.slDistanceWhenHorizontalLevelCantBeFound!,
       minStopLossDistance: params!.minStopLossDistance!,
+      maxStopLossDistance: params!.maxStopLossDistance!,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
       priceOffset: params!.priceOffset!,
       candles,
@@ -196,8 +198,8 @@ export function Strategy({
       }
     });
 
-    const takeProfit = price - params!.takeProfitDistance;
-    // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 10000 * 0.85)) * 10000 || 10000;
+    const takeProfit = price - params!.takeProfitDistance!!;
+    // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 10000 * 0.85)) * 10000 || 10000;
     const size = 10000;
     const rollover = (90 * size) / 10000;
     const o: Order = {
@@ -225,8 +227,9 @@ function getEMA(candle: Candle, candlesAmount: number): MovingAverage {
 
 interface GetStopLossParams {
   readonly orderPrice: number;
-  readonly maxStopLossDistance: number;
+  readonly slDistanceWhenHorizontalLevelCantBeFound: number;
   readonly minStopLossDistance: number;
+  readonly maxStopLossDistance: number;
   readonly currentDataIndex: number;
   readonly candlesAmountToBeConsideredHorizontalLevel?: {
     readonly future: number;
@@ -239,8 +242,9 @@ interface GetStopLossParams {
 }
 function getStopLoss({
   orderPrice,
-  maxStopLossDistance,
+  slDistanceWhenHorizontalLevelCantBeFound,
   minStopLossDistance,
+  maxStopLossDistance,
   currentDataIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   longOrShort,
@@ -259,9 +263,12 @@ function getStopLoss({
     if (longOrShort === "long") {
       let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "support" });
       if (!sl || sl >= orderPrice) {
+        return orderPrice - slDistanceWhenHorizontalLevelCantBeFound;
+      }
+      if (orderPrice - sl > maxStopLossDistance) {
         return orderPrice - maxStopLossDistance;
       }
-      if (orderPrice - sl > minStopLossDistance) {
+      if (orderPrice - sl < minStopLossDistance) {
         return orderPrice - minStopLossDistance;
       }
       return sl;
@@ -269,19 +276,22 @@ function getStopLoss({
     if (longOrShort === "short") {
       let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "resistance" });
       if (!sl || sl <= orderPrice) {
+        return orderPrice + slDistanceWhenHorizontalLevelCantBeFound;
+      }
+      if (sl - orderPrice > maxStopLossDistance) {
         return orderPrice + maxStopLossDistance;
       }
-      if (sl - orderPrice > minStopLossDistance) {
+      if (sl - orderPrice < minStopLossDistance) {
         return orderPrice + minStopLossDistance;
       }
       return sl;
     }
   } else { 
     if (longOrShort === "long") {
-      return orderPrice - maxStopLossDistance;
+      return orderPrice - slDistanceWhenHorizontalLevelCantBeFound;
     }
     if (longOrShort === "short") {
-      return orderPrice + maxStopLossDistance;
+      return orderPrice + slDistanceWhenHorizontalLevelCantBeFound;
     }
   }
 

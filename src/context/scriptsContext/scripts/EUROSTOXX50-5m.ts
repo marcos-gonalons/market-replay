@@ -211,9 +211,9 @@ export default (function f({
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price + scriptParams.stopLossDistance;
-      const takeProfit = price - scriptParams.takeProfitDistance;
-      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
+      const stopLoss = price + scriptParams.stopLossDistance!;
+      const takeProfit = price - scriptParams.takeProfitDistance!;
+      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance! + 1) || 1;
 
       const o = {
         type: "sell-limit" as OrderType,
@@ -426,9 +426,9 @@ export default (function f({
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - scriptParams.stopLossDistance;
-      const takeProfit = price + scriptParams.takeProfitDistance;
-      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
+      const stopLoss = price - scriptParams.stopLossDistance!;
+      const takeProfit = price + scriptParams.takeProfitDistance!;
+      const size = Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance! + 1) || 1;
 
       const o = {
         type: "buy-limit" as OrderType,

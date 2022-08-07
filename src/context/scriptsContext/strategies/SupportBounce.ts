@@ -119,11 +119,11 @@ export function Strategy({
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price - params!.stopLossDistance;
-    const takeProfit = price + params!.takeProfitDistance;
+    const stopLoss = price - params!.stopLossDistance!;
+    const takeProfit = price + params!.takeProfitDistance!;
 
     //const size =
-    //Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance * 1000 * 0.93)) *
+    //Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 1000 * 0.93)) *
     //10000 || 10000;
     const size = 10000;
 

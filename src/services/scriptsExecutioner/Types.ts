@@ -42,11 +42,14 @@ export interface StrategyParams {
     weekday: number;
     hours: string[];
   }[];
+  
   validMonths?: number[];
   riskPercentage: number;
+  slDistanceWhenHorizontalLevelCantBeFound?: number;
   minStopLossDistance?: number;
-  stopLossDistance: number;
-  takeProfitDistance: number;
+  maxStopLossDistance?: number;
+  stopLossDistance?: number;
+  takeProfitDistance?: number;
 
   
   trendCandles?: number;

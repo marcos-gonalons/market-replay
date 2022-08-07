@@ -203,10 +203,10 @@ export default (function f({
 
     orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-    const stopLoss = price - scriptParams.stopLossDistance;
-    const takeProfit = price + scriptParams.takeProfitDistance;
-    const size = 1; // Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance + 1) || 1;
-    // const size = (Math.floor((balance * (scriptParams.riskPercentage / 100) / scriptParams.stopLossDistance) / 100000) * 100000) / 10;
+    const stopLoss = price - scriptParams.stopLossDistance!;
+    const takeProfit = price + scriptParams.takeProfitDistance!;
+    const size = 1; // Math.floor((balance * (scriptParams.riskPercentage / 100)) / scriptParams.stopLossDistance! + 1) || 1;
+    // const size = (Math.floor((balance * (scriptParams.riskPercentage / 100) / scriptParams.stopLossDistance!) / 100000) * 100000) / 10;
 
     const o = {
       type: "buy-stop" as OrderType,

@@ -10,34 +10,38 @@ export default function getParamsArray(): StrategyParams[] {
   const validDays: StrategyParams["validDays"] = [];
   const validMonths: StrategyParams["validMonths"] = [];
 
-  for (const minStopLossDistance of [280].map(sl => sl * priceAdjustment)) {
-    for (const maxStopLossDistance of [300].map(sl => sl * priceAdjustment)) {
-      for (const takeProfitDistance of [70].map(tp => tp * priceAdjustment)) {
-        for (const futureCandles of [25]) {
-          for (const pastCandles of [40]) {
-            for (const priceOffset of [-10].map(po => po * priceAdjustment)) {
-              for (const candlesAmountWithoutEMAsCrossing of [50]) {
-                for (const tpDistanceShortForTighterSL of [0,10,20,30,40,50,60].map((tp) => tp * priceAdjustment)) {
-                  for (const slDistanceWhenTpIsVeryClose of [-260,-240,-220,-200,-180,-160,-140,-120,-100,-80,-60,-40,-20,0,10,20,30,40,50,60].map((tp) => tp * priceAdjustment)) {
-                    for (const maxSecondsOpenTrade of [0]) {
-                      arr.push({
-                        validHours,
-                        validDays,
-                        validMonths,
-                        riskPercentage,
-                        priceOffset,
-                        candlesAmountToBeConsideredHorizontalLevel: {
-                          future: futureCandles,
-                          past: pastCandles
-                        },
-                        minStopLossDistance,
-                        stopLossDistance: maxStopLossDistance,
-                        takeProfitDistance,
-                        tpDistanceShortForTighterSL,
-                        slDistanceWhenTpIsVeryClose,
-                        candlesAmountWithoutEMAsCrossing,
-                        maxSecondsOpenTrade
-                      });
+
+  for (const minStopLossDistance of [0].map(sl => sl * priceAdjustment)) {
+    for (const maxStopLossDistance of [160].map(sl => sl * priceAdjustment)) {
+      for (const slDistanceWhenHorizontalLevelCantBeFound of [300].map(sl => sl * priceAdjustment)) {
+        for (const takeProfitDistance of [200].map(tp => tp * priceAdjustment)) {
+          for (const futureCandles of [40]) {
+            for (const pastCandles of [20]) {
+              for (const priceOffset of [40].map(po => po * priceAdjustment)) {
+                for (const candlesAmountWithoutEMAsCrossing of [30]) {
+                  for (const tpDistanceShortForTighterSL of [20].map((tp) => tp * priceAdjustment)) {
+                    for (const slDistanceWhenTpIsVeryClose of [-40].map((tp) => tp * priceAdjustment)) {
+                      for (const maxSecondsOpenTrade of [0]) {
+                        arr.push({
+                          validHours,
+                          validDays,
+                          validMonths,
+                          riskPercentage,
+                          priceOffset,
+                          candlesAmountToBeConsideredHorizontalLevel: {
+                            future: futureCandles,
+                            past: pastCandles
+                          },
+                          minStopLossDistance,
+                          maxStopLossDistance,
+                          stopLossDistance: slDistanceWhenHorizontalLevelCantBeFound,
+                          takeProfitDistance,
+                          tpDistanceShortForTighterSL,
+                          slDistanceWhenTpIsVeryClose,
+                          candlesAmountWithoutEMAsCrossing,
+                          maxSecondsOpenTrade
+                        });
+                      }
                     }
                   }
                 }

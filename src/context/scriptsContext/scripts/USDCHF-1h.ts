@@ -161,10 +161,10 @@ export default (function f({
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - scriptParams.stopLossDistance;
-      const takeProfit = price + scriptParams.takeProfitDistance;
+      const stopLoss = price - scriptParams.stopLossDistance!;
+      const takeProfit = price + scriptParams.takeProfitDistance!;
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance! * 10000 * 0.93)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;
@@ -330,11 +330,11 @@ export default (function f({
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price - scriptParams.stopLossDistance;
-      const takeProfit = price + scriptParams.takeProfitDistance;
+      const stopLoss = price - scriptParams.stopLossDistance!;
+      const takeProfit = price + scriptParams.takeProfitDistance!;
 
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance! * 10000 * 0.93)) *
           10000 || 10000;
 
       const rollover = (0.7 * size) / 10000;
@@ -503,10 +503,10 @@ export default (function f({
 
       orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
 
-      const stopLoss = price + scriptParams.stopLossDistance;
-      const takeProfit = price - scriptParams.takeProfitDistance;
+      const stopLoss = price + scriptParams.stopLossDistance!;
+      const takeProfit = price - scriptParams.takeProfitDistance!;
       const size =
-        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance * 10000 * 0.93)) *
+        Math.floor((balance * (scriptParams.riskPercentage / 100)) / (scriptParams.stopLossDistance! * 10000 * 0.93)) *
           10000 || 10000;
       //const size = 10000;
 
