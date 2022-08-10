@@ -45,7 +45,6 @@ export interface StrategyParams {
   
   validMonths?: number[];
   riskPercentage: number;
-  slDistanceWhenHorizontalLevelCantBeFound?: number;
   minStopLossDistance?: number;
   maxStopLossDistance?: number;
   stopLossDistance?: number;

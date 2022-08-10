@@ -18,8 +18,8 @@ export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * (365 / 12);
 export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;
 
 export const COMMISSIONS = 35 / 100 / 10000;
-export const SPREAD = 0.0035; // 0.00025; // 0.00012; // 0.00001; // 0.0035
-export const STOP_ORDER_POINTS_HANDICAP = 0.0035; // 0.00025; // 2
+export const SPREAD = 0.00012; // 0.00025; // 0.00012; // 0.00001; // 0.0035
+export const STOP_ORDER_POINTS_HANDICAP = 0.00012; // 0.00025; // 2
 
 /***
  * jpy 0.0074
@@ -27,7 +27,7 @@ export const STOP_ORDER_POINTS_HANDICAP = 0.0035; // 0.00025; // 2
  * cad 0.78
  * chf 0.96
  */
-export const EUR_EXCHANGE_RATE = 0.0074;
+export const EUR_EXCHANGE_RATE = 0.95;
 
 export const DEFAULT_COLORS: Colors = {
   background: "rgb(0, 0, 0)",

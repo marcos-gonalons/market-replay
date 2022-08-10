@@ -130,7 +130,6 @@ export function Strategy({
     const stopLoss = getStopLoss({
       longOrShort: "long",
       orderPrice: price,
-      slDistanceWhenHorizontalLevelCantBeFound: params!.slDistanceWhenHorizontalLevelCantBeFound!,
       minStopLossDistance: params!.minStopLossDistance!,
       maxStopLossDistance: params!.maxStopLossDistance!,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
@@ -186,7 +185,6 @@ export function Strategy({
     const stopLoss = getStopLoss({
       longOrShort: "short",
       orderPrice: price,
-      slDistanceWhenHorizontalLevelCantBeFound: params!.slDistanceWhenHorizontalLevelCantBeFound!,
       minStopLossDistance: params!.minStopLossDistance!,
       maxStopLossDistance: params!.maxStopLossDistance!,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
@@ -227,7 +225,6 @@ function getEMA(candle: Candle, candlesAmount: number): MovingAverage {
 
 interface GetStopLossParams {
   readonly orderPrice: number;
-  readonly slDistanceWhenHorizontalLevelCantBeFound: number;
   readonly minStopLossDistance: number;
   readonly maxStopLossDistance: number;
   readonly currentDataIndex: number;
@@ -242,7 +239,6 @@ interface GetStopLossParams {
 }
 function getStopLoss({
   orderPrice,
-  slDistanceWhenHorizontalLevelCantBeFound,
   minStopLossDistance,
   maxStopLossDistance,
   currentDataIndex,
@@ -263,12 +259,12 @@ function getStopLoss({
     if (longOrShort === "long") {
       let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "support" });
       if (!sl || sl >= orderPrice) {
-        return orderPrice - slDistanceWhenHorizontalLevelCantBeFound;
-      }
-      if (orderPrice - sl > maxStopLossDistance) {
         return orderPrice - maxStopLossDistance;
       }
-      if (orderPrice - sl < minStopLossDistance) {
+      if (orderPrice - sl >= maxStopLossDistance) {
+        return orderPrice - maxStopLossDistance;
+      }
+      if (orderPrice - sl <= minStopLossDistance) {
         return orderPrice - minStopLossDistance;
       }
       return sl;
@@ -276,25 +272,24 @@ function getStopLoss({
     if (longOrShort === "short") {
       let sl = GetHorizontalLevel({ ...p, resistanceOrSupport: "resistance" });
       if (!sl || sl <= orderPrice) {
-        return orderPrice + slDistanceWhenHorizontalLevelCantBeFound;
-      }
-      if (sl - orderPrice > maxStopLossDistance) {
         return orderPrice + maxStopLossDistance;
       }
-      if (sl - orderPrice < minStopLossDistance) {
+      if (sl - orderPrice >= maxStopLossDistance) {
+        return orderPrice + maxStopLossDistance;
+      }
+      if (sl - orderPrice <= minStopLossDistance) {
         return orderPrice + minStopLossDistance;
       }
       return sl;
     }
   } else { 
     if (longOrShort === "long") {
-      return orderPrice - slDistanceWhenHorizontalLevelCantBeFound;
+      return orderPrice - maxStopLossDistance;
     }
     if (longOrShort === "short") {
-      return orderPrice + slDistanceWhenHorizontalLevelCantBeFound;
+      return orderPrice + maxStopLossDistance;
     }
   }
-
 
   return 0;
 }
