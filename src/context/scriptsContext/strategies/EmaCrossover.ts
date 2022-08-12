@@ -109,6 +109,7 @@ export function Strategy({
   const bigEMA = 21;
 
   if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
+    return;
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
@@ -163,7 +164,6 @@ export function Strategy({
   
 
   if (currentCandle.open < getEMA(currentCandle, baseEMA).value) {
-    return;
     debugLog(ENABLE_DEBUG, "Price is below 200 EMA, only shorts allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
@@ -199,7 +199,7 @@ export function Strategy({
     const takeProfit = price - params!.takeProfitDistance!!;
     // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 10000 * 0.85)) * 10000 || 10000;
     const size = 10000;
-    const rollover = (90 * size) / 10000;
+    const rollover = (0.7 * size) / 10000;
     const o: Order = {
       type: "market" as OrderType,
       position: "short" as Position,

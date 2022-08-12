@@ -193,6 +193,7 @@ export default function processOrders({
   }
 
   function processTakeProfitTrade(order: Order, orderIndex: number): void {
+    debugger;
     const trade = {
       startDate: order.createdAt!,
       endDate: currentCandle.timestamp,
