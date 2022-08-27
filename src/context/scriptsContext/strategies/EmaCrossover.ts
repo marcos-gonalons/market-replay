@@ -3,6 +3,7 @@ import { StrategyFuncParameters } from "../../../services/scriptsExecutioner/Typ
 import type { Candle, MovingAverage } from "../../globalContext/Types";
 import { Order, OrderType, Position } from "../../tradesContext/Types";
 import { get as GetHorizontalLevel } from "./common/GetHorizontalLevel";
+import { handle as HandleTrailingSLAndTP } from "./common/HandleTrailingSLAndTP";
 
 export function Strategy({
   candles,
@@ -51,53 +52,15 @@ export function Strategy({
     }
   }
 
-  if (openPosition && openPosition.position === "long") {
-    if (
-      params!.tpDistanceShortForTighterSL !== 0 && 
-      candles[currentDataIndex].timestamp > openPosition.createdAt! &&
-      openPosition.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL!
-    ) {
-      debugLog(
-        ENABLE_DEBUG,
-        "Adjusting SL ...",
-        date,
-        openPosition,
-        candles[currentDataIndex],
-        params!.tpDistanceShortForTighterSL
-      );
-      const newSL = openPosition.price + params!.slDistanceWhenTpIsVeryClose!;
-      if (newSL < candles[currentDataIndex].close) {
-        debugLog(ENABLE_DEBUG, "Adjusted SL", date, newSL);
-        openPosition.stopLoss = newSL;
-      } else {
-        debugLog(ENABLE_DEBUG, "Can't adjust the SL, is higher than current price", date, newSL, candles[currentDataIndex]);
-      }
+  HandleTrailingSLAndTP({
+    openPosition,
+    tpDistanceShortForTighterSL: params!.tpDistanceShortForTighterSL!,
+    slDistanceWhenTpIsVeryClose: params!.slDistanceWhenTpIsVeryClose!,
+    currentCandle: candles[currentDataIndex],
+    log: (...msg: any[]) => {
+      debugLog(ENABLE_DEBUG, date, ...msg)
     }
-  }
-
-  if (openPosition && openPosition.position === "short") {
-    if (
-      params!.tpDistanceShortForTighterSL !== 0 && 
-      candles[currentDataIndex].timestamp > openPosition.createdAt! &&
-      candles[currentDataIndex].low - openPosition.takeProfit! < params!.tpDistanceShortForTighterSL!
-    ) {
-      debugLog(
-        ENABLE_DEBUG,
-        "Adjusting SL ...",
-        date,
-        openPosition,
-        candles[currentDataIndex],
-        params!.tpDistanceShortForTighterSL
-      );
-      const newSL = openPosition.price - params!.slDistanceWhenTpIsVeryClose!;
-      if (newSL > candles[currentDataIndex].close) {
-        debugLog(ENABLE_DEBUG, "Adjusted SL", date, newSL);
-        openPosition.stopLoss = newSL;
-      } else {
-        debugLog(ENABLE_DEBUG, "Can't adjust the SL, is lower than current price", date, newSL, candles[currentDataIndex]);
-      }
-    }
-  }
+  });
 
   if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
