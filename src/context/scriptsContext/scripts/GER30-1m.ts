@@ -38,8 +38,10 @@ export default (function f({
       withPendingOrders: true,
       stopLossDistance: 24,
       takeProfitDistance: 34,
-      tpDistanceShortForTighterSL: 0,
-      slDistanceWhenTpIsVeryClose: 0,
+      trailingSL: {
+        tpDistanceShortForTighterSL: 0,
+        slDistanceWhenTpIsVeryClose: 0,
+      },
       trendCandles: 60,
       trendDiff: 15,
       candlesAmountToBeConsideredHorizontalLevel: {
@@ -84,8 +86,10 @@ export default (function f({
       riskPercentage: 1,
       stopLossDistance: 15,
       takeProfitDistance: 34,
-      tpDistanceShortForTighterSL: 1,
-      slDistanceWhenTpIsVeryClose: 0,
+      trailingSL: {
+        tpDistanceShortForTighterSL: 1,
+        slDistanceWhenTpIsVeryClose: 0,
+      },
       trendCandles: 90,
       trendDiff: 30,
       candlesAmountToBeConsideredHorizontalLevel: {

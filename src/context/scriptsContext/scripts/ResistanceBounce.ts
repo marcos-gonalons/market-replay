@@ -54,8 +54,10 @@ export default (function f({
       riskPercentage,
       stopLossDistance,
       takeProfitDistance,
-      tpDistanceShortForTighterSL,
-      slDistanceWhenTpIsVeryClose,
+      trailingSL: {
+        tpDistanceShortForTighterSL,
+        slDistanceWhenTpIsVeryClose,
+      },
       trendCandles,
       trendDiff,
       candlesAmountToBeConsideredHorizontalLevel,
@@ -81,10 +83,10 @@ export default (function f({
   }
 
   if (marketOrder && marketOrder.position === "short") {
-    const newSLPrice = marketOrder.price + scriptParams.slDistanceWhenTpIsVeryClose!;
+    const newSLPrice = marketOrder.price + scriptParams.trailingSL!.slDistanceWhenTpIsVeryClose!;
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.tpDistanceShortForTighterSL! &&
+      candles[currentDataIndex].low - marketOrder.takeProfit! < scriptParams.trailingSL!.tpDistanceShortForTighterSL! &&
       candles[currentDataIndex].close < newSLPrice
     ) {
       debugLog(
@@ -93,7 +95,7 @@ export default (function f({
         date,
         marketOrder,
         candles[currentDataIndex],
-        scriptParams.tpDistanceShortForTighterSL
+        scriptParams.trailingSL!.tpDistanceShortForTighterSL
       );
       marketOrder.stopLoss = newSLPrice;
     }

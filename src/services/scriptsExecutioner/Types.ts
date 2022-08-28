@@ -50,10 +50,18 @@ export interface StrategyParams {
   stopLossDistance?: number;
   takeProfitDistance?: number;
 
+  trailingSL?: {
+    tpDistanceShortForTighterSL: number;
+    slDistanceWhenTpIsVeryClose: number;
+  };
+
+  trailingTP?: {
+    slDistanceShortForTighterTP: number;
+    tpDistanceWhenSlIsVeryClose: number;
+  };
   
   trendCandles?: number;
   trendDiff?: number;
-  slDistanceWhenTpIsVeryClose?: number;
   candlesAmountToBeConsideredHorizontalLevel?: {
     future: number;
     past: number;
@@ -61,7 +69,6 @@ export interface StrategyParams {
 
   candlesAmountWithoutEMAsCrossing?: number;
 
-  tpDistanceShortForTighterSL?: number;
   priceOffset?: number;
   maxSecondsOpenTrade?: number;
 

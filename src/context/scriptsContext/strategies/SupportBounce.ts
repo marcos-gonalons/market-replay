@@ -45,10 +45,10 @@ export function Strategy({
   }
 
   if (marketOrder && marketOrder.position === "long") {
-    const newSLPrice = marketOrder.price + params!.slDistanceWhenTpIsVeryClose!;
+    const newSLPrice = marketOrder.price + params!.trailingSL!.slDistanceWhenTpIsVeryClose!;
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      marketOrder.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL! &&
+      marketOrder.takeProfit! - candles[currentDataIndex].high < params!.trailingSL!.tpDistanceShortForTighterSL! &&
       candles[currentDataIndex].close > newSLPrice
     ) {
       debugLog(
@@ -57,7 +57,7 @@ export function Strategy({
         date,
         marketOrder,
         candles[currentDataIndex],
-        params!.tpDistanceShortForTighterSL
+        params!.trailingSL!.tpDistanceShortForTighterSL
       );
       marketOrder.stopLoss = newSLPrice;
     }

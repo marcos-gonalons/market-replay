@@ -68,7 +68,7 @@ export function Strategy({
   if (marketOrder && marketOrder.position === "long") {
     if (
       candles[currentDataIndex].timestamp > marketOrder.createdAt! &&
-      marketOrder.takeProfit! - candles[currentDataIndex].high < params!.tpDistanceShortForTighterSL!
+      marketOrder.takeProfit! - candles[currentDataIndex].high < params!.trailingSL!.tpDistanceShortForTighterSL!
     ) {
       debugLog(
         ENABLE_DEBUG,
@@ -76,9 +76,9 @@ export function Strategy({
         date,
         marketOrder,
         candles[currentDataIndex],
-        params!.tpDistanceShortForTighterSL
+        params!.trailingSL!.tpDistanceShortForTighterSL
       );
-      marketOrder.stopLoss = marketOrder.price + params!.slDistanceWhenTpIsVeryClose!;
+      marketOrder.stopLoss = marketOrder.price + params!.trailingSL!.slDistanceWhenTpIsVeryClose!;
     }
   }
 

@@ -54,8 +54,8 @@ export function Strategy({
 
   HandleTrailingSLAndTP({
     openPosition,
-    tpDistanceShortForTighterSL: params!.tpDistanceShortForTighterSL!,
-    slDistanceWhenTpIsVeryClose: params!.slDistanceWhenTpIsVeryClose!,
+    trailingSL: params!.trailingSL!,
+    trailingTP: params!.trailingTP!,
     currentCandle: candles[currentDataIndex],
     log: (...msg: any[]) => {
       debugLog(ENABLE_DEBUG, date, ...msg)
