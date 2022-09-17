@@ -21,6 +21,10 @@ export function Strategy({
 }: StrategyFuncParameters) {
   const ENABLE_DEBUG = false;
 
+  const baseEMA = 200;
+  const smallEMA = 9;
+  const bigEMA = 21;
+
   void persistedVars;
   void trades;
   void spread;
@@ -63,16 +67,27 @@ export function Strategy({
   });
 
   if (openPosition) {
+    if (openPosition.position === "long") {
+
+       if (getEMA(candles[currentDataIndex-1], smallEMA).value < getEMA(candles[currentDataIndex-1], bigEMA).value) {
+        closeOrder(openPosition.id!, 'open');
+        return;
+      }
+    }
+
+    if (openPosition.position === "short") {
+
+    }
+  }
+
+  if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
 
-  const baseEMA = 200;
-  const smallEMA = 9;
-  const bigEMA = 21;
+
 
   if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
-    return;
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
@@ -127,6 +142,7 @@ export function Strategy({
   
 
   if (currentCandle.open < getEMA(currentCandle, baseEMA).value) {
+    return;
     debugLog(ENABLE_DEBUG, "Price is below 200 EMA, only shorts allowed", currentCandle, date);
 
     for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {

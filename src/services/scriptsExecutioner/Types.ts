@@ -12,7 +12,7 @@ export interface StrategyFuncParameters {
   params?: StrategyParams;
   createOrder: (order: Order) => string;
   removeAllOrders?: () => void;
-  closeOrder: (orderId: string) => void;
+  closeOrder: (orderId: string, openOrClose?: 'open'|'close') => void;
   isWithinTime: (
     executeHours: {
       hour: string;

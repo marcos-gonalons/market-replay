@@ -312,18 +312,22 @@ class ScriptsExecutionerService {
 
     if (replayMode) {
       (function (tradesContext: TradesContext): void {
-        closeOrderFunc = (id: string): void => {
+        closeOrderFunc = (id: string, openOrClose: 'open'|'close' = 'close'): void => {
           const order = tradesContext.state.orders.find((o) => o.id === id);
           if (!order) return;
 
           if (order.type === "market") {
-            let result = (currentCandle!.close - order.price) * order.size;
+            let endPrice = currentCandle![openOrClose];
+            const spreadAdjustment = (order.position === "short" ? SPREAD : -SPREAD) / 2;
+            endPrice += spreadAdjustment;
+
+            let result = (endPrice - order.price) * order.size;
             if (order.position === "short") result = -result;
             const trade = {
               startDate: order.createdAt!,
               endDate: currentCandle!.timestamp,
               startPrice: order.price,
-              endPrice: currentCandle!.close,
+              endPrice,
               size: order.size,
               position: order.position,
               result,
@@ -338,11 +342,15 @@ class ScriptsExecutionerService {
         };
       })(this.tradesContext!);
     } else {
-      closeOrderFunc = (id: string): void => {
+      closeOrderFunc = (id: string, openOrClose: 'open'|'close' = 'close'): void => {
         const order = orders!.find((o) => o.id === id);
         if (!order) return;
 
-        let result = (currentCandle!.close - order.price) * order.size;
+        let endPrice = currentCandle![openOrClose];
+        const spreadAdjustment = (order.position === "short" ? SPREAD : -SPREAD) / 2;
+        endPrice += spreadAdjustment;
+
+        let result = (endPrice - order.price) * order.size;
         if (order.position === "short") result = -result;
 
         if (order.type === "market") {
@@ -350,7 +358,7 @@ class ScriptsExecutionerService {
             startDate: order.createdAt!,
             endDate: currentCandle!.timestamp,
             startPrice: order.price,
-            endPrice: currentCandle!.close,
+            endPrice,
             size: order.size,
             position: order.position,
             result,
