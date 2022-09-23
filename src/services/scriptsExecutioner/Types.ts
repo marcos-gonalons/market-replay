@@ -59,6 +59,8 @@ export interface StrategyParams {
     slDistanceShortForTighterTP: number;
     tpDistanceWhenSlIsVeryClose: number;
   };
+
+  minProfit?: number;
   
   trendCandles?: number;
   trendDiff?: number;

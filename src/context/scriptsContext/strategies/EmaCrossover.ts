@@ -68,10 +68,11 @@ export function Strategy({
 
   if (openPosition) {
     if (openPosition.position === "long") {
-
-       if (getEMA(candles[currentDataIndex-1], smallEMA).value < getEMA(candles[currentDataIndex-1], bigEMA).value) {
-        closeOrder(openPosition.id!, 'open');
-        return;
+      if (currentCandle.open - openPosition.price > params!.minProfit!) {
+        if (getEMA(candles[currentDataIndex-1], smallEMA).value < getEMA(candles[currentDataIndex-1], bigEMA).value) {
+          closeOrder(openPosition.id!, 'open');
+          return;
+        }
       }
     }
 
@@ -84,8 +85,6 @@ export function Strategy({
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
-
-
 
   if (currentCandle.open > getEMA(currentCandle, baseEMA).value) {
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
