@@ -77,7 +77,7 @@ export function Strategy({
     }
 
     if (openPosition.position === "short") {
-
+      alert('TODO!');
     }
   }
 

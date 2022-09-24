@@ -180,7 +180,6 @@ class ScriptsExecutionerService {
       console.log("-".repeat(200));
       /***/
 
-      console.log(trades.length);
       if (profits > best!.profits!) {
         best = {...params};
         best!.profits = profits;
