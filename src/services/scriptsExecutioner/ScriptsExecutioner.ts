@@ -153,7 +153,7 @@ class ScriptsExecutionerService {
           type: "scripts-executioner",
           payload: {
             balance,
-            progress: (j * 100) / combinationsLength,
+            progress: parseFloat(((j * 100) / combinationsLength).toFixed(5)),
             trades,
           },
         });
@@ -193,7 +193,7 @@ class ScriptsExecutionerService {
             type: "scripts-executioner",
             payload: {
               balance,
-              progress: (j * 100) / (data.length * combinationsLength),
+              progress: parseFloat(((j * 100) / combinationsLength).toFixed(5)),
               trades,
               best: best!,
             },
@@ -213,7 +213,7 @@ class ScriptsExecutionerService {
             type: "scripts-executioner",
             payload: {
               balance,
-              progress: (j * 100) / (data.length * combinationsLength),
+              progress: parseFloat(((j * 100) / combinationsLength).toFixed(5)),
               trades,
               best: best!,
             },
