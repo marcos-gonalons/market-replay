@@ -21,6 +21,8 @@ export const COMMISSIONS = 35 / 100 / 10000;
 export const SPREAD = 0.00012; // 0.00025; // 0.00012; // 0.00001; // 0.0035
 export const STOP_ORDER_POINTS_HANDICAP = 0.00012; // 0.00012; 0.00025; // 2
 
+export const GOOD_SUCCESS_RATE = 35;
+
 /***
  * jpy 0.0074
  * usd 0.95

@@ -20,11 +20,11 @@ import { Order, State as TradesContextState, Trade, TradesContext } from "../../
 import { addCommissions, adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
-import { EUR_EXCHANGE_RATE, SPREAD } from "../painter/Constants";
+import { EUR_EXCHANGE_RATE, GOOD_SUCCESS_RATE, SPREAD } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
-import getParamsArray from "./ParamsArray";
 import { Strategy, StrategyFuncParameters, StrategyParams } from "./Types";
+import getCombinations from "./ParamCombinations";
 
 class ScriptsExecutionerService {
   private PainterService?: PainterService;
@@ -70,26 +70,66 @@ class ScriptsExecutionerService {
     return this;
   }
 
-  public executeWithFullData2(
+  public executeCombinationsWithFullData(
     script: Script,
     data: Candle[],
     initialBalance: number,
     worker?: AppWorker
   ): ScriptsExecutionerService {
-    const paramsArray = getParamsArray();
+    let balance = initialBalance;
+    let best: StrategyParams | null = null;
+    let bestWithGoodSuccessRate: StrategyParams | null = null;
 
-    let best: StrategyParams = paramsArray[0];
-    let bestWithGoodSuccessRate: StrategyParams = {...paramsArray[0]};
-    best.profits = -9999999;
-    bestWithGoodSuccessRate.profits = -9999999;
+    const { combinations, length: combinationsLength } = getCombinations();
 
     let j = 0;
-    for (const params of paramsArray) {
+    for (const minStopLossDistance of combinations.minStopLossDistance) {
+    for (const maxStopLossDistance of combinations.maxStopLossDistance) {
+    for (const takeProfitDistance of combinations.takeProfitDistance) {
+    for (const minProfit of combinations.minProfit) {
+    for (const futureCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.future) {
+    for (const pastCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.past) {
+    for (const priceOffset of combinations.priceOffset) {
+    for (const candlesAmountWithoutEMAsCrossing of combinations.candlesAmountWithoutEMAsCrossing) {
+    for (const tpDistanceShortForTighterSL of combinations.trailingSL.tpDistanceShortForTighterSL) {
+    for (const slDistanceWhenTpIsVeryClose of combinations.trailingSL.slDistanceWhenTpIsVeryClose) {
+    for (const slDistanceShortForTighterTP of combinations.trailingTP.slDistanceShortForTighterTP) {
+    for (const tpDistanceWhenSlIsVeryClose of combinations.trailingTP.tpDistanceWhenSlIsVeryClose) {
+    for (const maxSecondsOpenTrade of combinations.maxSecondsOpenTrade) {
       const orders: Order[] = [];
       const trades: Trade[] = [];
-      let balance = initialBalance;
-      let lastTradesLength = trades.length;
 
+      const params = {
+        riskPercentage: 1,
+        priceOffset,
+        candlesAmountToBeConsideredHorizontalLevel: {
+          future: futureCandles,
+          past: pastCandles
+        },
+        minStopLossDistance,
+        maxStopLossDistance,
+        takeProfitDistance,
+        minProfit,
+        trailingSL: {
+          tpDistanceShortForTighterSL,
+          slDistanceWhenTpIsVeryClose,
+        },
+        trailingTP: {
+          slDistanceShortForTighterTP,
+          tpDistanceWhenSlIsVeryClose
+        },
+        candlesAmountWithoutEMAsCrossing,
+        maxSecondsOpenTrade
+      }
+
+      if (best === null && bestWithGoodSuccessRate === null) {
+        best = params;
+        bestWithGoodSuccessRate = {...params};
+        best.profits = -9999999;
+        bestWithGoodSuccessRate.profits = -9999999;
+      }
+
+      let lastTradesLength = 0;
       for (let i = 0; i < data.length; i++) {
         processOrders({
           orders,
@@ -104,19 +144,19 @@ class ScriptsExecutionerService {
           balance += trades[trades.length - 1].result;
         }
         this.executeScriptCode(script, data, balance, false, orders, trades, i, params);
+      }
 
-        if (worker && i % Math.round(data.length / 100) === 0) {
-          worker.postMessage({
-            type: "scripts-executioner",
-            payload: {
-              balance,
-              progress: (j * 100) / (data.length * paramsArray.length),
-              trades,
-            },
-          });
-        }
-
-        j++;
+      // Report every N finished combinations.
+      // Looks like calling postMessage too often causes the browser to crash.
+      if (worker && !(j % 10)) {
+        worker.postMessage({
+          type: "scripts-executioner",
+          payload: {
+            balance,
+            progress: (j * 100) / combinationsLength,
+            trades,
+          },
+        });
       }
 
       const reports = generateReports(trades, initialBalance);
@@ -140,10 +180,11 @@ class ScriptsExecutionerService {
       console.log("-".repeat(200));
       /***/
 
-      if (profits > best.profits!) {
+      console.log(trades.length);
+      if (profits > best!.profits!) {
         best = {...params};
-        best.profits = profits;
-        best.totalTrades = totalTrades;
+        best!.profits = profits;
+        best!.totalTrades = totalTrades;
 
         console.log("new best", best);
 
@@ -152,18 +193,18 @@ class ScriptsExecutionerService {
             type: "scripts-executioner",
             payload: {
               balance,
-              progress: (j * 100) / (data.length * paramsArray.length),
+              progress: (j * 100) / (data.length * combinationsLength),
               trades,
-              best,
+              best: best!,
             },
           });
         }
       }
 
-      if (successRate >= 35 && profits > bestWithGoodSuccessRate.profits!) {
+      if (successRate >= GOOD_SUCCESS_RATE && profits > bestWithGoodSuccessRate!.profits!) {
         bestWithGoodSuccessRate = {...params};
-        bestWithGoodSuccessRate.profits = profits;
-        bestWithGoodSuccessRate.totalTrades = totalTrades;
+        bestWithGoodSuccessRate!.profits = profits;
+        bestWithGoodSuccessRate!.totalTrades = totalTrades;
 
         console.log("new best with good successRate", bestWithGoodSuccessRate);
 
@@ -172,22 +213,23 @@ class ScriptsExecutionerService {
             type: "scripts-executioner",
             payload: {
               balance,
-              progress: (j * 100) / (data.length * paramsArray.length),
+              progress: (j * 100) / (data.length * combinationsLength),
               trades,
-              best,
+              best: best!,
             },
           });
         }
       }
       
-    }
+      j++;
+  }}}}}}}}}}}}}
 
     console.log("Best", best);
     console.log("Best", JSON.stringify(best));
 
-
     console.log("Best with good success rate", bestWithGoodSuccessRate);
     console.log("Best with good success rate", JSON.stringify(bestWithGoodSuccessRate));
+
     return this;
   }
 
