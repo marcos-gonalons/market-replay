@@ -29,19 +29,21 @@ export default (function f({
     const priceAdjustment = 1 / 10000;
 
     const riskPercentage = 1;
-    const minStopLossDistance = 0 * priceAdjustment;
-    const maxStopLossDistance = 1000 * priceAdjustment;
-    const candlesAmountToBeConsideredHorizontalLevel = {
-      future: 1,
-      past: 1
-    }
     const priceOffset = 0 * priceAdjustment;
-    const takeProfitDistance = 75 * priceAdjustment;
-    const minProfit = 0 * priceAdjustment;
+
+    const candlesAmountToBeConsideredHorizontalLevel = {
+      future: 2,
+      past: 0
+    }
+
+    const minStopLossDistance = 0 * priceAdjustment;
+    const maxStopLossDistance = 200 * priceAdjustment;
+    const takeProfitDistance = 200 * priceAdjustment;
+    const minProfit = 10 * priceAdjustment;
 
     const trailingSL = {
-      tpDistanceShortForTighterSL: 0 * priceAdjustment,
-      slDistanceWhenTpIsVeryClose: 0 * priceAdjustment
+      tpDistanceShortForTighterSL: 120 * priceAdjustment,
+      slDistanceWhenTpIsVeryClose: 15 * priceAdjustment
     }
 
     const trailingTP = {
@@ -49,8 +51,8 @@ export default (function f({
       tpDistanceWhenSlIsVeryClose: 0 * priceAdjustment
     }
 
-    const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
     const candlesAmountWithoutEMAsCrossing = 0;
+    const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
 
     const validHours: StrategyParams["validHours"] = [];
     const validMonths: StrategyParams["validMonths"] = [];
