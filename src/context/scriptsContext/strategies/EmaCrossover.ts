@@ -77,7 +77,12 @@ export function Strategy({
     }
 
     if (openPosition.position === "short") {
-      alert('TODO!');
+      if (openPosition.price - currentCandle.open > params!.minProfit!) {
+        if (getEMA(candles[currentDataIndex-1], smallEMA).value > getEMA(candles[currentDataIndex-1], bigEMA).value) {
+          closeOrder(openPosition.id!, 'open');
+          return;
+        }
+      }
     }
   }
 
@@ -121,8 +126,8 @@ export function Strategy({
 
     const takeProfit = price + params!.takeProfitDistance!!;
     // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 10000 * 0.85)) * 10000 || 10000;
-    const size = 10000;
-    const rollover = (0.7 * size) / 10000;
+    const size = 1;
+    const rollover = 0; // (90 * size) / 10000;
     const o: Order = {
       type: "market" as OrderType,
       position: "long" as Position,
@@ -176,8 +181,8 @@ export function Strategy({
 
     const takeProfit = price - params!.takeProfitDistance!!;
     // const size = Math.floor((balance * (params!.riskPercentage / 100)) / (params!.stopLossDistance! * 10000 * 0.85)) * 10000 || 10000;
-    const size = 10000;
-    const rollover = (0.7 * size) / 10000;
+    const size = 1;
+    const rollover = 0; // (90 * size) / 10000;
     const o: Order = {
       type: "market" as OrderType,
       position: "short" as Position,
