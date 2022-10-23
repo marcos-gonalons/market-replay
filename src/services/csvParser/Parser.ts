@@ -45,6 +45,12 @@ export function getDateObject(dateString: string): Date {
 
   const splits = dateString.split(" ");
   const [day, month, year] = splits[0].split(".");
-  splits[0] = `${month}.${day}.${year}`;
-  return new Date(splits.join(" "));
+  const time = splits[1];
+  const timezone = splits[2];
+
+  const correctTimezone = timezone[3]+timezone[4]+timezone[5]+':'+timezone[6]+timezone[7];
+
+  const final = `${year}-${month}-${day}T${time}${correctTimezone}`
+
+  return new Date(final);
 }
