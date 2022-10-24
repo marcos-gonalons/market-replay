@@ -85,6 +85,7 @@ export default (function f({
   }
 
   function shorts() {
+    return
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;

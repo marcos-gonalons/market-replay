@@ -40,17 +40,19 @@ export function parse(csvContents: string): Candle[] {
 }
 
 export function getDateObject(dateString: string): Date {
-  // return new Date((parseInt(dateString) - 3600) * 1000);   // Winter time
-  // return new Date((parseInt(dateString) - 3600 * 2) * 1000); // Summer time
+  try {
+    const splits = dateString.split(" ");
+    const [day, month, year] = splits[0].split(".");
+    const time = splits[1];
+    const timezone = splits[2];
 
-  const splits = dateString.split(" ");
-  const [day, month, year] = splits[0].split(".");
-  const time = splits[1];
-  const timezone = splits[2];
+    const correctTimezone = timezone[3]+timezone[4]+timezone[5]+':'+timezone[6]+timezone[7];
 
-  const correctTimezone = timezone[3]+timezone[4]+timezone[5]+':'+timezone[6]+timezone[7];
+    const final = `${year}-${month}-${day}T${time}${correctTimezone}`
 
-  const final = `${year}-${month}-${day}T${time}${correctTimezone}`
-
-  return new Date(final);
+    return new Date(final);
+  } catch (e) {
+    // return new Date((parseInt(dateString) - 3600) * 1000);   // Winter time
+    return new Date((parseInt(dateString) - 3600 * 2) * 1000); // Summer time
+  }
 }
