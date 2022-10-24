@@ -220,7 +220,7 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
               painterService.setOffsetByDate(d);
             }}
           >
-            <span>{`${t.size} ${t.position} -> ${t.result.toFixed(2)} -> ${balance.toFixed(
+            <span>{`${t.size} ${t.position} -> ${t.startPrice.toFixed(5)} | ${t.endPrice.toFixed(5)} -> ${t.result.toFixed(2)} -> ${balance.toFixed(
               0
             )} -> ${d.toLocaleString()} to ${ed.toLocaleString()}`}</span>
           </div>

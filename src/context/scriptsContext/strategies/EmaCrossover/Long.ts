@@ -19,7 +19,7 @@ export function Strategy({
   params,
   debugLog,
 }: StrategyFuncParameters) {
-  const ENABLE_DEBUG = false;
+  const ENABLE_DEBUG = true;
 
   const baseEMA = 200;
   const smallEMA = 9;
