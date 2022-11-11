@@ -49,9 +49,12 @@ export function getDateObject(dateString: string): Date {
 
     const final = `${year}-${month}-${day}T${time}${correctTimezone}`
 
-    return new Date(final);
+    const date = new Date(final);
+
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(),
+    date.getUTCDate(), date.getUTCHours(),
+    date.getUTCMinutes(), date.getUTCSeconds()));
   } catch (e) {
-    // return new Date((parseInt(dateString) - 3600) * 1000);   // Winter time
-    return new Date((parseInt(dateString) - 3600 * 2) * 1000); // Summer time
+    return new Date((parseInt(dateString)));
   }
 }
