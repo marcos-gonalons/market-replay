@@ -31,24 +31,24 @@ export default function getCombinations():  {
   const combinations: ParamCombinations = {
     riskPercentage: [1],
 
-    priceOffset: [20].map(po => po * priceAdjustment),
+    priceOffset: [40,50,60,70,75,80,90,100].map(po => po * priceAdjustment),
     candlesAmountToBeConsideredHorizontalLevel: {
-      future: [0],
-      past: [0]
+      future: [30],
+      past: [40]
     },
-    minStopLossDistance: [0].map(sl => sl * priceAdjustment),
-    maxStopLossDistance: [900].map(sl => sl * priceAdjustment),
-    takeProfitDistance: [160].map(tp => tp * priceAdjustment),
-    minProfit: [100].map(mp => mp * priceAdjustment),
+    minStopLossDistance: [50].map(sl => sl * priceAdjustment),
+    maxStopLossDistance: [580].map(sl => sl * priceAdjustment),
+    takeProfitDistance: [230,240,250,260,270,280].map(tp => tp * priceAdjustment),
+    minProfit: [999999].map(mp => mp * priceAdjustment),
     trailingSL: {
-      tpDistanceShortForTighterSL: [0].map(tp => tp * priceAdjustment),
-      slDistanceWhenTpIsVeryClose: [0].map(sl => sl * priceAdjustment)
+      tpDistanceShortForTighterSL: [30].map(tp => tp * priceAdjustment),
+      slDistanceWhenTpIsVeryClose: [-90].map(sl => sl * priceAdjustment)
     },
     trailingTP: {
-      slDistanceShortForTighterTP: [0,20,40,60,80,100,120,140,160,200,180,220,240,260,280].map(sl => sl * priceAdjustment),
-      tpDistanceWhenSlIsVeryClose: [-150,-130,-110,-90,-70,-50,-30,-10,0,20,40,60,80,100,120,140,160,200,180,220,240,260,280].map(tp => tp * priceAdjustment)
+      slDistanceShortForTighterTP: [100].map(sl => sl * priceAdjustment),
+      tpDistanceWhenSlIsVeryClose: [-20].map(tp => tp * priceAdjustment)
     },
-    candlesAmountWithoutEMAsCrossing: [3],
+    candlesAmountWithoutEMAsCrossing: [12],
     maxSecondsOpenTrade: [0],
   }
 

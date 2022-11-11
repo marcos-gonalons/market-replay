@@ -224,6 +224,7 @@ class ScriptsExecutionerService {
       j++;
   }}}}}}}}}}}}}
 
+  alert('DONE')
     console.log("Best", best);
     console.log("Best", JSON.stringify(best));
 

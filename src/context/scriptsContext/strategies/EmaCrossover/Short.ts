@@ -19,7 +19,7 @@ export function Strategy({
   params,
   debugLog,
 }: StrategyFuncParameters) {
-  const ENABLE_DEBUG = false;
+  const ENABLE_DEBUG = true;
 
   const baseEMA = 200;
   const smallEMA = 9;
@@ -56,15 +56,17 @@ export function Strategy({
     }
   }
 
-  HandleTrailingSLAndTP({
-    openPosition,
-    trailingSL: params!.trailingSL!,
-    trailingTP: params!.trailingTP!,
-    currentCandle: candles[currentDataIndex],
-    log: (...msg: any[]) => {
-      debugLog(ENABLE_DEBUG, date, ...msg)
-    }
-  });
+  if (openPosition?.position === "short") {
+    HandleTrailingSLAndTP({
+      openPosition,
+      trailingSL: params!.trailingSL!,
+      trailingTP: params!.trailingTP!,
+      currentCandle: candles[currentDataIndex],
+      log: (...msg: any[]) => {
+        debugLog(ENABLE_DEBUG, date, ...msg)
+      }
+    });
+  }
 
   if (openPosition && openPosition.position === "short") {
     if (openPosition.price - currentCandle.open > params!.minProfit!) {

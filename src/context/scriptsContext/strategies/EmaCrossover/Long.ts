@@ -56,15 +56,17 @@ export function Strategy({
     }
   }
 
-  HandleTrailingSLAndTP({
-    openPosition,
-    trailingSL: params!.trailingSL!,
-    trailingTP: params!.trailingTP!,
-    currentCandle: candles[currentDataIndex],
-    log: (...msg: any[]) => {
-      debugLog(ENABLE_DEBUG, date, ...msg)
-    }
-  });
+  if (openPosition?.position === "long") {
+    HandleTrailingSLAndTP({
+      openPosition,
+      trailingSL: params!.trailingSL!,
+      trailingTP: params!.trailingTP!,
+      currentCandle: candles[currentDataIndex],
+      log: (...msg: any[]) => {
+        debugLog(ENABLE_DEBUG, date, ...msg)
+      }
+    });
+  }
 
   if (openPosition && openPosition.position === "long") {
     if (currentCandle.open - openPosition.price > params!.minProfit!) {
