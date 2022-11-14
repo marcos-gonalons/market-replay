@@ -55,6 +55,6 @@ export function getDateObject(dateString: string): Date {
     date.getUTCDate(), date.getUTCHours(),
     date.getUTCMinutes(), date.getUTCSeconds()));
   } catch (e) {
-    return new Date((parseInt(dateString)));
+    return new Date((parseInt(dateString)*1000));
   }
 }
