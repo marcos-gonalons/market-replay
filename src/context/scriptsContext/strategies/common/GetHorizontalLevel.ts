@@ -19,7 +19,7 @@ export function get({
   priceOffset,
   candles,
   log
-}: Params): number|null {
+}: Params): number[] {
   let candlesToCheck = 300;
 
   for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
@@ -74,11 +74,11 @@ export function get({
     if (isFalsePositive) continue;
   
     if (resistanceOrSupport === "support") {
-      return candles[horizontalLevelCandleIndex].low + priceOffset!;
+      return [candles[horizontalLevelCandleIndex].low + priceOffset!, horizontalLevelCandleIndex];
     } else {
-      return candles[horizontalLevelCandleIndex].high - priceOffset!
+      return [candles[horizontalLevelCandleIndex].high - priceOffset!, horizontalLevelCandleIndex];
     }
   }
 
-  return null;
+  return [0,0];
 }

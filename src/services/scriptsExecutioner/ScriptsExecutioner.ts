@@ -91,6 +91,7 @@ class ScriptsExecutionerService {
     for (const futureCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.future) {
     for (const pastCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.past) {
     for (const priceOffset of combinations.priceOffset) {
+    for (const maxAttemptsToGetSL of combinations.maxAttemptsToGetSL) {
     for (const candlesAmountWithoutEMAsCrossing of combinations.candlesAmountWithoutEMAsCrossing) {
     for (const tpDistanceShortForTighterSL of combinations.trailingSL.tpDistanceShortForTighterSL) {
     for (const slDistanceWhenTpIsVeryClose of combinations.trailingSL.slDistanceWhenTpIsVeryClose) {
@@ -103,6 +104,7 @@ class ScriptsExecutionerService {
       const params = {
         riskPercentage: 1,
         priceOffset,
+        maxAttemptsToGetSL,
         candlesAmountToBeConsideredHorizontalLevel: {
           future: futureCandles,
           past: pastCandles
@@ -222,7 +224,7 @@ class ScriptsExecutionerService {
       }
       
       j++;
-  }}}}}}}}}}}}}
+  }}}}}}}}}}}}}}
 
   alert('DONE')
     console.log("Best", best);

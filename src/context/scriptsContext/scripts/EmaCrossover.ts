@@ -23,6 +23,7 @@ export default (function f({
 
 
   function longs() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -30,29 +31,30 @@ export default (function f({
       const priceAdjustment = 1 / 10000;
   
       const riskPercentage = 1;
-      const priceOffset = 0 * priceAdjustment;
+      const priceOffset = 75 * priceAdjustment;
+      const maxAttemptsToGetSL = 10;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 2,
-        past: 0
+        future: 30,
+        past: 40
       }
   
-      const minStopLossDistance = 0 * priceAdjustment;
-      const maxStopLossDistance = 200 * priceAdjustment;
+      const minStopLossDistance = 50 * priceAdjustment;
+      const maxStopLossDistance = 600 * priceAdjustment;
       const takeProfitDistance = 200 * priceAdjustment;
-      const minProfit = 10 * priceAdjustment;
+      const minProfit = 99999 * priceAdjustment;
   
       const trailingSL = {
-        tpDistanceShortForTighterSL: 120 * priceAdjustment,
-        slDistanceWhenTpIsVeryClose: 15 * priceAdjustment
+        tpDistanceShortForTighterSL: 30 * priceAdjustment,
+        slDistanceWhenTpIsVeryClose: 90 * priceAdjustment
       }
   
       const trailingTP = {
-        slDistanceShortForTighterTP: 0 * priceAdjustment,
-        tpDistanceWhenSlIsVeryClose: 0 * priceAdjustment
+        slDistanceShortForTighterTP: 100 * priceAdjustment,
+        tpDistanceWhenSlIsVeryClose: -20 * priceAdjustment
       }
   
-      const candlesAmountWithoutEMAsCrossing = 0;
+      const candlesAmountWithoutEMAsCrossing = 12;
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
       const validHours: StrategyParams["validHours"] = [];
@@ -74,6 +76,7 @@ export default (function f({
         trailingTP,
         candlesAmountWithoutEMAsCrossing,
         maxSecondsOpenTrade,
+        maxAttemptsToGetSL
       };
     }
 
@@ -92,17 +95,18 @@ export default (function f({
       const priceAdjustment = 1 / 10000;
   
       const riskPercentage = 1;
-      const priceOffset = 200 * priceAdjustment;
+      const priceOffset = 25 * priceAdjustment;
+      const maxAttemptsToGetSL = 10;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
         future: 25,
-        past: 40
+        past: 10
       }
   
-      const minStopLossDistance = 0 * priceAdjustment;
-      const maxStopLossDistance = 550 * priceAdjustment;
-      const takeProfitDistance = 170 * priceAdjustment;
-      const minProfit = 100 * priceAdjustment;
+      const minStopLossDistance = 60 * priceAdjustment;
+      const maxStopLossDistance = 500 * priceAdjustment;
+      const takeProfitDistance = 120 * priceAdjustment;
+      const minProfit = 60 * priceAdjustment;
   
       const trailingSL = {
         tpDistanceShortForTighterSL: 0 * priceAdjustment,
@@ -110,11 +114,11 @@ export default (function f({
       }
   
       const trailingTP = {
-        slDistanceShortForTighterTP: 100 * priceAdjustment,
-        tpDistanceWhenSlIsVeryClose: 60 * priceAdjustment
+        slDistanceShortForTighterTP: 20 * priceAdjustment,
+        tpDistanceWhenSlIsVeryClose: -100 * priceAdjustment
       }
   
-      const candlesAmountWithoutEMAsCrossing = 6;
+      const candlesAmountWithoutEMAsCrossing = 10;
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
       const validHours: StrategyParams["validHours"] = [];
@@ -136,6 +140,7 @@ export default (function f({
         trailingTP,
         candlesAmountWithoutEMAsCrossing,
         maxSecondsOpenTrade,
+        maxAttemptsToGetSL
       };
     }
 

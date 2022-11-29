@@ -4,6 +4,7 @@ export interface ParamCombinations {
   minStopLossDistance: StrategyParams['minStopLossDistance'][];
   riskPercentage: StrategyParams['riskPercentage'][];
   priceOffset: StrategyParams['priceOffset'][];
+  maxAttemptsToGetSL: StrategyParams['maxAttemptsToGetSL'][];
   candlesAmountToBeConsideredHorizontalLevel: {
     future: number[],
     past: number[]
@@ -32,6 +33,7 @@ export default function getCombinations():  {
     riskPercentage: [1],
 
     priceOffset: [40,50,60,70,75,80,90,100].map(po => po * priceAdjustment),
+    maxAttemptsToGetSL: [10,20,30,40],
     candlesAmountToBeConsideredHorizontalLevel: {
       future: [30],
       past: [40]
@@ -61,6 +63,7 @@ export default function getCombinations():  {
       combinations.maxStopLossDistance.length *
       combinations.minStopLossDistance.length *
       combinations.priceOffset.length *
+      combinations.maxAttemptsToGetSL.length *
       combinations.candlesAmountWithoutEMAsCrossing.length *
       combinations.candlesAmountToBeConsideredHorizontalLevel.future.length *
       combinations.candlesAmountToBeConsideredHorizontalLevel.past.length *

@@ -11,6 +11,8 @@ export function parse(csvContents: string): Candle[] {
     lines = csvContents.split("\n");
   }
 
+  lines.splice(0,1);
+
   const data: Candle[] = [];
   for (const line of lines) {
     const [date, open, high, low, close, volume] = line.trim().split(",");

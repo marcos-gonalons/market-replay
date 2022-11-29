@@ -72,6 +72,7 @@ export interface StrategyParams {
   candlesAmountWithoutEMAsCrossing?: number;
 
   priceOffset?: number;
+  maxAttemptsToGetSL?: number;
   maxSecondsOpenTrade?: number;
 
   profits?: number;

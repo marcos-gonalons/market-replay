@@ -114,6 +114,7 @@ export function Strategy({
     priceOffset: params!.priceOffset!,
     candles,
     currentDataIndex,
+    maxAttempts: params!.maxAttemptsToGetSL!,
     log: (...msg: any[]) => {
       debugLog(ENABLE_DEBUG, date, ...msg)
     }
