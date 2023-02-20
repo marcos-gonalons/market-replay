@@ -7,6 +7,8 @@ import { Strategy as ResistanceBounceStrategy } from "../../context/scriptsConte
 import { Strategy as SupportBounceStrategy } from "../../context/scriptsContext/strategies/SupportBounce";
 import { Strategy as EmaCrossoverLongsStrategy } from "../../context/scriptsContext/strategies/EmaCrossover/Long";
 import { Strategy as EmaCrossoverShortsStrategy } from "../../context/scriptsContext/strategies/EmaCrossover/Short";
+import { Strategy as RangesShortsStrategy } from "../../context/scriptsContext/strategies/Ranges/Short";
+import { Strategy as RangesLongsStrategy } from "../../context/scriptsContext/strategies/Ranges/Long";
 import { Script } from "../../context/scriptsContext/Types";
 import {
   addOrder,
@@ -573,6 +575,12 @@ class ScriptsExecutionerService {
     },{
       name: "EMA Crossover Shorts",
       func: EmaCrossoverShortsStrategy
+    },{
+      name: "Ranges Shorts",
+      func: RangesShortsStrategy
+    },{
+      name: "Ranges Longs",
+      func: RangesLongsStrategy
     }];
   }
 

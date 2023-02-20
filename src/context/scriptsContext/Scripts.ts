@@ -3,6 +3,7 @@ import ResistanceBreakoutAnticipation from "./scripts/ResistanceBreakoutAnticipa
 import SupportBounce from "./scripts/SupportBounce";
 import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
 import EMACrossover from "./scripts/EmaCrossover";
+import Ranges from "./scripts/Ranges";
 import { Script } from "./Types";
 
 const SCRIPTS: Script[] = [
@@ -30,6 +31,11 @@ const SCRIPTS: Script[] = [
     name: "EMA Crossover",
     isActive: false,
     contents: EMACrossover,
+  },
+  {
+    name: "Ranges",
+    isActive: false,
+    contents: Ranges,
   },
 ];
 

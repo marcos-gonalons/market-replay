@@ -21,73 +21,7 @@ export default (function f({
 
   if (candles.length === 0 || currentDataIndex === 0) return;
 
-
   function longs() {
-    return;
-    function getParams(params: StrategyParams | null): StrategyParams {
-      if (params) {
-        return params;
-      }
-      const priceAdjustment = 1 / 10000;
-  
-      const riskPercentage = 1;
-      const priceOffset = 75 * priceAdjustment;
-      const maxAttemptsToGetSL = 10;
-  
-      const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 30,
-        past: 40
-      }
-  
-      const minStopLossDistance = 50 * priceAdjustment;
-      const maxStopLossDistance = 600 * priceAdjustment;
-      const takeProfitDistance = 200 * priceAdjustment;
-      const minProfit = 99999 * priceAdjustment;
-  
-      const trailingSL = {
-        tpDistanceShortForTighterSL: 30 * priceAdjustment,
-        slDistanceWhenTpIsVeryClose: 90 * priceAdjustment
-      }
-  
-      const trailingTP = {
-        slDistanceShortForTighterTP: 100 * priceAdjustment,
-        tpDistanceWhenSlIsVeryClose: -20 * priceAdjustment
-      }
-  
-      const candlesAmountWithoutEMAsCrossing = 12;
-      const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
-  
-      const validHours: StrategyParams["validHours"] = [];
-      const validMonths: StrategyParams["validMonths"] = [];
-      const validDays: StrategyParams["validDays"] = [];
-  
-      return {
-        validHours,
-        validDays,
-        validMonths,
-        riskPercentage,
-        minStopLossDistance,
-        maxStopLossDistance,
-        candlesAmountToBeConsideredHorizontalLevel,
-        priceOffset,
-        takeProfitDistance,
-        minProfit,
-        trailingSL,
-        trailingTP,
-        candlesAmountWithoutEMAsCrossing,
-        maxSecondsOpenTrade,
-        maxAttemptsToGetSL
-      };
-    }
-
-    strategies.find(s => s.name === "EMA Crossover Longs")!.func({
-      candles, orders, trades, balance, currentDataIndex, spread,
-      createOrder, closeOrder, persistedVars, isWithinTime, debugLog,
-      params: getParams(params || null), strategies
-    });
-  }
-
-  function shorts() {
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -144,7 +78,7 @@ export default (function f({
       };
     }
 
-    strategies.find(s => s.name === "EMA Crossover Shorts")!.func({
+    strategies.find(s => s.name === "Ranges Longs")!.func({
       candles, orders, trades, balance, currentDataIndex, spread,
       createOrder, closeOrder, persistedVars, isWithinTime, debugLog,
       params: getParams(params || null), strategies
@@ -152,7 +86,6 @@ export default (function f({
   }
 
   longs();
-  shorts();
 
   // end script
 }
