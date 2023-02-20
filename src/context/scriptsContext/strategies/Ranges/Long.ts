@@ -1,6 +1,5 @@
 import { StrategyFuncParameters } from "../../../../services/scriptsExecutioner/Types";
 
-import type { Candle, MovingAverage } from "../../../globalContext/Types";
 import { handle as HandleTrailingSLAndTP } from "../common/HandleTrailingSLAndTP";
 
 export function Strategy({
@@ -18,10 +17,6 @@ export function Strategy({
   debugLog,
 }: StrategyFuncParameters) {
   const ENABLE_DEBUG = true;
-
-  const baseEMA = 200;
-  const smallEMA = 9;
-  const bigEMA = 21;
 
   void persistedVars;
   void trades;
@@ -66,24 +61,9 @@ export function Strategy({
     });
   }
 
-  if (openPosition && openPosition.position === "long") {
-    if (currentCandle.open - openPosition.price > params!.minProfit!) {
-      if (getEMA(candles[currentDataIndex-1], smallEMA).value < getEMA(candles[currentDataIndex-1], bigEMA).value) {
-          closeOrder(openPosition.id!, 'open');
-          return;
-      }
-    }
-  }
-
   if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
 
-  
-}
-  
-
-function getEMA(candle: Candle, candlesAmount: number): MovingAverage {
-  return candle.indicators.movingAverages.find(m => m.candlesAmount === candlesAmount)!;
 }
