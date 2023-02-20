@@ -25,22 +25,19 @@ export function get({
     if (x < 0) {
       break;
     }
-    const horizontalLevelCandleIndex = x - candlesAmountToBeConsideredHorizontalLevel.future;
 
-    if (!IsValidHorizontalLevel({
+    const { isValid, indexFound } = IsValidHorizontalLevel({
       resistanceOrSupport,
       currentCandlesIndex: x,
-      indexToCheck: horizontalLevelCandleIndex,
       candlesAmountToBeConsideredHorizontalLevel,
       candles
-    })) {
-      continue;
-    }
+    });
+    if (!isValid) continue;
   
     if (resistanceOrSupport === "support") {
-      return [candles[horizontalLevelCandleIndex].low + priceOffset!, horizontalLevelCandleIndex];
+      return [candles[indexFound].low + priceOffset!, indexFound];
     } else {
-      return [candles[horizontalLevelCandleIndex].high - priceOffset!, horizontalLevelCandleIndex];
+      return [candles[indexFound].high - priceOffset!, indexFound];
     }
   }
 
@@ -49,7 +46,6 @@ export function get({
 
 interface IsValidHorizontalLevelParams {
   readonly resistanceOrSupport: "resistance" | "support";
-  readonly indexToCheck: number;
   readonly currentCandlesIndex: number;
   readonly candlesAmountToBeConsideredHorizontalLevel: {
     readonly future: number;
@@ -59,44 +55,44 @@ interface IsValidHorizontalLevelParams {
 }
 export function IsValidHorizontalLevel({
   resistanceOrSupport,
-  indexToCheck,
   currentCandlesIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   candles,
- }: IsValidHorizontalLevelParams): boolean {
-    if (indexToCheck < 0 || currentCandlesIndex < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
-      return false;
-    }
-    
-    let isFalsePositive = false;
-    for (let j = indexToCheck + 1; j < currentCandlesIndex; j++) {
-      if (resistanceOrSupport === "resistance") {
-        isFalsePositive = candles[j].high > candles[indexToCheck].high;
-      }
-      if (resistanceOrSupport === "support") {
-        isFalsePositive = candles[j].low < candles[indexToCheck].low;
-      }
+ }: IsValidHorizontalLevelParams): { isValid: boolean, indexFound: number } {
+  const indexToCheck = currentCandlesIndex - candlesAmountToBeConsideredHorizontalLevel.future
+  if (indexToCheck < 0 || currentCandlesIndex < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
+    return { isValid: false, indexFound: 0 };
+  }
   
-      if (isFalsePositive) return false;
+  let isFalsePositive = false;
+  for (let j = indexToCheck + 1; j < currentCandlesIndex; j++) {
+    if (resistanceOrSupport === "resistance") {
+      isFalsePositive = candles[j].high > candles[indexToCheck].high;
+    }
+    if (resistanceOrSupport === "support") {
+      isFalsePositive = candles[j].low < candles[indexToCheck].low;
     }
 
-    isFalsePositive = false;
-    for (
-     let j = indexToCheck - candlesAmountToBeConsideredHorizontalLevel.past;
-      j < indexToCheck;
-      j++
-    ) {
-      if (!candles[j]) return false;
-  
-      if (resistanceOrSupport === "resistance") {
-        isFalsePositive = candles[j].high > candles[indexToCheck].high
-      }
-      if (resistanceOrSupport === "support") {
-        isFalsePositive = candles[j].low < candles[indexToCheck].low;
-      }
+    if (isFalsePositive) return { isValid: false, indexFound: 0 };
+  }
 
-      if (isFalsePositive) return false;
+  isFalsePositive = false;
+  for (
+    let j = indexToCheck - candlesAmountToBeConsideredHorizontalLevel.past;
+    j < indexToCheck;
+    j++
+  ) {
+    if (!candles[j]) return { isValid: false, indexFound: 0 };
+
+    if (resistanceOrSupport === "resistance") {
+      isFalsePositive = candles[j].high > candles[indexToCheck].high
     }
-    
-    return true;
+    if (resistanceOrSupport === "support") {
+      isFalsePositive = candles[j].low < candles[indexToCheck].low;
+    }
+
+    if (isFalsePositive) return { isValid: false, indexFound: 0 };
+  }
+  
+  return { isValid: true, indexFound: indexToCheck };
 }
