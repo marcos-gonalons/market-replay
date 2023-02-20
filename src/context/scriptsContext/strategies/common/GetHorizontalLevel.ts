@@ -1,6 +1,6 @@
 import { Candle } from "../../../globalContext/Types";
 
-interface Params {
+interface GetParams {
   readonly resistanceOrSupport: "resistance" | "support";
   readonly currentDataIndex: number;
   readonly candlesAmountToBeConsideredHorizontalLevel: {
@@ -17,9 +17,8 @@ export function get({
   currentDataIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   priceOffset,
-  candles,
-  log
-}: Params): number[] {
+  candles
+}: GetParams): number[] {
   let candlesToCheck = 300;
 
   for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
@@ -27,51 +26,16 @@ export function get({
       break;
     }
     const horizontalLevelCandleIndex = x - candlesAmountToBeConsideredHorizontalLevel.future;
-    if (horizontalLevelCandleIndex < 0 || x < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
+
+    if (!IsValidHorizontalLevel({
+      resistanceOrSupport,
+      currentCandlesIndex: x,
+      indexToCheck: horizontalLevelCandleIndex,
+      candlesAmountToBeConsideredHorizontalLevel,
+      candles
+    })) {
       continue;
     }
-    
-    let isFalsePositive = false;
-    for (let j = horizontalLevelCandleIndex + 1; j < x; j++) {
-      if (resistanceOrSupport === "resistance") {
-        isFalsePositive = candles[j].high > candles[horizontalLevelCandleIndex].high;
-      }
-      if (resistanceOrSupport === "support") {
-        isFalsePositive = candles[j].low < candles[horizontalLevelCandleIndex].low;
-      }
-  
-      if (isFalsePositive) {
-        log("future_overcame");
-        break;
-      }
-  
-    }
-    
-    if (isFalsePositive) continue;
-    
-
-    isFalsePositive = false;
-    for (
-     let j = horizontalLevelCandleIndex - candlesAmountToBeConsideredHorizontalLevel.past;
-      j < horizontalLevelCandleIndex;
-      j++
-    ) {
-      if (!candles[j]) continue;
-  
-      if (resistanceOrSupport === "resistance") {
-        isFalsePositive = candles[j].high > candles[horizontalLevelCandleIndex].high
-      }
-      if (resistanceOrSupport === "support") {
-        isFalsePositive = candles[j].low < candles[horizontalLevelCandleIndex].low;
-      }
-
-      if (isFalsePositive) {
-        log("past_overcame");
-        break;
-      }
-    }
-    
-    if (isFalsePositive) continue;
   
     if (resistanceOrSupport === "support") {
       return [candles[horizontalLevelCandleIndex].low + priceOffset!, horizontalLevelCandleIndex];
@@ -81,4 +45,58 @@ export function get({
   }
 
   return [0,0];
+}
+
+interface IsValidHorizontalLevelParams {
+  readonly resistanceOrSupport: "resistance" | "support";
+  readonly indexToCheck: number;
+  readonly currentCandlesIndex: number;
+  readonly candlesAmountToBeConsideredHorizontalLevel: {
+    readonly future: number;
+    readonly past: number;
+  }
+  readonly candles: Candle[];
+}
+export function IsValidHorizontalLevel({
+  resistanceOrSupport,
+  indexToCheck,
+  currentCandlesIndex,
+  candlesAmountToBeConsideredHorizontalLevel,
+  candles,
+ }: IsValidHorizontalLevelParams): boolean {
+    if (indexToCheck < 0 || currentCandlesIndex < candlesAmountToBeConsideredHorizontalLevel.future + candlesAmountToBeConsideredHorizontalLevel.past) {
+      return false;
+    }
+    
+    let isFalsePositive = false;
+    for (let j = indexToCheck + 1; j < currentCandlesIndex; j++) {
+      if (resistanceOrSupport === "resistance") {
+        isFalsePositive = candles[j].high > candles[indexToCheck].high;
+      }
+      if (resistanceOrSupport === "support") {
+        isFalsePositive = candles[j].low < candles[indexToCheck].low;
+      }
+  
+      if (isFalsePositive) return false;
+    }
+
+    isFalsePositive = false;
+    for (
+     let j = indexToCheck - candlesAmountToBeConsideredHorizontalLevel.past;
+      j < indexToCheck;
+      j++
+    ) {
+      if (!candles[j]) return false;
+  
+      if (resistanceOrSupport === "resistance") {
+        isFalsePositive = candles[j].high > candles[indexToCheck].high
+      }
+      if (resistanceOrSupport === "support") {
+        isFalsePositive = candles[j].low < candles[indexToCheck].low;
+      }
+
+      if (isFalsePositive) return false;
+    }
+    
+    return true;
 }
