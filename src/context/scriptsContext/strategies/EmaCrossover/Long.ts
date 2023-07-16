@@ -88,7 +88,7 @@ export function Strategy({
   }
 
   debugLog(ENABLE_DEBUG, "Price is above huge EMA, only longs allowed", currentCandle, date);
-  for (let i = currentDataIndex - params!.candlesAmountWithoutEMAsCrossing! - 2; i <= currentDataIndex - 2; i++) {
+  for (let i = currentDataIndex - params!.emaCrossover!.candlesAmountWithoutEMAsCrossing - 2; i <= currentDataIndex - 2; i++) {
     if (i <= 0) return;
 
     if (getEMA(candles[i], smallEMA).value >= getEMA(candles[i], bigEMA).value) {
@@ -110,10 +110,10 @@ export function Strategy({
     minStopLossDistance: params!.minStopLossDistance!,
     maxStopLossDistance: params!.maxStopLossDistance!,
     candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
-    priceOffset: params!.priceOffset!,
+    priceOffset: params!.emaCrossover!.stopLossPriceOffset,
     candles,
     currentDataIndex,
-    maxAttempts: params!.maxAttemptsToGetSL!,
+    maxAttempts: params!.emaCrossover!.maxAttemptsToGetSL,
     log: (...msg: any[]) => {
       debugLog(ENABLE_DEBUG, date, ...msg)
     }

@@ -4,7 +4,7 @@ export interface ParamCombinations {
   minStopLossDistance: StrategyParams['minStopLossDistance'][];
   riskPercentage: StrategyParams['riskPercentage'][];
   priceOffset: StrategyParams['priceOffset'][];
-  maxAttemptsToGetSL: StrategyParams['maxAttemptsToGetSL'][];
+  maxAttemptsToGetSL: number[];
   candlesAmountToBeConsideredHorizontalLevel: {
     future: number[],
     past: number[]
@@ -20,7 +20,7 @@ export interface ParamCombinations {
     slDistanceShortForTighterTP: number[];
     tpDistanceWhenSlIsVeryClose: number[];
   }
-  candlesAmountWithoutEMAsCrossing: StrategyParams['candlesAmountWithoutEMAsCrossing'][];
+  candlesAmountWithoutEMAsCrossing: number[];
   maxSecondsOpenTrade: StrategyParams['maxSecondsOpenTrade'][];
 }
 

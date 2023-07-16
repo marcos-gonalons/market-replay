@@ -30,7 +30,7 @@ export default (function f({
       const priceAdjustment = 1 / 10000;
   
       const riskPercentage = 1;
-      const priceOffset = 0 * priceAdjustment;
+      const stopLossPriceOffset = 0 * priceAdjustment;
       const maxAttemptsToGetSL = 8;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
@@ -68,14 +68,16 @@ export default (function f({
         minStopLossDistance,
         maxStopLossDistance,
         candlesAmountToBeConsideredHorizontalLevel,
-        priceOffset,
         takeProfitDistance,
         minProfit,
         trailingSL,
         trailingTP,
-        candlesAmountWithoutEMAsCrossing,
         maxSecondsOpenTrade,
-        maxAttemptsToGetSL
+        emaCrossover: {
+          stopLossPriceOffset,
+          maxAttemptsToGetSL,
+          candlesAmountWithoutEMAsCrossing
+        }
       };
     }
 
@@ -95,7 +97,7 @@ export default (function f({
       const priceAdjustment = 1 / 10000;
   
       const riskPercentage = 1;
-      const priceOffset = 25 * priceAdjustment;
+      const stopLossPriceOffset = 25 * priceAdjustment;
       const maxAttemptsToGetSL = 11;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
@@ -133,14 +135,16 @@ export default (function f({
         minStopLossDistance,
         maxStopLossDistance,
         candlesAmountToBeConsideredHorizontalLevel,
-        priceOffset,
         takeProfitDistance,
         minProfit,
         trailingSL,
         trailingTP,
-        candlesAmountWithoutEMAsCrossing,
         maxSecondsOpenTrade,
-        maxAttemptsToGetSL
+        emaCrossover: {
+          stopLossPriceOffset,
+          maxAttemptsToGetSL,
+          candlesAmountWithoutEMAsCrossing
+        }
       };
     }
 

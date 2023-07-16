@@ -42,8 +42,8 @@ export interface StrategyParams {
     weekday: number;
     hours: string[];
   }[];
-  
   validMonths?: number[];
+
   riskPercentage: number;
   minStopLossDistance?: number;
   maxStopLossDistance?: number;
@@ -69,15 +69,19 @@ export interface StrategyParams {
     past: number;
   };
 
-  candlesAmountWithoutEMAsCrossing?: number;
-
   priceOffset?: number;
-  maxAttemptsToGetSL?: number;
+
   maxSecondsOpenTrade?: number;
 
   profits?: number;
   totalTrades?: number;
   withPendingOrders?: boolean;
+
+  emaCrossover?: {
+    stopLossPriceOffset: number;
+    maxAttemptsToGetSL: number;
+    candlesAmountWithoutEMAsCrossing: number;
+  }
 }
 
 type StrategyName = (
