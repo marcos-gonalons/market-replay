@@ -103,6 +103,7 @@ export function Strategy({
     }
     if (isRangeBroken) continue;
 
+    // todo: move this to script params object
     const PRICE_TOLERANCE_SAME_LEVEL = 50*(1/10000);
 
     const { level: supportCandle1, index: supportCandleIndex } = getPreviousLevel(
@@ -129,9 +130,9 @@ export function Strategy({
       continue;
     }
 
-    resistanceCandle1.meta = { marked: "yellow" };
-    supportCandle1.meta = { marked: "purple" };
-    resistanceCandle2.meta = { marked: "blue" };
+    resistanceCandle1.meta = { type: "resistance" };
+    supportCandle1.meta = { type: "support" };
+    resistanceCandle2.meta = { type: "resistance" };
 
     debugLog(ENABLE_DEBUG, "HABEMUS RANGE");
     break;

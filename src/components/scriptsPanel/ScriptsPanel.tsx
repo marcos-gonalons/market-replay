@@ -180,8 +180,6 @@ function onReceiveMsgFromWorker(
     tradesContext.dispatch(setBalance(balance));
     scriptsContext.dispatch(setProgress(0));
 
-    console.log("EHEHHE");
-    console.log(candles?.length);
     if (candles) {
       painterService.setData(candles);
     }
