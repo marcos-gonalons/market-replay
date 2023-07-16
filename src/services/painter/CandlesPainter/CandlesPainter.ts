@@ -54,6 +54,11 @@ export function drawCandles({
     ctx.stroke();
     ctx.closePath();
 
+    if (candle.meta && candle.meta.marked) {
+      ctx.fillStyle = candle.meta.marked as string;
+      ctx.fillRect(x, 0, 1, 1000);
+    }
+
     candleNumber++;
   }
 }
