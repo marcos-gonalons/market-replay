@@ -28,8 +28,8 @@ export default (function f({
     const riskPercentage = 1;
 
     const candlesAmountToBeConsideredHorizontalLevel = {
-      future: 5,
-      past: 5
+      future: 30,
+      past: 30
     }
 
     return { 
