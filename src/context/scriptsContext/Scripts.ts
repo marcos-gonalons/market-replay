@@ -4,6 +4,7 @@ import SupportBounce from "./scripts/SupportBounce";
 import SupportBreakoutAnticipation from "./scripts/SupportBreakoutAnticipation";
 import EMACrossover from "./scripts/EmaCrossover";
 import Ranges from "./scripts/Ranges";
+import Test from "./scripts/Test";
 import { Script } from "./Types";
 
 const SCRIPTS: Script[] = [
@@ -37,6 +38,11 @@ const SCRIPTS: Script[] = [
     isActive: false,
     contents: Ranges,
   },
+  {
+    name: "Test",
+    isActive: false,
+    contents: Test
+  }
 ];
 
 export default SCRIPTS;

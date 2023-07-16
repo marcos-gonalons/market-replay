@@ -28,6 +28,7 @@ export interface ScriptExecutionerWorkerMessageOut {
   trades: Trade[];
   reports?: Report[];
   best?: StrategyParams;
+  candles?: Candle[];
 }
 
 export interface AppWorker extends Worker {

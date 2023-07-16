@@ -42,7 +42,8 @@ export function drawCandles({
     const wickX = x + candleWidth / 2;
     ctx.beginPath();
     ctx.moveTo(wickX, y);
-    ctx.lineTo(wickX, y - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff);
+    const topWickEndPosition = y - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff;
+    ctx.lineTo(wickX, topWickEndPosition);
     ctx.stroke();
     ctx.closePath();
 
@@ -50,13 +51,24 @@ export function drawCandles({
     wickDiff = candle.low - (isPositive ? candle.open : candle.close);
     ctx.beginPath();
     ctx.moveTo(wickX, y + h);
-    ctx.lineTo(wickX, y + h - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff);
+    const bottomWickEndPosition = y + h - ((candlesDisplayDimensions.height - paddingInPx * 2) / priceRangeDiff) * wickDiff;
+    ctx.lineTo(wickX, bottomWickEndPosition);
     ctx.stroke();
     ctx.closePath();
 
-    if (candle.meta && candle.meta.marked) {
-      ctx.fillStyle = candle.meta.marked as string;
-      ctx.fillRect(x, 0, 1, 1000);
+    if (candle.meta && candle.meta.type) {
+      if (candle.meta.type === "resistance") {
+        ctx.fillStyle = "yellow";
+        ctx.beginPath();
+        ctx.arc(x + candleWidth / 2, topWickEndPosition, 10, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      if (candle.meta.type === "support") {
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.arc(x + candleWidth / 2, bottomWickEndPosition, 10, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     }
 
     candleNumber++;

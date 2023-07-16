@@ -9,6 +9,7 @@ import { Strategy as EmaCrossoverLongsStrategy } from "../../context/scriptsCont
 import { Strategy as EmaCrossoverShortsStrategy } from "../../context/scriptsContext/strategies/EmaCrossover/Short";
 import { Strategy as RangesShortsStrategy } from "../../context/scriptsContext/strategies/Ranges/Short";
 import { Strategy as RangesLongsStrategy } from "../../context/scriptsContext/strategies/Ranges/Long";
+import { Strategy as Test } from "../../context/scriptsContext/strategies/Test";
 import { Script } from "../../context/scriptsContext/Types";
 import {
   addOrder,
@@ -285,6 +286,7 @@ class ScriptsExecutionerService {
           progress: 100,
           trades,
           reports: generateReports(trades, initialBalance),
+          candles: data
         },
       });
     }
@@ -581,6 +583,9 @@ class ScriptsExecutionerService {
     },{
       name: "Ranges Longs",
       func: RangesLongsStrategy
+    },{
+      name: "Test",
+      func: Test,
     }];
   }
 

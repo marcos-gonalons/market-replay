@@ -167,7 +167,7 @@ function onReceiveMsgFromWorker(
 
   if (type !== "scripts-executioner") return;
 
-  const { balance, progress, trades, reports, best } = payload as ScriptExecutionerWorkerMessageOut;
+  const { balance, progress, trades, reports, best, candles } = payload as ScriptExecutionerWorkerMessageOut;
 
   scriptsContext.dispatch(setProgress(progress));
 
@@ -180,12 +180,20 @@ function onReceiveMsgFromWorker(
     tradesContext.dispatch(setBalance(balance));
     scriptsContext.dispatch(setProgress(0));
 
+    console.log("EHEHHE");
+    console.log(candles?.length);
+    if (candles) {
+      painterService.setData(candles);
+    }
+
     painterService.draw();
 
     if (reports) {
       setIsReportModalVisible(true);
       setScriptReports(reports);
     }
+
+
   }
 }
 

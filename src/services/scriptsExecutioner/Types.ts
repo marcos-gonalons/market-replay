@@ -82,7 +82,7 @@ export interface StrategyParams {
 
 type StrategyName = (
   "Resistance Breakout" | "Support Breakout" | "Resistance Bounce" | "Support Bounce" |
-  "EMA Crossover Longs" | "EMA Crossover Shorts" | "Ranges Shorts" | "Ranges Longs"
+  "EMA Crossover Longs" | "EMA Crossover Shorts" | "Ranges Shorts" | "Ranges Longs" | "Test"
 )
 export interface Strategy {
   name: StrategyName;
