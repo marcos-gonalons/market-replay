@@ -53,6 +53,14 @@ export default (function f({
       const validHours: StrategyParams["validHours"] = [];
       const validMonths: StrategyParams["validMonths"] = [];
       const validDays: StrategyParams["validDays"] = [];
+
+      const ranges: StrategyParams["ranges"] = {
+        candlesToCheck: 300,
+        maxPriceDifferenceForSameHorizontalLevel: 50 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
+        minCandlesBetweenRangePoints: 4,
+        maxCandlesBetweenRangePoints: 500
+      }
   
       return {
         validHours,
@@ -64,7 +72,8 @@ export default (function f({
         takeProfitDistance,
         trailingSL,
         trailingTP,
-        maxSecondsOpenTrade
+        maxSecondsOpenTrade,
+        ranges
       };
     }
 

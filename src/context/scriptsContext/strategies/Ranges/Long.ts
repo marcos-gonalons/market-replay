@@ -68,9 +68,7 @@ export function Strategy({
     return;
   }
 
-  let candlesToCheck = 300;
-
-  for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
+  for (let x = currentDataIndex; x > currentDataIndex - params!.ranges!.candlesToCheck; x--) {
     if (x < 0) {
       break;
     }
@@ -89,9 +87,6 @@ export function Strategy({
     }
 
     debugLog(ENABLE_DEBUG, "resistanceCandle1", resistanceCandle1.timestamp, new Date(resistanceCandle1.timestamp));
-    if (resistanceCandle1.timestamp === 1646107200000) {
-      debugger;
-    }
 
     // todo: if we start with a support this for must be adjusted
     let isRangeBroken = false;
@@ -102,9 +97,6 @@ export function Strategy({
       }
     }
     if (isRangeBroken) continue;
-
-    // todo: move this to script params object
-    const PRICE_TOLERANCE_SAME_LEVEL = 50*(1/10000);
 
     const { level: supportCandle1, index: supportCandleIndex } = getPreviousLevel(
       "support",
@@ -126,7 +118,7 @@ export function Strategy({
       continue;
     }
 
-    if (Math.abs(resistanceCandle1.high-resistanceCandle2.high)>=PRICE_TOLERANCE_SAME_LEVEL) {
+    if (Math.abs(resistanceCandle1.high-resistanceCandle2.high)>=params!.ranges!.maxPriceDifferenceForSameHorizontalLevel) {
       continue;
     }
 
@@ -144,13 +136,16 @@ export function Strategy({
     candles: Candle[],
     nextLevelToCompare: Candle,
   ): { level: Candle|null, index: number } {
-    const MIN_CANDLES_BETWEEN_LEVELS = 4;
-    const MAX_AMOUNT_FOR_NEXT_LEVEL = 500;
-    const MIN_PRICE_DIFFERENCE_BETWEEN_LEVELS = 100 * (1/10000);
-
     const nullReturn = { level: null, index: 0 };
 
-    for (let i = currentLevelIndex-1; i >= currentLevelIndex-1-MIN_CANDLES_BETWEEN_LEVELS; i--) {
+    const {
+      maxPriceDifferenceForSameHorizontalLevel,
+      minPriceDifferenceBetweenRangePoints,
+      minCandlesBetweenRangePoints,
+      maxCandlesBetweenRangePoints
+    } = params!.ranges!;
+
+    for (let i = currentLevelIndex-1; i >= currentLevelIndex-1-minCandlesBetweenRangePoints; i--) {
       if (resistanceOrSupport === "resistance") {
         if (candles[i].low <= nextLevelToCompare.low) {
           return nullReturn;
@@ -163,8 +158,8 @@ export function Strategy({
       }
     }
 
-    currentLevelIndex = currentLevelIndex - MIN_CANDLES_BETWEEN_LEVELS;
-    for (let j = currentLevelIndex; j >= currentLevelIndex-MAX_AMOUNT_FOR_NEXT_LEVEL; j--) {
+    currentLevelIndex = currentLevelIndex - minCandlesBetweenRangePoints;
+    for (let j = currentLevelIndex; j >= currentLevelIndex-maxCandlesBetweenRangePoints; j--) {
       let isValid = IsValidHorizontalLevel({
         resistanceOrSupport,
         indexToCheck: j,
@@ -182,7 +177,7 @@ export function Strategy({
           continue;
         }
         const priceDiff = levelCandle.high-nextLevelToCompare.low;
-        if (priceDiff <= MIN_PRICE_DIFFERENCE_BETWEEN_LEVELS) {
+        if (priceDiff <= minPriceDifferenceBetweenRangePoints) {
           continue;
         }
 
@@ -206,7 +201,7 @@ export function Strategy({
           continue;
         }
         const priceDiff = nextLevelToCompare.high-levelCandle.low;
-        if (priceDiff <= MIN_PRICE_DIFFERENCE_BETWEEN_LEVELS) {
+        if (priceDiff <= minPriceDifferenceBetweenRangePoints) {
           continue;
         }
 

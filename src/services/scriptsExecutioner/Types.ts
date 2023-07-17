@@ -82,6 +82,14 @@ export interface StrategyParams {
     maxAttemptsToGetSL: number;
     candlesAmountWithoutEMAsCrossing: number;
   }
+
+  ranges?: {
+    candlesToCheck: number;
+    maxPriceDifferenceForSameHorizontalLevel: number;
+    minPriceDifferenceBetweenRangePoints: number;
+    minCandlesBetweenRangePoints: number;
+    maxCandlesBetweenRangePoints: number;
+  }
 }
 
 type StrategyName = (
