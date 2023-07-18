@@ -9,6 +9,7 @@ import { Modal } from "semantic-ui-react";
 import { setIsScriptsPanelVisible } from "../../context/globalContext/Actions";
 import { GlobalContext } from "../../context/globalContext/GlobalContext";
 import { addScript, modifyScriptContents, setBest, setProgress } from "../../context/scriptsContext/Actions";
+import { setDataAction } from "../../context/globalContext/Actions";
 import { ScriptsContext } from "../../context/scriptsContext/ScriptsContext";
 import { State as ScriptsContextState } from "../../context/scriptsContext/Types";
 import { setBalance, setTrades } from "../../context/tradesContext/Actions";
@@ -22,6 +23,7 @@ import HelpModal from "./helpModal/HelpModal";
 import ReportModal from "./reportModal/ReportModal";
 import ScriptsList from "./scriptsList/ScriptsList";
 import styles from "./ScriptsPanel.module.css";
+import { Candle } from "../../context/globalContext/Types";
 
 function ScriptsPanel(): JSX.Element {
   const {
@@ -51,7 +53,8 @@ function ScriptsPanel(): JSX.Element {
         tradesContext,
         painterService,
         setScriptReports,
-        setIsReportModalVisible
+        setIsReportModalVisible,
+        (data: Candle[]) => globalContextDispatch(setDataAction(data))
       );
     });
   }, [
@@ -156,7 +159,8 @@ function onReceiveMsgFromWorker(
   tradesContext: { state: TradesContextState; dispatch: React.Dispatch<ReducerAction> },
   painterService: PainterService,
   setScriptReports: (reports: Report[]) => void,
-  setIsReportModalVisible: (value: boolean) => void
+  setIsReportModalVisible: (value: boolean) => void,
+  setData: (data: Candle[]) => void
 ): void {
   const { error, type, payload } = msg;
 
@@ -181,7 +185,7 @@ function onReceiveMsgFromWorker(
     scriptsContext.dispatch(setProgress(0));
 
     if (candles) {
-      painterService.setData(candles);
+      setData(candles);
     }
 
     painterService.draw();

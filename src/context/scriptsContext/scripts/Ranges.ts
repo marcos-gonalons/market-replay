@@ -56,9 +56,9 @@ export default (function f({
 
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 300,
-        maxPriceDifferenceForSameHorizontalLevel: 50 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
-        minCandlesBetweenRangePoints: 4,
+        maxPriceDifferenceForSameHorizontalLevel: 500 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 10 * priceAdjustment,
+        minCandlesBetweenRangePoints: 2,
         maxCandlesBetweenRangePoints: 500
       }
   

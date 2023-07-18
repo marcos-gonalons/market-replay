@@ -139,7 +139,6 @@ export function Strategy({
     const nullReturn = { level: null, index: 0 };
 
     const {
-      maxPriceDifferenceForSameHorizontalLevel,
       minPriceDifferenceBetweenRangePoints,
       minCandlesBetweenRangePoints,
       maxCandlesBetweenRangePoints

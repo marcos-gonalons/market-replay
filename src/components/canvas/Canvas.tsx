@@ -46,6 +46,7 @@ export default function Canvas(): JSX.Element {
     if (!painterService || !replayerService) return;
 
     if (!replayerService.isReplayActive()) {
+      console.log("set data");
       painterService.setData(data ?? []);
       painterService.draw();
     }
