@@ -1,6 +1,7 @@
 import { StrategyFuncParameters } from "../../../../services/scriptsExecutioner/Types";
-
 import { handle as HandleTrailingSLAndTP } from "../common/HandleTrailingSLAndTP";
+import { get as GetRange, getAverages } from "../common/GetRange";
+import { Order, OrderType, Position } from "../../../tradesContext/Types";
 
 export function Strategy({
   candles,
@@ -23,7 +24,6 @@ export function Strategy({
   void spread;
   void createOrder;
 
-  debugLog(ENABLE_DEBUG, "Params ", params);
   const currentCandle = candles[currentDataIndex];
   const date = new Date(currentCandle.timestamp);
 
@@ -49,12 +49,12 @@ export function Strategy({
     }
   }
 
-  if (openPosition?.position === "short") {
+  if (openPosition?.position === "long") {
     HandleTrailingSLAndTP({
       openPosition,
       trailingSL: params!.trailingSL!,
       trailingTP: params!.trailingTP!,
-      currentCandle: candles[currentDataIndex],
+      currentCandle,
       log: (...msg: any[]) => {
         debugLog(ENABLE_DEBUG, date, ...msg)
       }
@@ -65,4 +65,70 @@ export function Strategy({
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
+
+  const range = GetRange({
+    candles,
+    currentCandle,
+    currentDataIndex,
+    strategyParams: params!
+  });
+
+  if (!range) return;
+  range.map(l => l.candle.meta = { type: l.type });
+
+  const [resistancesAvg, supportsAvg] = getAverages(range);
+  
+  let type: OrderType = "sell-limit";
+  let position: Position = "short";
+  let price: number = resistancesAvg;
+  let stopLoss: number = price + params!.stopLossDistance!;
+  let takeProfit: number;
+  switch (params!.ranges!.takeProfitStrategy) {
+    case "half":
+      takeProfit = (resistancesAvg + supportsAvg) / 2;
+      break;
+    case "level":
+      takeProfit = supportsAvg;
+      break;
+    case "levelWithOffset":
+      takeProfit = supportsAvg - (params!.takeProfitDistance || 0)
+      break;
+  }
+
+  if (takeProfit >= price) {
+    return;
+  }
+
+  const size = 10000;
+  const rollover = (0.7 * size) / 10000;
+
+  const order: Order = {
+    type: type!,
+    position: position!,
+    price,
+    size,
+    rollover,
+    takeProfit,
+    stopLoss
+  }
+
+  const existingOrderAtSamePrice = orders.find(o => 
+    o.type !== "market" &&
+    o.price === price &&
+    o.type === "sell-limit"
+  );
+  if (existingOrderAtSamePrice) {
+    return;
+  }
+
+  if (price === 1.29905) {
+    debugLog(ENABLE_DEBUG, date);
+    debugLog(ENABLE_DEBUG, currentDataIndex);
+    range.map(l => debugLog(ENABLE_DEBUG, l.type, new Date(l.candle.timestamp)));
+    debugger;
+  }
+  orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
+  void order;
+  // createOrder(order);
+
 }

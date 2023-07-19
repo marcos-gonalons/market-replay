@@ -30,7 +30,8 @@ export function get({
       resistanceOrSupport,
       indexToCheck: x,
       candlesAmountToBeConsideredHorizontalLevel,
-      candles
+      candles,
+      currentDataIndex
     });
     if (!isValid) continue;
 
@@ -52,18 +53,20 @@ interface IsValidHorizontalLevelParams {
     readonly past: number;
   }
   readonly candles: Candle[];
+  readonly currentDataIndex: number;
 }
 export function IsValidHorizontalLevel({
   resistanceOrSupport,
   indexToCheck,
   candlesAmountToBeConsideredHorizontalLevel,
   candles,
+  currentDataIndex
  }: IsValidHorizontalLevelParams): boolean {
-  if (indexToCheck >= candles.length || indexToCheck < 0) return false;
+  if (indexToCheck >= currentDataIndex || indexToCheck < 0) return false;
 
   // Future candles
   for (let i = indexToCheck+1; i < indexToCheck+1+candlesAmountToBeConsideredHorizontalLevel.future; i++) {
-    if (i === candles.length) return false;
+    if (i === currentDataIndex) return false;
     if (resistanceOrSupport === "resistance")
       if (candles[i].high > candles[indexToCheck].high) return false;
 
