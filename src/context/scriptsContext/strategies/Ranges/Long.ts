@@ -1,8 +1,10 @@
 import { StrategyFuncParameters } from "../../../../services/scriptsExecutioner/Types";
 import { Candle } from "../../../globalContext/Types";
-import { IsValidHorizontalLevel } from "../common/GetHorizontalLevel";
+import { get as GetHorizontalLevel } from "../common/GetHorizontalLevel";
 
 import { handle as HandleTrailingSLAndTP } from "../common/HandleTrailingSLAndTP";
+
+type Level = { candle: Candle; index: number; type: "resistance" | "support" };
 
 export function Strategy({
   candles,
@@ -25,7 +27,6 @@ export function Strategy({
   void spread;
   void createOrder;
 
-  debugLog(ENABLE_DEBUG, "Params ", params);
   const currentCandle = candles[currentDataIndex];
   const date = new Date(currentCandle.timestamp);
 
@@ -68,156 +69,98 @@ export function Strategy({
     return;
   }
 
-  for (let x = currentDataIndex; x > currentDataIndex - params!.ranges!.candlesToCheck; x--) {
-    if (x < 0) {
+
+  let currentRangePoint = 1;
+  let levelToGet = params!.ranges!.startWith;
+  let index = currentDataIndex;
+  let candlesToCheck = params!.ranges!.candlesToCheck;
+  const levels: Level[] = [];
+  while (currentRangePoint <= params!.ranges!.rangePoints) {
+    const [_, foundAt] = GetHorizontalLevel({
+      resistanceOrSupport: levelToGet,
+      currentDataIndex: index,
+      candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
+      priceOffset: 0,
+      candles,
+      candlesToCheck
+    });
+    void _;
+
+    if (!foundAt) {
       break;
     }
 
-    const isValid = IsValidHorizontalLevel({
-      resistanceOrSupport: "resistance",
-      indexToCheck: x,
-      candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
-      candles
-    });
-    if (!isValid) continue;
+    const level = { type: levelToGet, index: foundAt, candle: candles[foundAt] };
 
-    const resistanceCandle1 = candles[x];
-    if (resistanceCandle1.high <= candles[candles.length-1].close) {
-      continue;
+    if (!validateRangeLevel(level, levels)) {
+      break;
     }
 
-    debugLog(ENABLE_DEBUG, "resistanceCandle1", resistanceCandle1.timestamp, new Date(resistanceCandle1.timestamp));
+    levels.push(level);
 
-    // todo: if we start with a support this for must be adjusted
-    let isRangeBroken = false;
-    for (let k = x+1; k < candles.length-1; k++) {
-      if (candles[k].high > resistanceCandle1.high) {
-        isRangeBroken = true;
-        break;
-      }
-    }
-    if (isRangeBroken) continue;
+    index = foundAt-params!.ranges!.minCandlesBetweenRangePoints;
+    candlesToCheck = params!.ranges!.maxCandlesBetweenRangePoints;
+    currentRangePoint++;
 
-    const { level: supportCandle1, index: supportCandleIndex } = getPreviousLevel(
-      "support",
-      x,
-      candles,
-      resistanceCandle1
-    );
-    if (!supportCandle1) {
-      continue;
-    }
-
-    const { level: resistanceCandle2 } = getPreviousLevel(
-      "resistance",
-      supportCandleIndex,
-      candles,
-      supportCandle1
-    );
-    if (!resistanceCandle2) {
-      continue;
-    }
-
-    if (Math.abs(resistanceCandle1.high-resistanceCandle2.high)>=params!.ranges!.maxPriceDifferenceForSameHorizontalLevel) {
-      continue;
-    }
-
-    resistanceCandle1.meta = { type: "resistance" };
-    supportCandle1.meta = { type: "support" };
-    resistanceCandle2.meta = { type: "resistance" };
-
-    debugLog(ENABLE_DEBUG, "HABEMUS RANGE");
-    break;
+    levelToGet = levelToGet === "support" ? "resistance" : "support";
   }
 
-  function getPreviousLevel(
-    resistanceOrSupport: "resistance"|"support",
-    currentLevelIndex: number,
-    candles: Candle[],
-    nextLevelToCompare: Candle,
-  ): { level: Candle|null, index: number } {
-    const nullReturn = { level: null, index: 0 };
+  if (currentRangePoint <= params!.ranges!.rangePoints) {
+    return;
+  }
 
-    const {
-      minPriceDifferenceBetweenRangePoints,
-      minCandlesBetweenRangePoints,
-      maxCandlesBetweenRangePoints
-    } = params!.ranges!;
+  debugLog(ENABLE_DEBUG, "HABEMUS RANGE!");
+  levels.map(l => l.candle.meta = { type: l.type });
 
-    for (let i = currentLevelIndex-1; i >= currentLevelIndex-1-minCandlesBetweenRangePoints; i--) {
-      if (resistanceOrSupport === "resistance") {
-        if (candles[i].low <= nextLevelToCompare.low) {
-          return nullReturn;
+  function validateRangeLevel(level: Level, levels: Level[]): boolean {
+    if (level.type === "resistance") {
+      if (level.candle.high <= currentCandle.close) {
+        return false;
+      }
+
+      for (const l of levels) {
+        if (l.type === "support") {
+          if (level.candle.high - l.candle.low < params!.ranges!.minPriceDifferenceBetweenRangePoints) {
+            return false;
+          }
+
+          for (let i = level.index+1; i < l.index; i++) {
+            if (candles[i].high > level.candle.high) {
+              return false;
+            }
+          }
+        } else {
+          if (Math.abs(l.candle.high-level.candle.high) > params!.ranges!.maxPriceDifferenceForSameHorizontalLevel) {
+            return false;
+          }
         }
       }
-      if (resistanceOrSupport === "support") {
-        if (candles[i].high >= nextLevelToCompare.high) {
-          return nullReturn;
+    }
+    if (level.type === "support") {
+      if (level.candle.low >= currentCandle.close) {
+        return false;
+      }
+      
+      for (const l of levels) {
+        if (l.type === "resistance") {
+          if (l.candle.high - level.candle.low < params!.ranges!.minPriceDifferenceBetweenRangePoints) {
+            return false;
+          }
+
+          for (let i = level.index+1; i < l.index; i++) {
+            if (candles[i].low < level.candle.low) {
+              return false;
+            }
+          }
+        } else {
+          if (Math.abs(l.candle.low-level.candle.low) > params!.ranges!.maxPriceDifferenceForSameHorizontalLevel) {
+            return false;
+          }
         }
       }
     }
 
-    currentLevelIndex = currentLevelIndex - minCandlesBetweenRangePoints;
-    for (let j = currentLevelIndex; j >= currentLevelIndex-maxCandlesBetweenRangePoints; j--) {
-      let isValid = IsValidHorizontalLevel({
-        resistanceOrSupport,
-        indexToCheck: j,
-        candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
-        candles
-      });
-      if (!isValid) continue;
-
-      const levelCandle = candles[j];
-      if (resistanceOrSupport === "resistance") {
-        if (levelCandle.high <= nextLevelToCompare.low) {
-          continue;
-        }
-        if (levelCandle.high <= candles[candles.length-1].close) {
-          continue;
-        }
-        const priceDiff = levelCandle.high-nextLevelToCompare.low;
-        if (priceDiff <= minPriceDifferenceBetweenRangePoints) {
-          continue;
-        }
-
-        isValid = true;
-        for (let i = j+1; i < currentLevelIndex-1; i++) {
-          if (candles[i].low <= nextLevelToCompare.low) {
-            isValid = false;
-            break;
-          }
-        }
-        if (!isValid) continue;
-
-        return { level: levelCandle, index: j }
-      }
-
-      if (resistanceOrSupport === "support") {
-        if (levelCandle.low >= nextLevelToCompare.high) {
-          continue;
-        }
-        if (levelCandle.low >= candles[candles.length-1].close) {
-          continue;
-        }
-        const priceDiff = nextLevelToCompare.high-levelCandle.low;
-        if (priceDiff <= minPriceDifferenceBetweenRangePoints) {
-          continue;
-        }
-
-        isValid = true;
-        for (let i = j+1; i < currentLevelIndex-1; i++) {
-          if (candles[i].high >= nextLevelToCompare.high) {
-            isValid = false;
-            break;
-          }
-        }
-        if (!isValid) continue;
-
-        return { level: levelCandle, index: j }
-      }
-    }
-
-    return nullReturn;
+    return true;
   }
 
 }

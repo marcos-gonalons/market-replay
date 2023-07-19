@@ -9,7 +9,8 @@ interface GetParams {
   };
   readonly priceOffset: number;
   readonly candles: Candle[];
-  readonly log: (...msg: any[]) => void;
+  readonly candlesToCheck: number;
+  readonly log?: (...msg: any[]) => void;
 }
 
 export function get({
@@ -17,10 +18,9 @@ export function get({
   currentDataIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   priceOffset,
-  candles
+  candles,
+  candlesToCheck
 }: GetParams): number[] {
-  let candlesToCheck = 300;
-
   for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
     if (x < 0) {
       break;

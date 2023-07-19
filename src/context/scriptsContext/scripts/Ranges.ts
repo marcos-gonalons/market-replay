@@ -31,8 +31,8 @@ export default (function f({
       const riskPercentage = 1;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 5,
-        past: 5
+        future: 10,
+        past: 10
       }
   
       const takeProfitDistance = 50 * priceAdjustment;
@@ -56,10 +56,12 @@ export default (function f({
 
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 300,
-        maxPriceDifferenceForSameHorizontalLevel: 500 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 10 * priceAdjustment,
-        minCandlesBetweenRangePoints: 2,
-        maxCandlesBetweenRangePoints: 500
+        maxPriceDifferenceForSameHorizontalLevel: 100 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
+        minCandlesBetweenRangePoints: 10,
+        maxCandlesBetweenRangePoints: 100,
+        rangePoints: 4,
+        startWith: "resistance"
       }
   
       return {

@@ -89,6 +89,8 @@ export interface StrategyParams {
     minPriceDifferenceBetweenRangePoints: number;
     minCandlesBetweenRangePoints: number;
     maxCandlesBetweenRangePoints: number;
+    rangePoints: number;
+    startWith: "resistance" | "support";
   }
 }
 
