@@ -7,20 +7,23 @@ interface GetParams {
     readonly future: number;
     readonly past: number;
   };
-  readonly priceOffset: number;
   readonly candles: Candle[];
   readonly candlesToCheck: number;
-  readonly log?: (...msg: any[]) => void;
 }
+
+export type Level = {
+  candle: Candle;
+  index: number;
+  type: "resistance" | "support" 
+};
 
 export function get({
   resistanceOrSupport,
   startAtIndex,
   candlesAmountToBeConsideredHorizontalLevel,
-  priceOffset,
   candles,
   candlesToCheck
-}: GetParams): number[] {
+}: GetParams): Level | null {
   for (let x = startAtIndex; x > startAtIndex - candlesToCheck; x--) {
     if (x < 0) {
       break;
@@ -35,14 +38,10 @@ export function get({
     });
     if (!isValid) continue;
 
-    if (resistanceOrSupport === "support") {
-      return [candles[x].low + priceOffset!, x];
-    } else {
-      return [candles[x].high - priceOffset!, x];
-    }
+    return { type: resistanceOrSupport, index: x, candle: candles[x] };
   }
 
-  return [0,0];
+  return null;
 }
 
 interface IsValidHorizontalLevelParams {

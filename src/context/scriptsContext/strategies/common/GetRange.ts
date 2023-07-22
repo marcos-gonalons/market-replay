@@ -1,13 +1,8 @@
 import { StrategyParams } from "../../../../services/scriptsExecutioner/Types";
 import { Candle } from "../../../globalContext/Types";
-import { get as GetHorizontalLevel } from "./GetHorizontalLevel";
+import { get as GetHorizontalLevel, Level } from "./GetHorizontalLevel";
 
-export type RangePoint = {
-    candle: Candle;
-    index: number;
-    type: "resistance" | "support" 
-};
-type Range = RangePoint[];
+
 type GetRangeParams = {
     readonly candles: Candle[]
     readonly currentCandle: Candle;
@@ -20,14 +15,16 @@ export function get({
   currentCandle,
   currentDataIndex,
   strategyParams
-}: GetRangeParams): Range | null {
+}: GetRangeParams): Level[] | null {
   let currentRangePoint = 1;
   let levelToGet = strategyParams!.ranges!.startWith;
   let index = currentDataIndex;
   let candlesToCheck = strategyParams!.ranges!.candlesToCheck;
-  const range: Range = [];
+  const range: Level[] = [];
+  let level: any;
+  let previous: any = [];
   while (currentRangePoint <= strategyParams!.ranges!.rangePoints) {
-    const level = getPreviousValidRangeLevel(1, index);
+    [level, previous] = getPreviousValidRangeLevel(1, index, previous);
     if (!level) {
       break;
     }
@@ -47,39 +44,47 @@ export function get({
 
   return range;
 
-  function getPreviousValidRangeLevel(attempt: number, startAt: number): RangePoint | null {
-    let maxAttempts = 10;
-    if (attempt === maxAttempts) {
-      return null;
+  function getPreviousValidRangeLevel(attempt: number, startAt: number, previousPotentialLevels: Level[]): any {
+    let indexToUse = startAt;
+    let potentialRangeLevels = [];
+    for (let i = 0; i < 10; i++) {
+      const _level = GetHorizontalLevel({
+        resistanceOrSupport: levelToGet,
+        startAtIndex: indexToUse,
+        candlesAmountToBeConsideredHorizontalLevel: strategyParams!.candlesAmountToBeConsideredHorizontalLevel!,
+        candles,
+        candlesToCheck
+      });
+    
+      if (!_level) {
+        continue;
+      }
+    
+      potentialRangeLevels.push(_level);
+
+      indexToUse = _level.index - 1;
     }
 
-    /**
-     * volver a debuguear el rango del 18 de noviembre a 30 de noviembre.
-     */
-  
-    let [_, foundAt] = GetHorizontalLevel({
-      resistanceOrSupport: levelToGet,
-      startAtIndex: startAt,
-      candlesAmountToBeConsideredHorizontalLevel: strategyParams!.candlesAmountToBeConsideredHorizontalLevel!,
-      priceOffset: 0,
-      candles,
-      candlesToCheck
-    });
-    void _;
-  
-    if (!foundAt) {
-      return null;
+    for (const potentialRangeLevel of potentialRangeLevels) {
+      if (!validateRangeLevel(potentialRangeLevel, range, candles)) {
+        continue;
+        //theLevel = getPreviousValidRangeLevel(attempt+1, potentialRangeLevel.index-1, potentialRangeLevels);
+      }
+      
+      return [potentialRangeLevel, potentialRangeLevels];
     }
-  
-    const level = { type: levelToGet, index: foundAt, candle: candles[foundAt] };
-    if (!validateRangeLevel(level, range, candles)) {
-      return getPreviousValidRangeLevel(attempt+1, foundAt-1);
+
+    const toCheck = previousPotentialLevels[attempt] ?? null;
+    if (!toCheck) {
+      return [null, []];
     }
-  
-    return level;
+    range.pop();
+    range.push(toCheck);
+
+    return getPreviousValidRangeLevel(attempt+1, toCheck.index-1, previousPotentialLevels);
   }
 
-  function validateRangeLevel(level: RangePoint, range: Range, candles: Candle[]): boolean {
+  function validateRangeLevel(level: Level, range: Level[], candles: Candle[]): boolean {
     if (level.type === "resistance") {
       if (level.candle.high <= currentCandle.close) {
         return false;
@@ -151,7 +156,7 @@ export function get({
 }
 
 
-export function getAverages(range: RangePoint[]): number[] {
+export function getAverages(range: Level[]): number[] {
   const resistances = range.filter(l => l.type === "resistance");
   const supports = range.filter(l => l.type === "support");
 

@@ -45,13 +45,22 @@ export function get({
     let attempt = 0;
 
     while (true) {
-      let foundAtIndex;
-      [sl, foundAtIndex] = GetHorizontalLevel({
+      const level = GetHorizontalLevel({
         ...p,
         candlesToCheck: 300,
         startAtIndex: index,
         resistanceOrSupport: longOrShort === "long" ? "support" : "resistance"
       });
+      if (!level) {
+        break;
+      }
+
+      if (level.type === "resistance") {
+        sl = level.candle.high - priceOffset;
+      }
+      if (level.type === "support") {
+        sl = level.candle.low + priceOffset;
+      }
 
       const validSL = longOrShort === "long" ?
         !((!sl || sl >= orderPrice) || (orderPrice - sl >= maxStopLossDistance) || (orderPrice - sl <= minStopLossDistance))
@@ -63,7 +72,7 @@ export function get({
         break;
       }
       log("Invalid SL - Trying again ... ");
-      index = foundAtIndex;
+      index = level?.index-1;
       attempt++;
 
       if (attempt === maxAttempts) {

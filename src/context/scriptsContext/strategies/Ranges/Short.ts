@@ -72,6 +72,12 @@ export function Strategy({
   if (!range) return;
   range.map(l => l.candle.meta = { type: l.type });
 
+  for (const r of range) {
+    if (r.candle.timestamp === 1638345600000) {
+      debugger;
+    }
+  }
+
   if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
@@ -126,7 +132,6 @@ export function Strategy({
     return;
   }
 
-  range.map(l => debugLog(ENABLE_DEBUG, l.type, new Date(l.candle.timestamp)));
   orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
   createOrder(order);
 
