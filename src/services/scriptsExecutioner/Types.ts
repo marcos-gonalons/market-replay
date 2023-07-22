@@ -33,6 +33,10 @@ export interface StrategyFuncParameters {
   strategies: Strategy[];
 }
 
+export type CandlesAmountToBeConsideredHorizontalLevel = {
+    future: number;
+    past: number;
+}
 export interface StrategyParams {
   validHours?: {
     hour: string;
@@ -64,10 +68,7 @@ export interface StrategyParams {
   
   trendCandles?: number;
   trendDiff?: number;
-  candlesAmountToBeConsideredHorizontalLevel?: {
-    future: number;
-    past: number;
-  };
+  candlesAmountToBeConsideredHorizontalLevel?: CandlesAmountToBeConsideredHorizontalLevel;
 
   priceOffset?: number;
 

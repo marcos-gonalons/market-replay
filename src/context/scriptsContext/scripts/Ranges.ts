@@ -107,7 +107,7 @@ export default (function f({
         minCandlesBetweenRangePoints: 4,
         maxCandlesBetweenRangePoints: 300,
         limitPriceOffset: 0 * priceAdjustment,
-        rangePoints: 3,
+        rangePoints: 4,
         startWith: "resistance",
         takeProfitStrategy: "half"
       }

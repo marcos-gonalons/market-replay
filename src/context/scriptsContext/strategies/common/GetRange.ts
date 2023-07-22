@@ -1,6 +1,7 @@
 import { StrategyParams } from "../../../../services/scriptsExecutioner/Types";
 import { Candle } from "../../../globalContext/Types";
 import { get as GetHorizontalLevel, Level } from "./GetHorizontalLevel";
+import { isRangeValid } from "./RangeValidator";
 
 
 type GetRangeParams = {
@@ -42,6 +43,14 @@ export function get({
     return null;
   }
 
+  debugger;
+  if (!isRangeValid({
+    range,
+    validationParams: strategyParams!.ranges!,
+    candles,
+    currentCandle
+  })) return null;
+
   return range;
 
   function getPreviousValidRangeLevel(attempt: number, startAt: number, previousPotentialLevels: Level[]): any {
@@ -68,7 +77,6 @@ export function get({
     for (const potentialRangeLevel of potentialRangeLevels) {
       if (!validateRangeLevel(potentialRangeLevel, range, candles)) {
         continue;
-        //theLevel = getPreviousValidRangeLevel(attempt+1, potentialRangeLevel.index-1, potentialRangeLevels);
       }
       
       return [potentialRangeLevel, potentialRangeLevels];
@@ -172,4 +180,75 @@ export function getAverages(range: Level[]): number[] {
 }
 
 
+/*
+export function v2({
+  candles,
+  currentCandle,
+  currentDataIndex,
+  strategyParams
+}: GetRangeParams): Level[] | null {
+  void currentCandle;
 
+  const get = (resistanceOrSupport: "resistance"|"support"): Level[] => {
+    return getLastLevels({
+      resistanceOrSupport,
+      amount: 10,
+      startAtIndex: currentDataIndex,
+      candlesAmountToBeConsideredHorizontalLevel: strategyParams.candlesAmountToBeConsideredHorizontalLevel!,
+      candles,
+      candlesToCheck: strategyParams.ranges!.candlesToCheck
+    });
+  }
+
+  const resistances = get("resistance");
+  const supports = get("support");
+
+  // construir un rango de N puntos
+  // validarlo
+  // no? siguiente rango
+  for (const [index, resistance] of resistances.entries()) {
+    
+  }
+
+  return null;
+}
+*/
+
+
+/*
+interface GetLastLevelsParams {
+  resistanceOrSupport: "resistance"|"support";
+  amount: number;
+  startAtIndex: number;
+  candlesAmountToBeConsideredHorizontalLevel: CandlesAmountToBeConsideredHorizontalLevel;
+  candles: Candle[];
+  candlesToCheck: number;
+}
+function getLastLevels({
+  resistanceOrSupport,
+  amount,
+  startAtIndex,
+  candlesAmountToBeConsideredHorizontalLevel,
+  candles,
+  candlesToCheck
+}: GetLastLevelsParams): Level[] {
+  const levels: Level[] = [];
+  let index = startAtIndex;
+  for (let i = 0; i < amount; i++) {
+      const level = GetHorizontalLevel({
+          resistanceOrSupport,
+          startAtIndex,
+          candlesAmountToBeConsideredHorizontalLevel,
+          candles,
+          candlesToCheck
+        });
+
+      if (!level) break;
+
+      levels.push(level);
+      index = level.index - 1;
+  }
+
+  return levels;
+}
+*/
