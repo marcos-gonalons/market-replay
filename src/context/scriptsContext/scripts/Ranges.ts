@@ -51,6 +51,7 @@ export default (function f({
         minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
         minCandlesBetweenRangePoints: 10,
         maxCandlesBetweenRangePoints: 100,
+        limitPriceOffset: 0,
         rangePoints: 3,
         startWith: "resistance",
         takeProfitStrategy: "half"
@@ -86,12 +87,12 @@ export default (function f({
       const riskPercentage = 1;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 10,
-        past: 10
+        future: 2,
+        past: 2
       }
   
       const takeProfitDistance = 100 * priceAdjustment;
-      const stopLossDistance = 100 * priceAdjustment;
+      const stopLossDistance = 70 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -101,10 +102,11 @@ export default (function f({
 
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 300,
-        maxPriceDifferenceForSameHorizontalLevel: 70 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
-        minCandlesBetweenRangePoints: 10,
-        maxCandlesBetweenRangePoints: 100,
+        maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 20 * priceAdjustment,
+        minCandlesBetweenRangePoints: 4,
+        maxCandlesBetweenRangePoints: 300,
+        limitPriceOffset: 0 * priceAdjustment,
         rangePoints: 3,
         startWith: "resistance",
         takeProfitStrategy: "half"

@@ -61,10 +61,6 @@ export function Strategy({
     });
   }
 
-  if (openPosition) {
-    debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
-    return;
-  }
 
   const range = GetRange({
     candles,
@@ -76,11 +72,20 @@ export function Strategy({
   if (!range) return;
   range.map(l => l.candle.meta = { type: l.type });
 
+  if (openPosition) {
+    debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
+    return;
+  }
+
+
   const [resistancesAvg, supportsAvg] = getAverages(range);
   
   let type: OrderType = "sell-limit";
   let position: Position = "short";
-  let price: number = resistancesAvg;
+  let price: number = resistancesAvg+params!.ranges!.limitPriceOffset;
+  if (currentCandle.close > price) {
+    return;
+  }
   let stopLoss: number = price + params!.stopLossDistance!;
   let takeProfit: number;
   switch (params!.ranges!.takeProfitStrategy) {
@@ -121,14 +126,8 @@ export function Strategy({
     return;
   }
 
-  if (price === 1.29905) {
-    debugLog(ENABLE_DEBUG, date);
-    debugLog(ENABLE_DEBUG, currentDataIndex);
-    range.map(l => debugLog(ENABLE_DEBUG, l.type, new Date(l.candle.timestamp)));
-    debugger;
-  }
+  range.map(l => debugLog(ENABLE_DEBUG, l.type, new Date(l.candle.timestamp)));
   orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
-  void order;
-  // createOrder(order);
+  createOrder(order);
 
 }

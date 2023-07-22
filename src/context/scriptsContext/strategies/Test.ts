@@ -39,7 +39,7 @@ export function Strategy({
       indexToCheck: x,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
       candles,
-      currentDataIndex
+      startAtIndex: currentDataIndex
     });
 
     if (isResistance) {
@@ -53,7 +53,7 @@ export function Strategy({
       indexToCheck: x,
       candlesAmountToBeConsideredHorizontalLevel: params!.candlesAmountToBeConsideredHorizontalLevel!,
       candles,
-      currentDataIndex
+      startAtIndex: currentDataIndex
     });
 
     if (isSupport) {

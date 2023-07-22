@@ -27,44 +27,59 @@ export function get({
   let candlesToCheck = strategyParams!.ranges!.candlesToCheck;
   const range: Range = [];
   while (currentRangePoint <= strategyParams!.ranges!.rangePoints) {
-    const [_, foundAt] = GetHorizontalLevel({
-      resistanceOrSupport: levelToGet,
-      currentDataIndex: index,
-      candlesAmountToBeConsideredHorizontalLevel: strategyParams!.candlesAmountToBeConsideredHorizontalLevel!,
-      priceOffset: 0,
-      candles,
-      candlesToCheck
-    });
-    void _;
-
-    if (!foundAt) {
+    const level = getPreviousValidRangeLevel(1, index);
+    if (!level) {
       break;
     }
 
-    const level = { type: levelToGet, index: foundAt, candle: candles[foundAt] };
-
-    if (!validateRangeLevel(level, range)) {
-      break;
-    }
-
-    range.push(level);
-
-    index = foundAt-strategyParams!.ranges!.minCandlesBetweenRangePoints;
+    index = level.index-strategyParams!.ranges!.minCandlesBetweenRangePoints;
     candlesToCheck = strategyParams!.ranges!.maxCandlesBetweenRangePoints;
     currentRangePoint++;
 
     levelToGet = levelToGet === "support" ? "resistance" : "support";
+    
+    range.push(level);
   }
 
   if (currentRangePoint <= strategyParams!.ranges!.rangePoints) {
     return null;
   }
 
-
-
   return range;
 
-  function validateRangeLevel(level: RangePoint, range: Range): boolean {
+  function getPreviousValidRangeLevel(attempt: number, startAt: number): RangePoint | null {
+    let maxAttempts = 10;
+    if (attempt === maxAttempts) {
+      return null;
+    }
+
+    /**
+     * volver a debuguear el rango del 18 de noviembre a 30 de noviembre.
+     */
+  
+    let [_, foundAt] = GetHorizontalLevel({
+      resistanceOrSupport: levelToGet,
+      startAtIndex: startAt,
+      candlesAmountToBeConsideredHorizontalLevel: strategyParams!.candlesAmountToBeConsideredHorizontalLevel!,
+      priceOffset: 0,
+      candles,
+      candlesToCheck
+    });
+    void _;
+  
+    if (!foundAt) {
+      return null;
+    }
+  
+    const level = { type: levelToGet, index: foundAt, candle: candles[foundAt] };
+    if (!validateRangeLevel(level, range, candles)) {
+      return getPreviousValidRangeLevel(attempt+1, foundAt-1);
+    }
+  
+    return level;
+  }
+
+  function validateRangeLevel(level: RangePoint, range: Range, candles: Candle[]): boolean {
     if (level.type === "resistance") {
       if (level.candle.high <= currentCandle.close) {
         return false;
@@ -112,9 +127,27 @@ export function get({
       }
     }
 
+    if (range.length > 0) {
+      const lastLevel = range[range.length-1];
+      if (level.type === "support") {
+        for (let i = level.index+1; i < lastLevel.index-1; i++) {
+          if (candles[i].low < level.candle.low || candles[i].high > lastLevel.candle.high) {
+            return false;
+          }
+        }
+      }
+      if (level.type === "resistance") {
+        for (let i = level.index+1; i < lastLevel.index-1; i++) {
+          if (candles[i].high > level.candle.high || candles[i].low < lastLevel.candle.low) {
+            return false;
+          }
+        }
+      }
+    }
+
     return true;
   }
-  
+ 
 }
 
 
@@ -132,3 +165,6 @@ export function getAverages(range: RangePoint[]): number[] {
     totalSupports / supports.length
   ];
 }
+
+
+

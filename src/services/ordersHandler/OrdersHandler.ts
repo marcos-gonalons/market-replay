@@ -102,10 +102,6 @@ export default function processOrders({
   }
 
   function transformOrderIntoAMarketOrder(order: Order, fillPrice: number): void {
-    if (order.price === 1.29905) {
-      console.log(new Date(currentCandle.timestamp));
-      debugger;
-    }
     const slDistance = order.stopLoss ? Math.abs(order.price - order.stopLoss) : 0;
     const tpDistance = order.takeProfit ? Math.abs(order.price - order.takeProfit) : 0;
 

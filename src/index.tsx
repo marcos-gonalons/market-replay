@@ -9,7 +9,6 @@ window.addEventListener("beforeunload", function (e) {
   e.returnValue = "";
 });
 
-
 alert(`Double check that you fixed, indeed, the volume.`);
 
 ReactDOM.render(

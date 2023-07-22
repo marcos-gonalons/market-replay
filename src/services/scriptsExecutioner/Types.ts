@@ -90,6 +90,7 @@ export interface StrategyParams {
     minCandlesBetweenRangePoints: number;
     maxCandlesBetweenRangePoints: number;
     rangePoints: number;
+    limitPriceOffset: number;
     startWith: "resistance" | "support";
     takeProfitStrategy: "level" | "half" | "levelWithOffset"
   }

@@ -2,7 +2,7 @@ import { Candle } from "../../../globalContext/Types";
 
 interface GetParams {
   readonly resistanceOrSupport: "resistance" | "support";
-  readonly currentDataIndex: number;
+  readonly startAtIndex: number;
   readonly candlesAmountToBeConsideredHorizontalLevel: {
     readonly future: number;
     readonly past: number;
@@ -15,13 +15,13 @@ interface GetParams {
 
 export function get({
   resistanceOrSupport,
-  currentDataIndex,
+  startAtIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   priceOffset,
   candles,
   candlesToCheck
 }: GetParams): number[] {
-  for (let x = currentDataIndex; x > currentDataIndex - candlesToCheck; x--) {
+  for (let x = startAtIndex; x > startAtIndex - candlesToCheck; x--) {
     if (x < 0) {
       break;
     }
@@ -31,7 +31,7 @@ export function get({
       indexToCheck: x,
       candlesAmountToBeConsideredHorizontalLevel,
       candles,
-      currentDataIndex
+      startAtIndex
     });
     if (!isValid) continue;
 
@@ -53,35 +53,53 @@ interface IsValidHorizontalLevelParams {
     readonly past: number;
   }
   readonly candles: Candle[];
-  readonly currentDataIndex: number;
+  readonly startAtIndex: number;
 }
 export function IsValidHorizontalLevel({
   resistanceOrSupport,
   indexToCheck,
   candlesAmountToBeConsideredHorizontalLevel,
   candles,
-  currentDataIndex
+  startAtIndex
  }: IsValidHorizontalLevelParams): boolean {
-  if (indexToCheck >= currentDataIndex || indexToCheck < 0) return false;
+  if (indexToCheck >= startAtIndex || indexToCheck < 0) {
+    return false;
+  }
 
   // Future candles
   for (let i = indexToCheck+1; i < indexToCheck+1+candlesAmountToBeConsideredHorizontalLevel.future; i++) {
-    if (i === currentDataIndex) return false;
-    if (resistanceOrSupport === "resistance")
-      if (candles[i].high > candles[indexToCheck].high) return false;
+    if (i === startAtIndex) {
+      return false;
+    }
+    if (resistanceOrSupport === "resistance") {
+      if (candles[i].high > candles[indexToCheck].high) {
+        return false;
+      }
+    }
 
-    if (resistanceOrSupport === "support")
-      if (candles[i].low < candles[indexToCheck].low) return false;
+    if (resistanceOrSupport === "support") {
+      if (candles[i].low < candles[indexToCheck].low) {
+        return false;
+      }
+    }
   }
-
+  
   // Past candles
   for (let i = indexToCheck-candlesAmountToBeConsideredHorizontalLevel.past; i < indexToCheck; i++) {
-    if (i < 0) return false;
-    if (resistanceOrSupport === "resistance")
-      if (candles[i].high > candles[indexToCheck].high) return false;
+    if (i < 0) {
+      return false;
+    }
+    if (resistanceOrSupport === "resistance") {
+      if (candles[i].high > candles[indexToCheck].high) {
+        return false;
+      }
+    }
       
-    if (resistanceOrSupport === "support")
-      if (candles[i].low < candles[indexToCheck].low) return false;
+    if (resistanceOrSupport === "support") {
+      if (candles[i].low < candles[indexToCheck].low) {
+        return false;
+      }
+    }
   }
 
   return true;

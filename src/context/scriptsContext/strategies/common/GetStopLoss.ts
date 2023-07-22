@@ -49,7 +49,7 @@ export function get({
       [sl, foundAtIndex] = GetHorizontalLevel({
         ...p,
         candlesToCheck: 300,
-        currentDataIndex: index,
+        startAtIndex: index,
         resistanceOrSupport: longOrShort === "long" ? "support" : "resistance"
       });
 
