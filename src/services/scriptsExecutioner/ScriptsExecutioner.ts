@@ -90,6 +90,7 @@ class ScriptsExecutionerService {
     for (const minStopLossDistance of combinations.minStopLossDistance) {
     for (const maxStopLossDistance of combinations.maxStopLossDistance) {
     for (const takeProfitDistance of combinations.takeProfitDistance) {
+    for (const stopLossDistance of combinations.stopLossDistance) {
     for (const minProfit of combinations.minProfit) {
     for (const futureCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.future) {
     for (const pastCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.past) {
@@ -101,6 +102,18 @@ class ScriptsExecutionerService {
     for (const slDistanceShortForTighterTP of combinations.trailingTP.slDistanceShortForTighterTP) {
     for (const tpDistanceWhenSlIsVeryClose of combinations.trailingTP.tpDistanceWhenSlIsVeryClose) {
     for (const maxSecondsOpenTrade of combinations.maxSecondsOpenTrade) {
+    for (const candlesToCheck of combinations.ranges.candlesToCheck) {
+    for (const maxPriceDifferenceForSameHorizontalLevel of combinations.ranges.maxPriceDifferenceForSameHorizontalLevel) {
+    for (const minPriceDifferenceBetweenRangePoints of combinations.ranges.minPriceDifferenceBetweenRangePoints) {
+    for (const minCandlesBetweenRangePoints of combinations.ranges.minCandlesBetweenRangePoints) {
+    for (const maxCandlesBetweenRangePoints of combinations.ranges.maxCandlesBetweenRangePoints) {
+    for (const rangesPriceOffset of combinations.ranges.priceOffset) {
+    for (const rangePoints of combinations.ranges.rangePoints) {
+    for (const startWith of combinations.ranges.startWith) {
+    for (const takeProfitStrategy of combinations.ranges.takeProfitStrategy) {
+    for (const stopLossStrategy of combinations.ranges.stopLossStrategy) {
+    for (const orderType of combinations.ranges.orderType) {
+    for (const trendyOnly of combinations.ranges.trendyOnly) {
       const orders: Order[] = [];
       const trades: Trade[] = [];
 
@@ -108,6 +121,7 @@ class ScriptsExecutionerService {
         riskPercentage: 1,
         priceOffset,
         maxAttemptsToGetSL,
+        stopLossDistance,
         candlesAmountToBeConsideredHorizontalLevel: {
           future: futureCandles,
           past: pastCandles
@@ -125,7 +139,21 @@ class ScriptsExecutionerService {
           tpDistanceWhenSlIsVeryClose
         },
         candlesAmountWithoutEMAsCrossing,
-        maxSecondsOpenTrade
+        maxSecondsOpenTrade,
+        ranges: {
+          candlesToCheck,
+          maxPriceDifferenceForSameHorizontalLevel,
+          minPriceDifferenceBetweenRangePoints,
+          minCandlesBetweenRangePoints,
+          maxCandlesBetweenRangePoints,
+          priceOffset: rangesPriceOffset,
+          rangePoints,
+          startWith,
+          takeProfitStrategy,
+          stopLossStrategy,
+          orderType,
+          trendyOnly,
+        }
       }
 
       if (best === null && bestWithGoodSuccessRate === null) {
@@ -154,7 +182,7 @@ class ScriptsExecutionerService {
 
       // Report every N finished combinations.
       // Looks like calling postMessage too often causes the browser to crash.
-      if (worker && !(j % 10)) {
+      if (worker && !(j % 1)) {
         worker.postMessage({
           type: "scripts-executioner",
           payload: {
@@ -227,7 +255,7 @@ class ScriptsExecutionerService {
       }
       
       j++;
-  }}}}}}}}}}}}}}
+  }}}}}}}}}}}}}}}}}}}}}}}}}}}
 
   alert('DONE')
     console.log("Best", best);

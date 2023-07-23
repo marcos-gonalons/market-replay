@@ -9,6 +9,7 @@ interface GetParams {
   };
   readonly candles: Candle[];
   readonly candlesToCheck: number;
+  readonly maxIndex: number;
 }
 
 export type Level = {
@@ -22,7 +23,8 @@ export function get({
   startAtIndex,
   candlesAmountToBeConsideredHorizontalLevel,
   candles,
-  candlesToCheck
+  candlesToCheck,
+  maxIndex
 }: GetParams): Level | null {
   for (let x = startAtIndex; x > startAtIndex - candlesToCheck; x--) {
     if (x < 0) {
@@ -34,7 +36,7 @@ export function get({
       indexToCheck: x,
       candlesAmountToBeConsideredHorizontalLevel,
       candles,
-      startAtIndex
+      maxIndex
     });
     if (!isValid) continue;
 
@@ -52,22 +54,22 @@ interface IsValidHorizontalLevelParams {
     readonly past: number;
   }
   readonly candles: Candle[];
-  readonly startAtIndex: number;
+  readonly maxIndex: number;
 }
 export function IsValidHorizontalLevel({
   resistanceOrSupport,
   indexToCheck,
   candlesAmountToBeConsideredHorizontalLevel,
   candles,
-  startAtIndex
+  maxIndex
  }: IsValidHorizontalLevelParams): boolean {
-  if (indexToCheck >= startAtIndex || indexToCheck < 0) {
+  if (indexToCheck >= maxIndex || indexToCheck < 0) {
     return false;
   }
 
   // Future candles
   for (let i = indexToCheck+1; i < indexToCheck+1+candlesAmountToBeConsideredHorizontalLevel.future; i++) {
-    if (i === startAtIndex) {
+    if (i === maxIndex) {
       return false;
     }
     if (resistanceOrSupport === "resistance") {

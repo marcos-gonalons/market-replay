@@ -22,7 +22,6 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   function longs() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -37,7 +36,8 @@ export default (function f({
       }
   
       const takeProfitDistance = 100 * priceAdjustment;
-      const stopLossDistance = 100 * priceAdjustment;
+      const stopLossDistance = 50 * priceAdjustment;
+      const maxStopLossDistance = 340 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -51,10 +51,13 @@ export default (function f({
         minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
         minCandlesBetweenRangePoints: 10,
         maxCandlesBetweenRangePoints: 100,
-        limitPriceOffset: 0,
+        priceOffset: 0,
         rangePoints: 3,
         startWith: "resistance",
-        takeProfitStrategy: "half"
+        takeProfitStrategy: "distance",
+        stopLossStrategy: "levelWithOffset",
+        orderType: "buy-stop",
+        trendyOnly: false,
       }
   
       return {
@@ -66,7 +69,8 @@ export default (function f({
         candlesAmountToBeConsideredHorizontalLevel,
         takeProfitDistance,
         maxSecondsOpenTrade,
-        ranges
+        ranges,
+        maxStopLossDistance
       };
     }
 
@@ -78,6 +82,7 @@ export default (function f({
   }
 
   function shorts() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -91,8 +96,9 @@ export default (function f({
         past: 2
       }
   
-      const takeProfitDistance = 100 * priceAdjustment;
-      const stopLossDistance = 70 * priceAdjustment;
+      const takeProfitDistance = 200 * priceAdjustment;
+      const stopLossDistance = 50 * priceAdjustment;
+      const maxStopLossDistance = 350 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -101,15 +107,18 @@ export default (function f({
       const validDays: StrategyParams["validDays"] = [];
 
       const ranges: StrategyParams["ranges"] = {
-        candlesToCheck: 300,
+        candlesToCheck: 1000,
         maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
         minPriceDifferenceBetweenRangePoints: 20 * priceAdjustment,
         minCandlesBetweenRangePoints: 4,
-        maxCandlesBetweenRangePoints: 300,
-        limitPriceOffset: 0 * priceAdjustment,
+        maxCandlesBetweenRangePoints: 100,
+        priceOffset: 0 * priceAdjustment,
         rangePoints: 3,
-        startWith: "resistance",
-        takeProfitStrategy: "half"
+        startWith: "support",
+        takeProfitStrategy: "distance",
+        stopLossStrategy: "half",
+        orderType: "sell-stop",
+        trendyOnly: false
       }
   
       return {
@@ -121,7 +130,8 @@ export default (function f({
         candlesAmountToBeConsideredHorizontalLevel,
         takeProfitDistance,
         maxSecondsOpenTrade,
-        ranges
+        ranges,
+        maxStopLossDistance
       };
     }
 

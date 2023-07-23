@@ -49,6 +49,7 @@ export function get({
         ...p,
         candlesToCheck: 300,
         startAtIndex: index,
+        maxIndex: currentDataIndex,
         resistanceOrSupport: longOrShort === "long" ? "support" : "resistance"
       });
       if (!level) {

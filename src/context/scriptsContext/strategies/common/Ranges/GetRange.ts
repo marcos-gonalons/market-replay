@@ -27,6 +27,7 @@ export function get({
 
   while (currentRangePoint <= strategyParams!.ranges!.rangePoints) {
     [level, previousPotentialLevels] = getPreviousValidRangeLevel(1, index, previousPotentialLevels);
+    debugger;
     if (!level) {
       break;
     }
@@ -53,6 +54,7 @@ export function get({
       const potentialLevel = GetHorizontalLevel({
         resistanceOrSupport: levelToGet,
         startAtIndex: indexToUse,
+        maxIndex: currentDataIndex,
         candlesAmountToBeConsideredHorizontalLevel: strategyParams!.candlesAmountToBeConsideredHorizontalLevel!,
         candles,
         candlesToCheck

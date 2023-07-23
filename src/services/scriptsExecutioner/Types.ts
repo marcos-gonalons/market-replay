@@ -91,9 +91,12 @@ export interface StrategyParams {
     minCandlesBetweenRangePoints: number;
     maxCandlesBetweenRangePoints: number;
     rangePoints: number;
-    limitPriceOffset: number;
+    priceOffset: number;
     startWith: "resistance" | "support";
-    takeProfitStrategy: "level" | "half" | "levelWithOffset"
+    takeProfitStrategy: "level" | "half" | "levelWithOffset" | "distance";
+    stopLossStrategy: "level" | "half" | "levelWithOffset" | "distance";
+    orderType: Order["type"];
+    trendyOnly: boolean;
   }
 }
 

@@ -2,6 +2,7 @@ import { StrategyFuncParameters } from "../../../../services/scriptsExecutioner/
 import { handle as HandleTrailingSLAndTP } from "../common/HandleTrailingSLAndTP";
 import { get as GetRange, getAverages } from "../common/Ranges/GetRange";
 import { Order, OrderType, Position } from "../../../tradesContext/Types";
+import { Candle, MovingAverage } from "../../../globalContext/Types";
 
 export function Strategy({
   candles,
@@ -49,7 +50,7 @@ export function Strategy({
     }
   }
 
-  if (openPosition?.position === "long") {
+  if (openPosition?.position === "short") {
     HandleTrailingSLAndTP({
       openPosition,
       trailingSL: params!.trailingSL!,
@@ -59,6 +60,13 @@ export function Strategy({
         debugLog(ENABLE_DEBUG, date, ...msg)
       }
     });
+  }
+
+  if (params!.ranges!.trendyOnly) {
+    if (currentCandle.open >= getEMA(currentCandle, 21).value) {
+      debugLog(ENABLE_DEBUG, "Price is above huge EMA, not opening any shorts just yet ...", currentCandle, date);
+      return;
+    }
   }
 
   const range = GetRange({
@@ -78,33 +86,38 @@ export function Strategy({
 
   const [resistancesAvg, supportsAvg] = getAverages(range);
   
-  let type: OrderType = "sell-limit";
+  let type: OrderType = params!.ranges!.orderType;
   let position: Position = "short";
-  let price: number = resistancesAvg+params!.ranges!.limitPriceOffset;
-  if (currentCandle.close > price) {
-    return;
-  }
-  let stopLoss: number = price + params!.stopLossDistance!;
-  let takeProfit: number;
-  switch (params!.ranges!.takeProfitStrategy) {
-    case "half":
-      takeProfit = (resistancesAvg + supportsAvg) / 2;
-      break;
-    case "level":
-      takeProfit = supportsAvg;
-      break;
-    case "levelWithOffset":
-      takeProfit = supportsAvg - (params!.takeProfitDistance || 0)
-      break;
+  let price: number = 0;
+
+  if (type === "sell-limit") {
+    price = resistancesAvg + params!.ranges!.priceOffset;
+
+    if (currentCandle.close >= price) {
+      return;
+    }
+  } else if (type === "sell-stop") {
+    price = supportsAvg + params!.ranges!.priceOffset;
+
+    if (price >= currentCandle.close) {
+      return;
+    }
+  } else if (type === "market") {
+    price = currentCandle.close;
   }
 
+  let stopLoss: number = getStopLoss();
+  if (stopLoss <= price) {
+    return;
+  }
+
+  let takeProfit: number = getTakeProfit();
   if (takeProfit >= price) {
     return;
   }
 
   const size = 10000;
   const rollover = (0.7 * size) / 10000;
-
   const order: Order = {
     type: type!,
     position: position!,
@@ -118,7 +131,7 @@ export function Strategy({
   const existingOrderAtSamePrice = orders.find(o => 
     o.type !== "market" &&
     o.price === price &&
-    o.type === "sell-limit"
+    o.position === "short"
   );
   if (existingOrderAtSamePrice) {
     return;
@@ -127,4 +140,45 @@ export function Strategy({
   orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
   createOrder(order);
 
+  function getStopLoss(): number {
+    let sl: number;
+    switch (params!.ranges!.stopLossStrategy) {
+      case "half":
+        sl = (resistancesAvg + supportsAvg) / 2;
+        break;
+      case "level":
+        sl = type === "sell-stop" ? resistancesAvg : supportsAvg;
+        break;
+      case "levelWithOffset":
+        let avg = type === "sell-stop" ? resistancesAvg : supportsAvg;
+        sl = avg + (params!.stopLossDistance || 0)
+        break;
+      case "distance":
+        sl = price + params!.stopLossDistance!;
+        break;
+    }
+    if (sl - price > params!.maxStopLossDistance!) {
+      sl = price + params!.maxStopLossDistance!;
+    }
+
+    return sl;
+  }
+
+  function getTakeProfit(): number {
+    switch (params!.ranges!.takeProfitStrategy) {
+      case "half":
+        return (resistancesAvg + supportsAvg) / 2;
+      case "level":
+        return supportsAvg;
+      case "levelWithOffset":
+        return supportsAvg - (params!.takeProfitDistance || 0)
+      case "distance":
+        return price - params!.takeProfitDistance!;
+    }
+  }
 }
+
+function getEMA(candle: Candle, candlesAmount: number): MovingAverage {
+  return candle.indicators.movingAverages.find(m => m.candlesAmount === candlesAmount)!;
+}
+
