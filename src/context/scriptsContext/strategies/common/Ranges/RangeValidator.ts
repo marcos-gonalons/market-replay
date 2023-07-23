@@ -1,6 +1,6 @@
-import { StrategyParams } from "../../../../services/scriptsExecutioner/Types";
-import { Candle } from "../../../globalContext/Types";
-import { Level } from "./GetHorizontalLevel";
+import { StrategyParams } from "../../../../../services/scriptsExecutioner/Types";
+import { Candle } from "../../../../globalContext/Types";
+import { Level } from "../GetHorizontalLevel";
 
 interface IsRangeValidParams {
   range: Level[];
@@ -14,7 +14,7 @@ export function isRangeValid({
   candles,
   currentCandle
 }: IsRangeValidParams): boolean {
-  if (range.length < 3) return false;
+  if (range.length < 2) return false;
 
   const resistances = range.filter(l => l.type === "resistance");
   const supports = range.filter(l => l.type === "support");
@@ -60,7 +60,12 @@ export function isRangeValid({
 
   // All candles between levels must not be lower or higher than the level.
   for (let i = 0; i < range.length - 1; i++) {
-    for (let j = range[i].index-1; j > range[i+1].index+1; j--) {
+    let higherIndex = range[i].index-1;
+    let lowerIndex = range[i+1].index+1;
+    if (higherIndex <= lowerIndex) {
+      return false;
+    }
+    for (let j = higherIndex; j > lowerIndex; j--) {
       if (range[i].type === "resistance") {
         if (candles[j].high > range[i].candle.high) {
           return false;

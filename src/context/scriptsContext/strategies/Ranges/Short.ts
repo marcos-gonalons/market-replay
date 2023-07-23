@@ -1,6 +1,6 @@
 import { StrategyFuncParameters } from "../../../../services/scriptsExecutioner/Types";
 import { handle as HandleTrailingSLAndTP } from "../common/HandleTrailingSLAndTP";
-import { get as GetRange, getAverages } from "../common/GetRange";
+import { get as GetRange, getAverages } from "../common/Ranges/GetRange";
 import { Order, OrderType, Position } from "../../../tradesContext/Types";
 
 export function Strategy({
@@ -61,7 +61,6 @@ export function Strategy({
     });
   }
 
-
   const range = GetRange({
     candles,
     currentCandle,
@@ -72,17 +71,10 @@ export function Strategy({
   if (!range) return;
   range.map(l => l.candle.meta = { type: l.type });
 
-  for (const r of range) {
-    if (r.candle.timestamp === 1638345600000) {
-      debugger;
-    }
-  }
-
   if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
-
 
   const [resistancesAvg, supportsAvg] = getAverages(range);
   
