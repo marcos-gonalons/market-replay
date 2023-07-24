@@ -54,6 +54,10 @@ export default function getCombinations():  {
     minProfit: [999999].map(mp => mp * priceAdjustment),
     ////////////////////////////////////////////////////////////
 
+    /*
+      {"riskPercentage":1,"priceOffset":0,"maxAttemptsToGetSL":0,"stopLossDistance":0.003,"candlesAmountToBeConsideredHorizontalLevel":{"future":10,"past":3},"minStopLossDistance":0,"maxStopLossDistance":0.045000000000000005,"takeProfitDistance":0.01,"minProfit":99.99990000000001,"trailingSL":{"tpDistanceShortForTighterSL":0,"slDistanceWhenTpIsVeryClose":0},"trailingTP":{"slDistanceShortForTighterTP":0,"tpDistanceWhenSlIsVeryClose":0},"candlesAmountWithoutEMAsCrossing":0,"maxSecondsOpenTrade":0,"ranges":{"candlesToCheck":400,"maxPriceDifferenceForSameHorizontalLevel":0.005,"minPriceDifferenceBetweenRangePoints":0.01,"minCandlesBetweenRangePoints":5,"maxCandlesBetweenRangePoints":150,"priceOffset":-0.005,"rangePoints":3,"startWith":"support","takeProfitStrategy":"distance","stopLossStrategy":"levelWithOffset","orderType":"sell-stop","trendyOnly":false},"profits":2969.647656250057,"totalTrades":117}
+    */
+
     riskPercentage: [1],
     maxSecondsOpenTrade: [0],
     trailingSL: {

@@ -22,6 +22,7 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   function longs() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -82,7 +83,6 @@ export default (function f({
   }
 
   function shorts() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;

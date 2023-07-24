@@ -56,11 +56,13 @@ export function get({
         break;
       }
 
-      if (level.type === "resistance") {
-        sl = level.candle.high - priceOffset;
+      sl = level.type === "resistance" ? level.candle.high : level.candle.low;
+
+      if (longOrShort === "long") {
+        sl = sl + priceOffset;
       }
-      if (level.type === "support") {
-        sl = level.candle.low + priceOffset;
+      if (longOrShort === "short") {
+        sl = sl - priceOffset;
       }
 
       const validSL = longOrShort === "long" ?
