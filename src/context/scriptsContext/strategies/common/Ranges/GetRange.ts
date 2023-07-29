@@ -27,7 +27,6 @@ export function get({
 
   while (currentRangePoint <= strategyParams!.ranges!.rangePoints) {
     [level, previousPotentialLevels] = getPreviousValidRangeLevel(1, index, previousPotentialLevels);
-    debugger;
     if (!level) {
       break;
     }
