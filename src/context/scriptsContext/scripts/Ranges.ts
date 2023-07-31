@@ -22,7 +22,6 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   function longs() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -32,13 +31,13 @@ export default (function f({
       const riskPercentage = 1;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 10,
-        past: 10
+        future: 5,
+        past: 5
       }
   
-      const takeProfitDistance = 100 * priceAdjustment;
-      const stopLossDistance = 50 * priceAdjustment;
-      const maxStopLossDistance = 340 * priceAdjustment;
+      const takeProfitDistance = 120 * priceAdjustment;
+      const stopLossDistance = 25 * priceAdjustment;
+      const maxStopLossDistance = 300 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -48,17 +47,17 @@ export default (function f({
 
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 300,
-        maxPriceDifferenceForSameHorizontalLevel: 70 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 100 * priceAdjustment,
-        minCandlesBetweenRangePoints: 10,
-        maxCandlesBetweenRangePoints: 100,
+        maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 80 * priceAdjustment,
+        minCandlesBetweenRangePoints: 5,
+        maxCandlesBetweenRangePoints: 300,
         priceOffset: 0,
         rangePoints: 3,
         startWith: "resistance",
         takeProfitStrategy: "distance",
         stopLossStrategy: "levelWithOffset",
         orderType: "buy-stop",
-        trendyOnly: false,
+        trendyOnly: true,
       }
   
       return {
@@ -83,6 +82,7 @@ export default (function f({
   }
 
   function shorts() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;

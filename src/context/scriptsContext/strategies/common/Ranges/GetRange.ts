@@ -31,6 +31,7 @@ export function get({
       break;
     }
 
+
     index = level.index-strategyParams!.ranges!.minCandlesBetweenRangePoints;
     candlesToCheck = strategyParams!.ranges!.maxCandlesBetweenRangePoints;
     currentRangePoint++;

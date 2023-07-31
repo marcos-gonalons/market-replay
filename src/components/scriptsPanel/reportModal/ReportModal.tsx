@@ -206,6 +206,25 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
   trades.sort((a, b) => {
     return a.startDate.valueOf() > b.startDate.valueOf() ? 1 : -1;
   });
+
+  //////////////////////
+  let csvString = "Trade Number,Start Date,End Date,Start Price,End Price,Result\n";
+  for (const [index, trade] of trades.entries()) {
+    const startDate = new Date(trade.startDate);
+    const endDate = new Date(trade.endDate);
+
+    csvString += (
+      String(index+1) + "," +
+      String(startDate.getDate()).padStart(2, "0") + "/" + String(startDate.getMonth()+1).padStart(2, "0") + "/" + startDate.getFullYear() + " "+String(startDate.getHours()).padStart(2, "0")+":" + String(startDate.getMinutes()).padStart(2, "0") + "," +
+      String(endDate.getDate()).padStart(2, "0") + "/" + String(endDate.getMonth()+1).padStart(2, "0") + "/" + endDate.getFullYear()+ " "+String(endDate.getHours()).padStart(2, "0")+":" + String(endDate.getMinutes()).padStart(2, "0") + "," +
+      trade.startPrice.toFixed(5) + "," +
+      trade.endPrice.toFixed(5) + "," +
+      trade.result.toFixed(2)
+    ) + "\n";
+  }
+  console.log(csvString);
+  //////////////////////
+
   let balance = 5000;
   return (
     <div style={{ fontFamily: "monospace" }}>
