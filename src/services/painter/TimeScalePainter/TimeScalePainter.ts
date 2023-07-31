@@ -128,7 +128,7 @@ export function drawDateInPointerPosition({
 
   ctx.font = "bold 15px Arial";
 
-  const text = getTextForDateInPointerPosition(dataTemporality, date);
+  const text = String(dataIndex) + " - " + getTextForDateInPointerPosition(dataTemporality, date);
 
   const dateWidthInPx = ctx.measureText(text).width;
   const dateHeightInPx = 30;
