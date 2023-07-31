@@ -63,7 +63,7 @@ export function Strategy({
   }
 
   if (params!.ranges!.trendyOnly) {
-    if (currentCandle.open >= getEMA(currentCandle, 200).value) {
+    if (currentCandle.close >= getEMA(currentCandle, 200).value) {
       debugLog(ENABLE_DEBUG, "Price is above huge EMA, not opening any shorts just yet ...", currentCandle, date);
       return;
     }

@@ -24,7 +24,7 @@ import { Order, State as TradesContextState, Trade, TradesContext } from "../../
 import { addCommissions, adjustTradeResultWithRollover, debugLog, getMinutesAsHalfAnHour } from "../../utils/Utils";
 import { AppWorker } from "../../worker/Types";
 import processOrders from "../ordersHandler/OrdersHandler";
-import { EUR_EXCHANGE_RATE, GOOD_SUCCESS_RATE, SPREAD } from "../painter/Constants";
+import { EUR_EXCHANGE_RATE, GOOD_SUCCESS_RATE, SPREAD, PRICE_DECIMALS } from "../painter/Constants";
 import PainterService from "../painter/Painter";
 import { generateReports } from "../reporter/Reporter";
 import { Strategy, StrategyFuncParameters, StrategyParams } from "./Types";
@@ -351,6 +351,16 @@ class ScriptsExecutionerService {
         if (order.type === "market") {
           adjustPricesTakingSpreadIntoConsideration(order);
         }
+
+        const p = Math.pow(10, PRICE_DECIMALS);
+        order.price = Math.round(order.price * p) / p;
+        if (order.takeProfit) {
+          order.takeProfit = Math.round(order.takeProfit * p) / p;
+        }
+        if (order.stopLoss) {
+          order.stopLoss = Math.round(order.stopLoss * p) / p;
+        }
+
         if (replayMode) {
           tradesContext.dispatch(addOrder(order));
         } else {

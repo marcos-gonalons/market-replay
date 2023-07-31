@@ -102,36 +102,14 @@ export default function processOrders({
   }
 
   function transformOrderIntoAMarketOrder(order: Order, fillPrice: number): void {
-    const slDistance = order.stopLoss ? Math.abs(order.price - order.stopLoss) : 0;
-    const tpDistance = order.takeProfit ? Math.abs(order.price - order.takeProfit) : 0;
-
     if (order.type === "buy-stop" || order.type === "sell-stop") {
       order.price = fillPrice;
 
-      if (tpDistance) {
-        if (order.position === "long") {
-          order.takeProfit = fillPrice + tpDistance;
-        } else {
-          order.takeProfit = fillPrice - tpDistance;
-        }
-      }
-      if (slDistance) {
-        if (order.position === "long") {
-          order.stopLoss = fillPrice - slDistance;
-        } else {
-          order.stopLoss = fillPrice + slDistance;
-        }
-      }
-
       if (order.type === "buy-stop") {
         order.price += STOP_ORDER_POINTS_HANDICAP;
-        order.stopLoss = order.stopLoss ? order.stopLoss + STOP_ORDER_POINTS_HANDICAP : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit + STOP_ORDER_POINTS_HANDICAP : order.takeProfit;
       }
       if (order.type === "sell-stop") {
         order.price -= STOP_ORDER_POINTS_HANDICAP;
-        order.stopLoss = order.stopLoss ? order.stopLoss - STOP_ORDER_POINTS_HANDICAP : order.stopLoss;
-        order.takeProfit = order.takeProfit ? order.takeProfit - STOP_ORDER_POINTS_HANDICAP : order.takeProfit;
       }
     }
 
