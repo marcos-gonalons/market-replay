@@ -63,13 +63,13 @@ export function IsValidHorizontalLevel({
   candles,
   maxIndex
  }: IsValidHorizontalLevelParams): boolean {
-  if (indexToCheck >= maxIndex || indexToCheck < 0) {
+  if (indexToCheck >= maxIndex+1 || indexToCheck < 0) {
     return false;
   }
 
   // Future candles
   for (let i = indexToCheck+1; i < indexToCheck+1+candlesAmountToBeConsideredHorizontalLevel.future; i++) {
-    if (i === maxIndex) {
+    if (i === maxIndex+1) {
       return false;
     }
     if (resistanceOrSupport === "resistance") {

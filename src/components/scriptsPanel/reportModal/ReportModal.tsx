@@ -228,7 +228,7 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
   let balance = 5000;
   return (
     <div style={{ fontFamily: "monospace" }}>
-      {trades.map((t) => {
+      {trades.map((t,i) => {
         balance += t.result;
         const d = new Date(t.startDate);
         const ed = new Date(t.endDate);
@@ -239,7 +239,7 @@ function renderTradesList(report: Report, painterService: PainterService): JSX.E
               painterService.setOffsetByDate(d);
             }}
           >
-            <span>{`${t.size} ${t.position} -> ${t.startPrice.toFixed(5)} | ${t.endPrice.toFixed(5)} -> ${t.result.toFixed(2)} -> ${balance.toFixed(
+            <span>{`${i+1} - ${t.size} ${t.position} -> ${t.startPrice.toFixed(5)} | ${t.endPrice.toFixed(5)} -> ${t.result.toFixed(2)} -> ${balance.toFixed(
               0
             )} -> ${d.toLocaleString()} to ${ed.toLocaleString()}`}</span>
           </div>
