@@ -52,7 +52,7 @@ export function Strategy({
 
     if (diffInSeconds >= params!.maxSecondsOpenTrade) {
       debugLog(ENABLE_DEBUG, "Closing the trade since it has been open for too much time", date, openPosition);
-      closeOrder(openPosition.id!);
+      closeOrder(openPosition.id!, 'close');
     }
   }
 
@@ -71,7 +71,7 @@ export function Strategy({
   if (openPosition && openPosition.position === "short") {
     if (openPosition.price - currentCandle.close > params!.minProfit!) {
       if (getEMA(currentCandle, smallEMA).value > getEMA(currentCandle, bigEMA).value) {
-          closeOrder(openPosition.id!, 'open');
+          closeOrder(openPosition.id!, 'close');
           return;
       }
     }
