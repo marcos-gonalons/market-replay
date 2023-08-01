@@ -38,21 +38,11 @@ export default function processOrders({
       }
 
       if (order.takeProfit && isPriceWithinCandle(tpRealPrice, currentCandle)) {
-        if (
-          (order.position === "long" && currentCandle.close > currentCandle.open) ||
-          (order.position === "short" && currentCandle.close < currentCandle.open)
-        ) {
           processTakeProfitTrade(order, index);
-        }
       }
 
       if (order.stopLoss && isPriceWithinCandle(slRealPrice, currentCandle)) {
-        if (
-          (order.position === "long" && currentCandle.close < currentCandle.open) ||
-          (order.position === "short" && currentCandle.close > currentCandle.open)
-        ) {
           processStopLossTrade(order, index, order.stopLoss);
-        }
       }
       continue;
     }

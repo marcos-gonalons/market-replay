@@ -336,12 +336,8 @@ class ScriptsExecutionerService {
       const adjustment = SPREAD/2;
       if (order.position === "short") {
         order.price -= adjustment;
-        order.stopLoss = order.stopLoss ? (order.stopLoss -= adjustment) : order.stopLoss;
-        order.takeProfit = order.takeProfit ? (order.takeProfit -= adjustment) : order.takeProfit;
       } else {
         order.price += adjustment;
-        order.stopLoss = order.stopLoss ? (order.stopLoss += adjustment) : order.stopLoss;
-        order.takeProfit = order.takeProfit ? (order.takeProfit += adjustment) : order.takeProfit;
       }
     }
 

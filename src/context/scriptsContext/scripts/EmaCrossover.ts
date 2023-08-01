@@ -23,7 +23,6 @@ export default (function f({
 
 
   function longs() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -90,6 +89,7 @@ export default (function f({
   }
 
   function shorts() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;

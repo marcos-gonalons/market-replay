@@ -61,7 +61,7 @@ export function Strategy({
       openPosition,
       trailingSL: params!.trailingSL!,
       trailingTP: params!.trailingTP!,
-      currentCandle: candles[currentDataIndex],
+      currentCandle,
       log: (...msg: any[]) => {
         debugLog(ENABLE_DEBUG, date, ...msg)
       }
@@ -69,8 +69,8 @@ export function Strategy({
   }
 
   if (openPosition && openPosition.position === "short") {
-    if (openPosition.price - currentCandle.open > params!.minProfit!) {
-      if (getEMA(candles[currentDataIndex-1], smallEMA).value > getEMA(candles[currentDataIndex-1], bigEMA).value) {
+    if (openPosition.price - currentCandle.close > params!.minProfit!) {
+      if (getEMA(currentCandle, smallEMA).value > getEMA(currentCandle, bigEMA).value) {
           closeOrder(openPosition.id!, 'open');
           return;
       }
@@ -83,13 +83,13 @@ export function Strategy({
   }
 
 
-  if (currentCandle.open >= getEMA(currentCandle, baseEMA).value) {
+  if (currentCandle.close >= getEMA(currentCandle, baseEMA).value) {
     debugLog(ENABLE_DEBUG, "Price is above huge EMA, not opening any shorts just yet ...", currentCandle, date);
     return;
   }
 
   debugLog(ENABLE_DEBUG, "Price is below 200 EMA, only shorts allowed", currentCandle, date);
-  for (let i = currentDataIndex - params!.emaCrossover!.candlesAmountWithoutEMAsCrossing - 2; i <= currentDataIndex - 2; i++) {
+  for (let i = currentDataIndex - params!.emaCrossover!.candlesAmountWithoutEMAsCrossing - 1; i < currentDataIndex; i++) {
     if (i <= 0) return;
 
     if (getEMA(candles[i], smallEMA).value <= getEMA(candles[i], bigEMA).value) {
@@ -98,12 +98,12 @@ export function Strategy({
     }
   }
 
-  if (getEMA(candles[currentDataIndex-1], smallEMA).value > getEMA(candles[currentDataIndex-1], bigEMA).value) {
+  if (getEMA(currentCandle, smallEMA).value > getEMA(currentCandle, bigEMA).value) {
     debugLog(ENABLE_DEBUG, "Small EMA is still above the big EMA - doing nothing", currentCandle, date);
     return;
   }
 
-  const price = currentCandle.open;
+  const price = currentCandle.close;
 
   const stopLoss = GetStopLoss({
     longOrShort: "short",
