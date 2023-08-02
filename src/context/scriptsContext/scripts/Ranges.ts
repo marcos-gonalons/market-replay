@@ -32,12 +32,12 @@ export default (function f({
   
       const candlesAmountToBeConsideredHorizontalLevel = {
         future: 3,
-        past: 3
+        past: 10
       }
   
-      const takeProfitDistance = 50 * priceAdjustment;
-      const stopLossDistance = -30 * priceAdjustment;
-      const maxStopLossDistance = 450 * priceAdjustment;
+      const takeProfitDistance = 0 * priceAdjustment;
+      const stopLossDistance = 20 * priceAdjustment;
+      const maxStopLossDistance = 300 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -47,17 +47,17 @@ export default (function f({
 
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 400,
-        maxPriceDifferenceForSameHorizontalLevel: 75 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 25 * priceAdjustment,
+        maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 75 * priceAdjustment,
         minCandlesBetweenRangePoints: 5,
-        maxCandlesBetweenRangePoints: 150,
-        priceOffset: -50 * priceAdjustment,
+        maxCandlesBetweenRangePoints: 300,
+        priceOffset: 0 * priceAdjustment,
         rangePoints: 3,
-        startWith: "support",
-        takeProfitStrategy: "distance",
-        stopLossStrategy: "levelWithOffset",
-        orderType: "buy-stop",
-        trendyOnly: false,
+        startWith: "resistance",
+        takeProfitStrategy: "level",
+        stopLossStrategy: "distance",
+        orderType: "buy-limit",
+        trendyOnly: true,
       }
   
       return {

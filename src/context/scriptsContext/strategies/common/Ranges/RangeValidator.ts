@@ -112,5 +112,7 @@ export function isRangeValid({
   }
   ////////////////////////////////////////////////////////////
 
+  // TODO: All candles from currentCandle to first candle of the range must be between the lowest resistance price and the highest support price.
+
   return true;
 }
