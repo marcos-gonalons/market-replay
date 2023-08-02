@@ -93,7 +93,7 @@ export function Strategy({
   if (type === "buy-limit") {
     price = supportsAvg + params!.ranges!.priceOffset;
 
-    if (currentCandle.close < price) {
+    if (currentCandle.close <= price) {
       return;
     }
   } else if (type === "buy-stop") {
@@ -171,7 +171,7 @@ export function Strategy({
       case "level":
         return resistancesAvg;
       case "levelWithOffset":
-        return resistancesAvg - (params!.takeProfitDistance || 0)
+        return resistancesAvg + (params!.takeProfitDistance || 0)
       case "distance":
         return price + params!.takeProfitDistance!;
     }
