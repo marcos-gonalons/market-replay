@@ -31,13 +31,13 @@ export default (function f({
       const riskPercentage = 1;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 5,
-        past: 5
+        future: 3,
+        past: 3
       }
   
-      const takeProfitDistance = 120 * priceAdjustment;
-      const stopLossDistance = 25 * priceAdjustment;
-      const maxStopLossDistance = 300 * priceAdjustment;
+      const takeProfitDistance = 50 * priceAdjustment;
+      const stopLossDistance = -30 * priceAdjustment;
+      const maxStopLossDistance = 450 * priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -46,18 +46,18 @@ export default (function f({
       const validDays: StrategyParams["validDays"] = [];
 
       const ranges: StrategyParams["ranges"] = {
-        candlesToCheck: 300,
-        maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 80 * priceAdjustment,
+        candlesToCheck: 400,
+        maxPriceDifferenceForSameHorizontalLevel: 75 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 25 * priceAdjustment,
         minCandlesBetweenRangePoints: 5,
-        maxCandlesBetweenRangePoints: 300,
-        priceOffset: 0,
+        maxCandlesBetweenRangePoints: 150,
+        priceOffset: -50 * priceAdjustment,
         rangePoints: 3,
-        startWith: "resistance",
+        startWith: "support",
         takeProfitStrategy: "distance",
         stopLossStrategy: "levelWithOffset",
         orderType: "buy-stop",
-        trendyOnly: true,
+        trendyOnly: false,
       }
   
       return {

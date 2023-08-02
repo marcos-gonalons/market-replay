@@ -4,7 +4,6 @@ import { StrategyParams } from "./Types";
 export interface ParamCombinations {
   minStopLossDistance: StrategyParams['minStopLossDistance'][];
   riskPercentage: StrategyParams['riskPercentage'][];
-  priceOffset: StrategyParams['priceOffset'][];
   maxAttemptsToGetSL: number[];
   candlesAmountToBeConsideredHorizontalLevel: {
     future: number[],
@@ -69,7 +68,6 @@ export default function getCombinations():  {
       tpDistanceWhenSlIsVeryClose: [0].map(tp => tp * priceAdjustment)
     },
 
-    priceOffset: [0].map(po => po * priceAdjustment),
     candlesAmountToBeConsideredHorizontalLevel: {
       future: [3,10],
       past: [3,10]
@@ -102,7 +100,6 @@ export default function getCombinations():  {
       combinations.stopLossDistance.length *
       combinations.maxStopLossDistance.length *
       combinations.minStopLossDistance.length *
-      combinations.priceOffset.length *
       combinations.maxAttemptsToGetSL.length *
       combinations.candlesAmountWithoutEMAsCrossing.length *
       combinations.candlesAmountToBeConsideredHorizontalLevel.future.length *

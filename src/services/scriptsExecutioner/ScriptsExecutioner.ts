@@ -94,7 +94,6 @@ class ScriptsExecutionerService {
     for (const minProfit of combinations.minProfit) {
     for (const futureCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.future) {
     for (const pastCandles of combinations.candlesAmountToBeConsideredHorizontalLevel.past) {
-    for (const priceOffset of combinations.priceOffset) {
     for (const maxAttemptsToGetSL of combinations.maxAttemptsToGetSL) {
     for (const candlesAmountWithoutEMAsCrossing of combinations.candlesAmountWithoutEMAsCrossing) {
     for (const tpDistanceShortForTighterSL of combinations.trailingSL.tpDistanceShortForTighterSL) {
@@ -119,7 +118,6 @@ class ScriptsExecutionerService {
 
       const params = {
         riskPercentage: 1,
-        priceOffset,
         maxAttemptsToGetSL,
         stopLossDistance,
         candlesAmountToBeConsideredHorizontalLevel: {
@@ -255,7 +253,7 @@ class ScriptsExecutionerService {
       }
       
       j++;
-  }}}}}}}}}}}}}}}}}}}}}}}}}}}
+  }}}}}}}}}}}}}}}}}}}}}}}}}}
 
   alert('DONE')
     console.log("Best", best);

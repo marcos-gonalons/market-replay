@@ -128,15 +128,6 @@ export function Strategy({
     stopLoss
   }
 
-  const existingOrderAtSamePrice = orders.find(o => 
-    o.type !== "market" &&
-    o.price === price &&
-    o.position === "short"
-  );
-  if (existingOrderAtSamePrice) {
-    return;
-  }
-
   orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
   createOrder(order);
 
