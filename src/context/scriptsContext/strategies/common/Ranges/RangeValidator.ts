@@ -7,12 +7,14 @@ interface IsRangeValidParams {
   validationParams: StrategyParams["ranges"];
   candles: Candle[];
   currentCandle: Candle;
+  currentDataIndex: number;
 }
 export function isRangeValid({
   range,
   validationParams,
   candles,
-  currentCandle
+  currentCandle,
+  currentDataIndex
 }: IsRangeValidParams): boolean {
   if (range.length < 2) return false;
 
@@ -112,7 +114,12 @@ export function isRangeValid({
   }
   ////////////////////////////////////////////////////////////
 
-  // TODO: All candles from currentCandle to first candle of the range must be between the lowest resistance price and the highest support price.
+  // All candles from currentCandle to first candle of the range must be between the lowest resistance price and the highest support price.
+  for (let i = range[0].index+1; i < currentDataIndex; i++) {
+    if (candles[i].low < highestSupport) return false;
+    if (candles[i].high > lowestResistance) return false;
+  }
+  ////////////////////////////////////////////////////////////
 
   return true;
 }

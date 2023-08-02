@@ -95,7 +95,8 @@ export function get({
       range: [...range, level],
       validationParams: strategyParams!.ranges!,
       candles,
-      currentCandle
+      currentCandle,
+      currentDataIndex
     });
   }
 }
