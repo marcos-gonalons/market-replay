@@ -25,6 +25,7 @@ ctx.addEventListener("message", ({ data }: MessageEvent) => {
         break;
     }
   } catch (err: unknown) {
+    console.log(err);
     ctx.postMessage({ error: err as Error });
   }
 });

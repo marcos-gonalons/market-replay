@@ -79,13 +79,22 @@ export function Strategy({
   if (!range) return;
   range.map(l => l.candle.meta = { type: l.type });
 
+  const [resistancesAvg, supportsAvg] = getAverages(range);
+
+  if (currentCandle.close - supportsAvg < params?.ranges?.minimumDistanceToLevel!) {
+    debugLog(ENABLE_DEBUG, "The distance to the support level is too small, doing nothing...", date, openPosition);
+    return;
+  }
+  if (resistancesAvg - currentCandle.close < params?.ranges?.minimumDistanceToLevel!) {
+    debugLog(ENABLE_DEBUG, "The distance to the resistance level is too small, doing nothing...", date, openPosition);
+    return;
+  }
+
   if (openPosition) {
     debugLog(ENABLE_DEBUG, "There is an open position - doing nothing ...", date, openPosition);
     return;
   }
 
-  const [resistancesAvg, supportsAvg] = getAverages(range);
-  
   let type: OrderType = params!.ranges!.orderType;
   let position: Position = "short";
   let price: number = 0;
@@ -125,7 +134,9 @@ export function Strategy({
     size,
     rollover,
     takeProfit,
-    stopLoss
+    stopLoss,
+    createdAt: currentCandle.timestamp,
+    fillDate: currentCandle.timestamp
   }
 
   orders.filter((o) => o.type !== "market").map((nmo) => closeOrder(nmo.id!));
@@ -138,11 +149,10 @@ export function Strategy({
         sl = (resistancesAvg + supportsAvg) / 2;
         break;
       case "level":
-        sl = type === "sell-stop" ? resistancesAvg : supportsAvg;
+        sl = resistancesAvg;
         break;
       case "levelWithOffset":
-        let avg = type === "sell-stop" ? resistancesAvg : supportsAvg;
-        sl = avg + (params!.stopLossDistance || 0)
+        sl = resistancesAvg + (params!.stopLossDistance || 0)
         break;
       case "distance":
         sl = price + params!.stopLossDistance!;

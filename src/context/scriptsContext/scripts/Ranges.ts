@@ -22,42 +22,46 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   function longs() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
       }
-      const priceAdjustment = 1 / 10000;
-  
       const riskPercentage = 1;
-  
-      const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 3,
-        past: 10
-      }
-  
-      const takeProfitDistance = 0 * priceAdjustment;
-      const stopLossDistance = 20 * priceAdjustment;
-      const maxStopLossDistance = 300 * priceAdjustment;
-  
-      const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
-  
+      const priceAdjustment = 1 / 10000;
       const validHours: StrategyParams["validHours"] = [];
       const validMonths: StrategyParams["validMonths"] = [];
       const validDays: StrategyParams["validDays"] = [];
+  
+      const candlesAmountToBeConsideredHorizontalLevel = {
+        future: 10,
+        past: 20
+      }
 
+      const takeProfitDistance = 60 * priceAdjustment;
+      const stopLossDistance = -10 * priceAdjustment;
+      const maxStopLossDistance = 300 * priceAdjustment;
+  
+      const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 400,
         maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 75 * priceAdjustment,
+        minPriceDifferenceBetweenRangePoints: 120 * priceAdjustment,
         minCandlesBetweenRangePoints: 5,
         maxCandlesBetweenRangePoints: 300,
+        minimumDistanceToLevel: 30 * priceAdjustment,
         priceOffset: 0 * priceAdjustment,
         rangePoints: 3,
         startWith: "resistance",
-        takeProfitStrategy: "level",
-        stopLossStrategy: "distance",
-        orderType: "buy-limit",
+        takeProfitStrategy: "levelWithOffset",
+        stopLossStrategy: "levelWithOffset",
+        orderType: "market",
         trendyOnly: true,
+      }
+
+      const trailingSL = {
+        tpDistanceShortForTighterSL: 70 * priceAdjustment,
+        slDistanceWhenTpIsVeryClose: -40 * priceAdjustment
       }
   
       return {
@@ -70,7 +74,8 @@ export default (function f({
         takeProfitDistance,
         maxSecondsOpenTrade,
         ranges,
-        maxStopLossDistance
+        maxStopLossDistance,
+        trailingSL
       };
     }
 
@@ -82,7 +87,6 @@ export default (function f({
   }
 
   function shorts() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
@@ -92,13 +96,13 @@ export default (function f({
       const riskPercentage = 1;
   
       const candlesAmountToBeConsideredHorizontalLevel = {
-        future: 2,
-        past: 2
+        future: 10,
+        past: 10
       }
   
-      const takeProfitDistance = 200 * priceAdjustment;
-      const stopLossDistance = 50 * priceAdjustment;
-      const maxStopLossDistance = 350 * priceAdjustment;
+      const takeProfitDistance = 60 * priceAdjustment;
+      const stopLossDistance = -20 * priceAdjustment;
+      const maxStopLossDistance = 300* priceAdjustment;
   
       const maxSecondsOpenTrade = 0 * 24 * 60 * 60;
   
@@ -109,15 +113,16 @@ export default (function f({
       const ranges: StrategyParams["ranges"] = {
         candlesToCheck: 1000,
         maxPriceDifferenceForSameHorizontalLevel: 25 * priceAdjustment,
-        minPriceDifferenceBetweenRangePoints: 20 * priceAdjustment,
-        minCandlesBetweenRangePoints: 4,
+        minPriceDifferenceBetweenRangePoints: 120 * priceAdjustment,
+        minCandlesBetweenRangePoints: 10,
         maxCandlesBetweenRangePoints: 100,
+        minimumDistanceToLevel: 30 * priceAdjustment,
         priceOffset: 0 * priceAdjustment,
         rangePoints: 3,
         startWith: "support",
-        takeProfitStrategy: "distance",
-        stopLossStrategy: "half",
-        orderType: "sell-stop",
+        takeProfitStrategy: "levelWithOffset",
+        stopLossStrategy: "levelWithOffset",
+        orderType: "market",
         trendyOnly: false
       }
   

@@ -30,6 +30,7 @@ export interface ParamCombinations {
     minPriceDifferenceBetweenRangePoints: number[];
     minCandlesBetweenRangePoints: number[];
     maxCandlesBetweenRangePoints: number[];
+    minimumDistanceToLevel: number[];
     priceOffset: number[];
     rangePoints: number[];
     startWith: ("support"|"resistance")[];
@@ -81,6 +82,7 @@ export default function getCombinations():  {
       minPriceDifferenceBetweenRangePoints: [25,50,75,100,140].map(p => p * priceAdjustment),
       minCandlesBetweenRangePoints: [5],
       maxCandlesBetweenRangePoints: [150],
+      minimumDistanceToLevel: [10].map(p => p * priceAdjustment),
       priceOffset: [-150,-110,-80,-50,-20,0].map(p => p * priceAdjustment),
       rangePoints: [3],
       startWith: ["support"],

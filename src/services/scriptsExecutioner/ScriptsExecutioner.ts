@@ -106,6 +106,7 @@ class ScriptsExecutionerService {
     for (const minPriceDifferenceBetweenRangePoints of combinations.ranges.minPriceDifferenceBetweenRangePoints) {
     for (const minCandlesBetweenRangePoints of combinations.ranges.minCandlesBetweenRangePoints) {
     for (const maxCandlesBetweenRangePoints of combinations.ranges.maxCandlesBetweenRangePoints) {
+    for (const minimumDistanceToLevel of combinations.ranges.minimumDistanceToLevel) {
     for (const rangesPriceOffset of combinations.ranges.priceOffset) {
     for (const rangePoints of combinations.ranges.rangePoints) {
     for (const startWith of combinations.ranges.startWith) {
@@ -144,6 +145,7 @@ class ScriptsExecutionerService {
           minPriceDifferenceBetweenRangePoints,
           minCandlesBetweenRangePoints,
           maxCandlesBetweenRangePoints,
+          minimumDistanceToLevel,
           priceOffset: rangesPriceOffset,
           rangePoints,
           startWith,
@@ -253,7 +255,7 @@ class ScriptsExecutionerService {
       }
       
       j++;
-  }}}}}}}}}}}}}}}}}}}}}}}}}}
+  }}}}}}}}}}}}}}}}}}}}}}}}}}}
 
   alert('DONE')
     console.log("Best", best);

@@ -90,6 +90,7 @@ export interface StrategyParams {
     minPriceDifferenceBetweenRangePoints: number;
     minCandlesBetweenRangePoints: number;
     maxCandlesBetweenRangePoints: number;
+    minimumDistanceToLevel: number;
     rangePoints: number;
     priceOffset: number;
     startWith: "resistance" | "support";
