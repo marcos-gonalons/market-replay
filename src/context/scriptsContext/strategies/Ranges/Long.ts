@@ -126,8 +126,8 @@ export function Strategy({
     return;
   }
 
-  const size = 10000;
-  const rollover = (0.7 * size) / 10000;
+  const size = 1;
+  const rollover = (0 * size) / 1;
   const order: Order = {
     type: type!,
     position: position!,

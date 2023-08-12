@@ -18,9 +18,9 @@ export const SECONDS_IN_A_MONTH = SECONDS_IN_A_DAY * (365 / 12);
 export const SECONDS_IN_A_YEAR = SECONDS_IN_A_MONTH * 12;
 
 export const COMMISSIONS = 35 / 100 / 10000;
-export const SPREAD = 0.00012; // 2; // 0.00012; // 0.00025; // 0.00001; // 0.0035
-export const STOP_ORDER_POINTS_HANDICAP = 0.00012; // 0.00012; // 0.0035; 0.00025; // 2
-export const PRICE_DECIMALS = 5;
+export const SPREAD = 2; // 2; // 0.00012; // 0.00025; // 0.00001; // 0.0035
+export const STOP_ORDER_POINTS_HANDICAP = 2; // 0.00012; // 0.0035; 0.00025; // 2
+export const PRICE_DECIMALS = 1;
 
 export const GOOD_SUCCESS_RATE = 35;
 

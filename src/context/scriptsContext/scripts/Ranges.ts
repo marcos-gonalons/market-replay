@@ -22,13 +22,12 @@ export default (function f({
   if (candles.length === 0 || currentDataIndex === 0) return;
 
   function longs() {
-    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;
       }
       const riskPercentage = 1;
-      const priceAdjustment = 1 / 10000;
+      const priceAdjustment = 1;//1 / 10000;
       const validHours: StrategyParams["validHours"] = [];
       const validMonths: StrategyParams["validMonths"] = [];
       const validDays: StrategyParams["validDays"] = [];
@@ -87,6 +86,7 @@ export default (function f({
   }
 
   function shorts() {
+    return;
     function getParams(params: StrategyParams | null): StrategyParams {
       if (params) {
         return params;

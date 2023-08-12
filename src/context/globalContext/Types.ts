@@ -12,6 +12,7 @@ interface Candle {
   volume: number;
   indicators: {
     movingAverages: MovingAverage[]
+    rsi: RSI;
   }
   meta?: { [key: string]: unknown };
 }
@@ -22,6 +23,11 @@ interface MovingAverage {
   candlesAmount: number;
 }
 
+interface RSI {
+  value: number;
+  averageProfits: number;
+  averageLoses: number;
+}
 
 interface State {
   readonly painterService: PainterService | null;

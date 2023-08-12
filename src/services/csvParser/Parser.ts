@@ -26,7 +26,12 @@ export function parse(csvContents: string): Candle[] {
       close: parseFloat(close ?? 0),
       volume: parseFloat(volume ?? 0),
       indicators: {
-        movingAverages: []
+        movingAverages: [],
+        rsi: {
+          value: 0,
+          averageLoses: 0,
+          averageProfits: 0
+        }
       },
     };
 
